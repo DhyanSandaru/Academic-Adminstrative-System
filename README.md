@@ -16,3 +16,4 @@ Database: MySQL
 Hosting: AWS Lightsail
 Authentication: JSON Web Tokens (JWT)
 Purpose: Developed as a final project (viva: December 1, 2025) to address gaps in existing SIS, offering a lightweight, user-friendly solution for small academies.
+
