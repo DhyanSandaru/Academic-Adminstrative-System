@@ -1,10 +1,14 @@
 import React from 'react'
+import { Link } from 'react-router-dom';
 
-export default function Navbar({ admin }) {
+
+export default function Navbar({ isOpen,setIsopen,admin }) {
   const initial = admin ? admin.charAt(0).toUpperCase() : 'A'
 
   return (
-    <div className="w-72 h-screen bg-[#121c3e] text-white flex flex-col">
+    <div className={`h-screen bg-[#121c3e] text-white flex flex-col transition-all duration-300 
+  ${isOpen ? "w-72" : "w-0 overflow-hidden"}`}>
+
       {/* Admin Profile */}
       <div className="p-6 flex items-center gap-4">
         <div className="w-16 h-16 rounded-full bg-[#ffc20e] flex items-center justify-center">
@@ -24,20 +28,20 @@ export default function Navbar({ admin }) {
         <div className="mb-6">
           <h4 className="text-gray-300 text-sm font-medium mb-3 px-2">Features</h4>
           <div className="space-y-1">
-            <a
-              href="#"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#253d90] transition-colors"
+            <Link
+              to="/dashboard"
+              className="flex items-Linkenter gap-3 px-3 py-2 rounded-lg hover:bg-[#253d90] transition-colors"
             >
               <img src="/images/dashboard-icon.png" alt="Dashboard" className="w-5 h-5" />
               <span>Dashboard</span>
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/timetable"
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#253d90] transition-colors"
             >
               <img src="/images/timetable-icon.png" alt="Time table" className="w-5 h-5" />
               <span>Time table</span>
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -45,20 +49,20 @@ export default function Navbar({ admin }) {
         <div className="mb-6">
           <h4 className="text-gray-300 text-sm font-medium mb-3 px-2">Student Management</h4>
           <div className="space-y-1">
-            <a
-              href="#"
+            <Link
+              to="/add-student"
               className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#ffc20e] text-[#121c3e] font-medium"
             >
-              <img src="/images/student.png" alt="Add student" className="w-5 h-5" />
+              <img src="/images/add_student.png" alt="Add student" className="w-5 h-5" />
               <span>Add student</span>
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/view-students"
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#253d90] transition-colors"
             >
               <img src="/images/view-students.png" alt="View students" className="w-5 h-5" />
               <span>View students</span>
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -66,20 +70,20 @@ export default function Navbar({ admin }) {
         <div className="mb-6">
           <h4 className="text-gray-300 text-sm font-medium mb-3 px-2">Lecturer Management</h4>
           <div className="space-y-1">
-            <a
-              href="#"
+            <Link
+              to="/add-lecturer"
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#253d90] transition-colors"
             >
               <img src="/images/add-lecturer.png" alt="Add Lecturer" className="w-5 h-5" />
               <span>Add Lecturer</span>
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/view-lecturers"
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#253d90] transition-colors"
             >
               <img src="/images/view-lecturers.png" alt="View lecturers" className="w-5 h-5" />
               <span>View lecturers</span>
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -87,20 +91,20 @@ export default function Navbar({ admin }) {
         <div className="mb-6">
           <h4 className="text-gray-300 text-sm font-medium mb-3 px-2">Payment Management</h4>
           <div className="space-y-1">
-            <a
-              href="#"
+            <Link
+              to="/add-payment"
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#253d90] transition-colors"
             >
               <img src="/images/add-payment.png" alt="Add Payment" className="w-5 h-5" />
               <span>Add Payment</span>
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/view-payments"
               className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#253d90] transition-colors"
             >
               <img src="/images/view-payments.png" alt="View payments" className="w-5 h-5" />
               <span>View payments</span>
-            </a>
+            </Link>
           </div>
         </div>
       </nav>
