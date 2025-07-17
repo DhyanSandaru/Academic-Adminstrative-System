@@ -24,7 +24,7 @@ export default function Layout({ children }) {
                 </div>
                 </header>
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto p-4">
+                <main className="flex flex-col p-4 justify-center items-center gap-5">
                     {children}
                 </main>
             </div>
