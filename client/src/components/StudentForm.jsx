@@ -35,8 +35,7 @@ export default function Form() {
     try {
       const res = await fetch("http://localhost:8000/add-student", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: formData,
+        body: formData
       });
 
       const data = await res.json();
@@ -78,6 +77,7 @@ export default function Form() {
               <div id="course-modules" className="flex-1 flex flex-wrap gap-2">
                 {courseModules.map((module) => (
                   <div
+                    key={module}
                     className="bg-[#253d90] hover:bg-[#1e2f7a] text-white py-1 rounded-md flex items-center pl-2"
                   >
                     {module}
