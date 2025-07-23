@@ -19,7 +19,7 @@ export default function ViewStudents() {
       <div className="bg-white w-[80vw] p-4 flex flex-col justify-between">
       <div className="grid grid-cols-5 gap-4">
         {currentStudents.map((_, index) => (
-          <Student key={index + start} />
+          <Student key={index + start} name="Joeleyne Rivera" studentId="S8591" courses="Chemistry,Physics" status="Paid"/>
         ))}
       </div>
 

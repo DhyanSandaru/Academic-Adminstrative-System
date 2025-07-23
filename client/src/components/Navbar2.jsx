@@ -35,7 +35,7 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
               label="Dashboard" 
             />
             <SidebarLink
-              to="/time-table"
+              to="/timetable"
               icon="/images/timetable-icon.png"
               label="Time Table" 
             />

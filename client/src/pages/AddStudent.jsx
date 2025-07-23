@@ -5,7 +5,7 @@ import Layout from "../components/Layout";
 export default function AddStudent() {
     return(
         <Layout title="Add Student">
-            <Form />
+            <StudentForm />
         </Layout>
     )
 }

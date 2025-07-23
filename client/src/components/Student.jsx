@@ -1,5 +1,5 @@
 import Badge from "./Badge"
-export default function Student(props) {
+export default function Student({name, studentId, courses, status}) {
     return (
        <div className="w-60 flex flex-col items-center justify-center">
             {/* Student Card */}
@@ -20,17 +20,17 @@ export default function Student(props) {
                     </div>
 
                     {/* Name */}
-                    <h2 className="text-2xl font-bold text-[#000000]">Joeylene Rivera</h2>
+                    <h2 className="text-2xl font-bold text-[#000000]">{name}</h2>
 
                     {/* Student Details */}
                     <div className="space-y-2 text-[#000000]">
-                        <p className="text-lg font-medium">Student ID: S8591</p>
+                        <p className="text-lg font-medium">Student ID: {studentId}</p>
                         <div>
                             <p className="font-medium">Enrolled Courses:</p>
-                            <p className="text-gray-700">Chemistry, Mathematics, Physics</p>
+                            <p className="text-gray-700">{courses}</p>
                         </div>
                     </div>
-                    <Badge status="Paid"/>
+                    <Badge status={status}/>
                 </div>
             </div>
         </div>
