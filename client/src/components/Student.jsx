@@ -2,7 +2,7 @@ import Badge from "./Badge"
 import { Link } from "react-router-dom"
 export default function Student({name, studentId, courses, status}) {
     return (
-        <Link to="/personal-details">
+        <Link to={`${studentId}/personal-details`}>
             <div className="w-60 flex flex-col items-center justify-center transition-transform duration-200 ease-in-out hover:scale-105 cursor-pointer">
                 {/* Student Card */}
                 <div className="relative bg-[#ffffff] rounded-3xl px-5 pt-4 pb-8 shadow-lg">

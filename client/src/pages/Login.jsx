@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import { useNavigate,Link } from 'react-router-dom';
+import axios from "axios";
 export default function Login() {
 
     const navigate = useNavigate();
@@ -13,25 +14,16 @@ export default function Login() {
         const loginData = { username, password };
 
         try {
-            const response = await fetch('http://localhost:8000/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(loginData),
-            });
+          const response = await axios.post("http://localhost:8000/login", loginData)
 
-            const result = await response.json();
-
-            if (response.ok) 
-                navigate('/dashboard');
-
-            else {
-                setError(result.message || 'Login failed');
-            }
+          navigate('/dashboard');
         } 
         catch (err) {
-        setError('Server error. Please try again later.');
+            if(err.response && err.response.data && err.response.data.message){
+                setError(err.response.data.message);
+            }
+            else
+                setError('Server error. Please try again later.');
         }
     };
 
@@ -40,6 +32,13 @@ export default function Login() {
             <div className="bg-grey-100 border-1 p-8 rounded-2xl shadow-lg text-black backdrop-blur-xs">
                 <h1 className="pb-5">Login</h1>
                 <p className="pb-10">Login to your account</p>
+
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+                        {error}
+                    </div>
+                )}
+
                 <form className="flex flex-col w-[70vh] gap-4 " onSubmit={handleSubmit}>
                     <div className="flex flex-col pb-5">
                         <label htmlFor="username" className="text-left">Username</label>

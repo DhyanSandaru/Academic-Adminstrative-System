@@ -1,5 +1,5 @@
 import { useState } from "react"
-
+import axios from "axios";
 
 export default function Form() {
 
@@ -21,7 +21,7 @@ export default function Form() {
     e.preventDefault();
 
     const form = e.target;
-     const formData = new FormData();
+    const formData = new FormData();
     formData.append("studentName", form["student-name"].value);
     formData.append("profilePhoto", profilePhoto);
     formData.append("gender", form["gender"].value);
@@ -33,19 +33,18 @@ export default function Form() {
     formData.append("courseModules", JSON.stringify(courseModules)); // send as string
 
     try {
-      const res = await fetch("http://localhost:8000/add-student", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await res.json();
-      alert(data.message || "Student added successfully!");
+      const res = await axios.post("http://localhost:8000/add-student",formData);
+      
+      alert(res.data.message || "Student added successfully!");
       form.reset();
       setCourseModules([]);
       setProfilePhoto(null);
+
     } catch (err) {
-      console.error(err);
-      alert("Submission failed");
+      if(err.response.data?.message)
+        alert(err.response.data.message)
+      else
+        alert("Submisson Failed")
     }
   };
 
@@ -103,9 +102,21 @@ export default function Form() {
 
           {/* Gender */}
           <div className="flex items-center gap-8">
-            <label htmlFor="gender" className="w-40 text-[#000000] font-medium">Gender :</label>
-            <div className="flex-1">
-              <input id="gender" className="border-0 border-b-2 border-[#000000] rounded-none bg-transparent focus:ring-0 focus:border-[#253d90]  w-90" />
+            <p className="w-40 text-[#000000] font-medium">Gender :</p>
+            <div className="flex-1 gap" id="gender">
+              <div className="flex justify-between items-center">
+                <label htmlFor="male" className="text-black">Male
+                  <input type="radio" id="male" name="gender" value="male" className="m-3" />
+                </label>
+
+                <label htmlFor="female" className="text-black">Female
+                  <input type="radio" id="female" name="gender" value="female" className="m-3" />
+                </label>
+
+                <label htmlFor="other" className="text-black">Other
+                  <input type="radio" id="other" name="gender" value="other" className="m-3" />
+                </label>
+              </div>
             </div>
           </div>
 

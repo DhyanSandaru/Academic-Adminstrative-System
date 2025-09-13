@@ -81,7 +81,7 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
           <h4 className="text-gray-300 text-sm font-medium mb-3 px-2">Payment Management</h4>
           <div className="space-y-1">
            <SidebarLink
-              to="/add-payments"
+              to="/add-payment"
               icon="/images/add-payment.png"
               label="Add Payments" 
             />
