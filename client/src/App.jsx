@@ -7,33 +7,28 @@ import ViewStudents from './pages/ViewStudents.jsx'
 import AddLecturer from './pages/AddLecturer.jsx'
 import ViewLecturers from './pages/ViewLecturers.jsx'
 import TimeTable from './pages/TimeTable.jsx'
-import PersonalDetails from './pages/profiles/PersonalDetails.jsx'
-import ContactDetails from './pages/profiles/ContactDetails.jsx'
-import EducationDetails from './pages/profiles/EducationDetails.jsx'
-import PaymentDetails from './pages/profiles/PaymentStatus.jsx'
-import Salary from './pages/profiles/Salary.jsx'
 import ViewPayment from './pages/ViewPayments.jsx'
 import AddPayment from './pages/AddPayment.jsx'
-
+import StudentProfile from './pages/StudentProfile.jsx'
+import LecturerProfile from './pages/LecturerProfile.jsx'
+import AdminProfile from './pages/AdminProfile.jsx'
 
 export default function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/admin-profile" element={<AdminProfile />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/add-student" element={<AddStudent />} />
         <Route path="/view-students" element={<ViewStudents />} />
         <Route path="/add-lecturer" element={<AddLecturer />} />
         <Route path="/view-lecturers" element={<ViewLecturers />} />
         <Route path="/timetable" element={<TimeTable/>}/>
-        <Route path="/view-lecturers/personal-details" element={<PersonalDetails/>}/>
-        <Route path="view-lecturers/contact-details" element={<ContactDetails/>}/>
-        <Route path="view-lecturers/education-details" element={<EducationDetails/>}/>
-        <Route path="view-lecturers/payment-status" element={<PaymentDetails/>}/>
-        <Route path="view-lecturers/calculate-salary" element={<Salary/>}/>
         <Route path="view-payment" element={<ViewPayment/>}/>
         <Route path="add-payment" element={<AddPayment/>}/>
+        <Route path="/view-students/:student_id" element={<StudentProfile/>}/>
+        <Route path="/view-lecturers/:lecturer_id" element={<LecturerProfile/>}/>
       </Routes>
     </Router>
   )

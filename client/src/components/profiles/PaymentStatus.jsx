@@ -1,15 +1,16 @@
-import ProfileLayout from './ProfileLayout.jsx'
 import { useEffect } from 'react'
-import Badge from '../../components/Badge.jsx'
+import Badge from '../Badge.jsx'
+import { Element } from 'react-scroll'
 
 export default function PaymentDetails(){
 
     return(
-        <ProfileLayout>
+        <Element name="payment_details" className='pt-20 pb-20 bg-white w-full rounded-lg shadow-md'>
+            <h2 className='text-lg'>Payment Status</h2>
             <div className='flex flex-col justify-center items-center gap-3 h-60'>
                 <div className='flex flex-row items-center gap-4'>
                     <p>Chemistry</p>
-                    <Badge status="Paid"/>
+                    <Badge status="Paid" className='flex-1'/>
                 </div>
                 <div className='flex flex-row items-center gap-4'>
                     <p>Physics</p>
@@ -20,6 +21,6 @@ export default function PaymentDetails(){
                     <Badge status="Unpaid"/>
                 </div>
             </div>
-        </ProfileLayout>
+        </Element>
     )
 }

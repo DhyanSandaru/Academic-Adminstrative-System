@@ -18,10 +18,13 @@ exports.addStudent = async (req, res) => {
     // Get relative path of uploaded image
     const profilePhoto = req.file ? `/students/${req.file.filename}` : null;
 
+    //to make sure the student id made using examYear will not break routing
+    const sanitizedExamYear = examYear.replace(/\s+/g, "").replace(/\//g, "_"); 
+
     // Get the current count of students for that year
-    const [rows] = await db.query(
+    const  [rows] = await db.query(
       `SELECT COUNT(*) as count FROM students WHERE exam_year = ? AND student_id LIKE ?`,
-      [examYear, `S${examYear}%`]
+      [examYear, `S${sanitizedExamYear}%`]
     );
 
     const count = rows[0].count; // current number of students
@@ -29,9 +32,8 @@ exports.addStudent = async (req, res) => {
 
     // Pad serial with leading zeros if you want fixed length (e.g., 2 digits)
     const serialStr = serial.toString().padStart(3, "0");
-
     
-    const studentId = `S${examYear}${serialStr}`;
+    const studentId = `S${sanitizedExamYear}${serialStr}`;
 
     // Insert into students
     await db.query(
@@ -69,15 +71,104 @@ exports.addStudent = async (req, res) => {
 
 exports.fetchStudents = async(req,res) => {
  try{
-  const [rows] = await db.query(`SELECT student_name,student_id,course,payment_status FROM students`)
-  res.json(rows);
+  const [rows] = await db.query(`SELECT * FROM students`)
+  const formattedData = rows.map(student => ({
+    name: student.student_name,
+    studentId: student.student_id,
+    profilePhoto: student.profile_photo,
+    gender: student.gender,
+    examYear: student.exam_year,
+    email: student.email,
+    NIC: student.nic,
+    mobile: student.mobile,
+    address: student.address,
+    payment_status: student.payment_status
+  }));
+  res.json(formattedData);
 
  } 
  catch(err){
-  console.error("Error fetching students :",err);
+  console.error("Error fetching students ",err);
   res.status(500).json({message: 'Internal server error'})
  }
 }
+
+exports.fetchStudentbyID = async(req,res) => {
+  const id = req.params.id;
+  try{
+    const[rows] = await db.query(`SELECT * FROM students WHERE student_id=?`,[id]);
+
+    if(rows.length == 0){
+      return res.status(404).json({message: "Student not found"});
+    }
+
+    const student = rows[0];
+
+    const [moduleRows] = await db.query(`
+      SELECT m.name 
+      FROM student_modules sm
+      JOIN modules m ON sm.module_id = m.module_id
+      WHERE sm.student_id = ?
+      `, [id]);
+    
+    const courses = moduleRows.map(row => row.name);
+
+    const formattedData = {
+      name: student.student_name,
+      studentId: student.student_id,
+      profilePhoto: student.profile_photo,
+      gender: student.gender,
+      examYear: student.exam_year,
+      email: student.email,
+      nic: student.nic,
+      mobile: student.mobile,
+      address: student.address,
+      payment_status: student.payment_status,
+      courses
+    }
+    res.json(formattedData)
+  }catch(err){
+    console.error("Error fetching students ",err);
+    res.status(500).json({message: 'Internal server error'})
+  }
+}
+
+exports.updateStudentById = async(req,res) => {
+  const{
+    name,
+    studentId,
+    profilePhoto,
+    gender,
+    examYear,
+    email,
+    nic,
+    mobile,
+    address,
+    payment_status
+  } = req.body;
+
+  try{
+    // Check if student exists
+    const [rows] = await db.query(`SELECT * FROM students WHERE student_id = ?`, [studentId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Update student record
+    await db.query(
+      `UPDATE students 
+       SET student_name = ?, gender = ?, profile_photo=  ?, exam_year = ?, email = ?, nic = ?, mobile = ?, address = ?, payment_status = ?
+       WHERE student_id = ?`,
+      [name, gender,profilePhoto, examYear, email, nic, mobile, address, payment_status, studentId]
+    );
+  }
+   catch (err) {
+    console.error("Error updating student:", err);
+    res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
 
 
 

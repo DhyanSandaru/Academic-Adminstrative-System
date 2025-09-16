@@ -1,5 +1,5 @@
-import ProfileLayout from "./ProfileLayout"
-import CalculateSalary from "../../components/CalculateSalary"
+import ProfileLayout from "../profiles/ProfileLayout"
+import CalculateSalary from "../CalculateSalary"
 export default function Salary(){
     return(
         <ProfileLayout>

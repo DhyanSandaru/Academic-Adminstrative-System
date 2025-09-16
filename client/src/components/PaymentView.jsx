@@ -12,9 +12,6 @@ export default function ViewPayment() {
 
   return (
     <div className="min-h-screen bg-[#e3edf9] p-[30px]">
-      <h1 className="text-[24px] font-bold mb-[20px] text-[#121c3e]">
-        View Payment
-      </h1>
 
       <input
         type="text"

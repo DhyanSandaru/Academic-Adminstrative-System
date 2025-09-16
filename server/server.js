@@ -7,13 +7,16 @@ const port = 8000;
 
 app.use(cors());
 app.use(express.json());
-app.use('/students', express.static(path.join(__dirname, 'public/students')));
+app.use('/students', express.static(path.join(__dirname, 'routes/students')));
+app.use('/lecturers', express.static(path.join(__dirname, 'routes/lecturers')));
 
 const loginRoute = require('./routes/LoginRoute.js');
 const studentsRoute = require('./routes/StudentsRoutes.js');
+const lecturerRoute = require('./routes/LecturerRoutes.js')
 
 app.use('/', loginRoute);
 app.use('/', studentsRoute);
+app.use('/',lecturerRoute)
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

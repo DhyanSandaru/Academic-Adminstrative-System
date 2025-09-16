@@ -11,17 +11,19 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
   ${isOpen ? "w-72" : "w-0 overflow-hidden"}`}>
 
       {/* Admin Profile */}
-      <div className="p-6 flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-[#ffc20e] flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full bg-[#ffc20e] flex items-center justify-center text-[#121c3e] font-semibold text-lg">
-            {initial}
+      <Link to="/admin-profile">
+        <div className="p-6 flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-[#ffc20e] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-[#ffc20e] flex items-center justify-center text-[#121c3e] font-semibold text-lg">
+              {initial}
+            </div>
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg">{admin}</h3>
+            <p className="text-gray-300 text-sm">Admin</p>
           </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-lg">{admin}</h3>
-          <p className="text-gray-300 text-sm">Admin</p>
-        </div>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 px-4">

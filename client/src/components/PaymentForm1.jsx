@@ -53,13 +53,7 @@ export default function AddPayment() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white px-6 py-4 flex items-center gap-4 shadow-sm">
-          <Menu className="w-6 h-6 text-gray-600" />
-          <div className="flex items-center gap-2">
-            <Plus className="w-5 h-5 text-gray-600" />
-            <h1 className="text-xl font-semibold text-gray-900">Add Payment</h1>
-          </div>
-        </div>
+        
 
         {/* Form Section */}
         <div className="flex-1 p-8">

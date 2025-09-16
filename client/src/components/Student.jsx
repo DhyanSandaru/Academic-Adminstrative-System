@@ -1,8 +1,8 @@
 import Badge from "./Badge"
 import { Link } from "react-router-dom"
-export default function Student({name, studentId, courses, status}) {
+export default function Student({name, studentId, courses, status,profilePhoto}) {
     return (
-        <Link to={`${studentId}/personal-details`}>
+        <Link to={`/view-students/${studentId}`}>
             <div className="w-60 flex flex-col items-center justify-center transition-transform duration-200 ease-in-out hover:scale-105 cursor-pointer">
                 {/* Student Card */}
                 <div className="relative bg-[#ffffff] rounded-3xl px-5 pt-4 pb-8 shadow-lg">
@@ -15,8 +15,8 @@ export default function Student({name, studentId, courses, status}) {
                         {/* Profile Image */}
                         <div className="w-24 h-24 rounded-full border-4 border-[#ffc20e] overflow-hidden">
                             <img
-                            src="\images\boy-icon.png"
-                            alt="Joeylene Rivera"
+                            src={`http://localhost:8000${profilePhoto}`}
+                            alt={name}
                             className="w-full h-full object-cover"
                             />
                         </div>

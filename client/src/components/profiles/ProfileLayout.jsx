@@ -1,13 +1,13 @@
-import {Link} from 'react-router-dom'
-import Layout from '../../components/Layout';
+import {Link} from 'react-scroll'
+import Layout from '../Layout';
 
 export default function ProfileLayout({ children }) {
   return (
     <Layout>
-      <div className="min-h-screen bg-[#e3edf9] p-6 flex gap-6 justify-center items-center">
+      <div className="w-3/4 bg-[#e3edf9] p-6 flex flex-col gap-6 justify-center items-center">
         {/* Sidebar */}
-        <div className="w-60 h-fit bg-white rounded-lg shadow">
-          <div className="p-6 space-y-4 flex flex-col">
+        <div className="h-fit bg-white rounded-lg shadow">
+          <div className="p-6 space-x-4 flex flex-row">
             <Link to='/view-lecturers/personal-details'>
               <button className="w-full justify-center text-black font-medium py-3 rounded-lg bg-[#ffc20e]">
               Personal Details
@@ -25,14 +25,9 @@ export default function ProfileLayout({ children }) {
                 Education Details
               </button>
             </Link>
-            <Link to='/view-lecturers/payment-status'>
+            <Link to='payment_details' smooth={true} spy={true} >
               <button className="w-full justify-center font-medium py-3 rounded-lg bg-[#e3edf9] text-black">
                 Payment Status
-              </button>
-            </Link>
-            <Link to='/view-lecturers/calculate-salary'>
-              <button className="w-full justify-center font-medium py-3 rounded-lg bg-[#e3edf9] text-black">
-                Calculate Salary
               </button>
             </Link>
             
@@ -40,7 +35,7 @@ export default function ProfileLayout({ children }) {
         </div>
 
         {/* Page-specific content */}
-        <div className="flex-1 bg-white rounded-lg shadow text-black w-[50vw] p-5">
+        <div className="rounded-lg shadow text-black flex flex-col gap-10 w-full">
           {children}
         </div>
     </div>

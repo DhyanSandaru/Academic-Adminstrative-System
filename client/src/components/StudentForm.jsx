@@ -1,13 +1,12 @@
-import { useState } from "react"
+import { useState } from "react";
 import axios from "axios";
 
-export default function Form() {
-
+export default function LecturerForm() {
   const [courseModules, setCourseModules] = useState([]);
   const [profilePhoto, setProfilePhoto] = useState(null);
 
   const addCourseModule = () => {
-    const newModule = prompt("Enter module name:");
+    const newModule = prompt("Enter subject name:");
     if (newModule) {
       setCourseModules([...courseModules, newModule]);
     }
@@ -22,70 +21,64 @@ export default function Form() {
 
     const form = e.target;
     const formData = new FormData();
-    formData.append("studentName", form["student-name"].value);
+
+    formData.append("lecturerName", form["student-name"].value);
     formData.append("profilePhoto", profilePhoto);
     formData.append("gender", form["gender"].value);
-    formData.append("examYear", form["exam-year"].value);
+    formData.append("qualifications", form["qualifications"].value);
     formData.append("email", form["email"].value);
     formData.append("nic", form["nic"].value);
     formData.append("mobile", form["mobile"].value);
     formData.append("address", form["address"].value);
-    formData.append("courseModules", JSON.stringify(courseModules)); // send as string
+    formData.append("subjectsTaught", JSON.stringify(courseModules)); // send as string
 
     try {
-      const res = await axios.post("http://localhost:8000/add-student",formData);
-      
-      alert(res.data.message || "Student added successfully!");
+      const res = await axios.post("http://localhost:8000/add-lecturer", formData);
+
+      alert(res.data.message || "Lecturer added successfully!");
       form.reset();
       setCourseModules([]);
       setProfilePhoto(null);
-
     } catch (err) {
-      if(err.response.data?.message)
-        alert(err.response.data.message)
-      else
-        alert("Submisson Failed")
+      console.error(err);
+      alert(err.response?.data?.message || "Submission Failed");
     }
   };
 
   return (
-    
     <div className="flex-1 p-8">
       <div className="max-w-4xl mx-auto bg-white rounded-lg p-8 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Student Name */}
+          {/* Lecturer Name */}
           <div className="flex items-center gap-8">
-            <label htmlFor="student-name" className="w-40 text-[#000000] font-medium">Student Name :</label>
+            <label htmlFor="student-name" className="w-40 text-[#000000] font-medium">Lecturer Name :</label>
             <div className="flex-1">
-              <input id="student-name" className="border-0 border-b-2 border-[#000000] rounded-none bg-transparent focus:ring-0 focus:border-[#253d90] w-90"/>
+              <input id="student-name" className="border-0 border-b-2 border-[#000000] bg-transparent focus:ring-0 focus:border-[#253d90] w-90" />
             </div>
           </div>
 
           {/* Profile Photo */}
           <div className="flex items-center gap-8">
-            <label htmlFor="profile-photo" className="w-40 text-[#000000] font-medium">Profile Photo</label>
+            <label htmlFor="profile-photo" className="w-40 text-[#000000] font-medium">Profile Photo :</label>
             <div className="flex-1 flex items-center gap-4">
-                <input type="file" accept="image/*" name="profilePhoto" id="profile-photo"  onChange={(e) => setProfilePhoto(e.target.files[0])} className="border-0 border-b-2 border-[#000000] rounded-none bg-transparent focus:ring-0 focus:border-[#253d90] w-60" />
+              <input type="file" accept="image/*" id="profile-photo" onChange={(e) => setProfilePhoto(e.target.files[0])} className="border-0 border-b-2 border-[#000000] bg-transparent focus:ring-0 focus:border-[#253d90] w-60" />
             </div>
           </div>
 
-          {/* Course Modules */}
+          {/* Subjects Taught */}
           <div className="flex items-start gap-8">
-            <label htmlFor="course-modules" className="w-40 text-[#000000] font-medium pt-2">Course Modules :</label>
+            <label htmlFor="course-modules" className="w-40 text-[#000000] font-medium pt-2">Subjects Taught :</label>
             <div className="flex-1 flex items-center gap-4">
               <div id="course-modules" className="flex-1 flex flex-wrap gap-2">
                 {courseModules.map((module) => (
-                  <div
-                    key={module}
-                    className="bg-[#253d90] hover:bg-[#1e2f7a] text-white py-1 rounded-md flex items-center pl-2"
-                  >
+                  <div key={module} className="bg-[#253d90] text-white py-1 rounded-md flex items-center pl-2">
                     {module}
                     <button
                       type="button"
                       onClick={() => removeCourseModule(module)}
-                      className="hover:bg-white/20 rounded-full"
+                      className="hover:bg-white/20 rounded-full ml-2 mr-1"
                     >
-                      <img src="\images\x.png" alt="close" className="w-3"/>
+                      <img src="/images/x.png" alt="close" className="w-3" />
                     </button>
                   </div>
                 ))}
@@ -95,7 +88,7 @@ export default function Form() {
                 onClick={addCourseModule}
                 className="bg-[#ffffff] hover:bg-[#ffffffe4] text-white rounded-lg flex items-center justify-center"
               >
-                <img src="\images\plus.png" alt="plus_icon" className="w-5"/>
+                <img src="/images/plus.png" alt="plus_icon" className="w-5" />
               </button>
             </div>
           </div>
@@ -103,7 +96,7 @@ export default function Form() {
           {/* Gender */}
           <div className="flex items-center gap-8">
             <p className="w-40 text-[#000000] font-medium">Gender :</p>
-            <div className="flex-1 gap" id="gender">
+            <div className="flex-1" id="gender">
               <div className="flex justify-between items-center">
                 <label htmlFor="male" className="text-black">Male
                   <input type="radio" id="male" name="gender" value="male" className="m-3" />
@@ -120,11 +113,11 @@ export default function Form() {
             </div>
           </div>
 
-          {/* Exam & Year */}
+          {/* Qualifications */}
           <div className="flex items-center gap-8">
-            <label htmlFor="exam-year" className="w-40 text-[#000000] font-medium">Exam & Year :</label>
+            <label htmlFor="qualifications" className="w-40 text-[#000000] font-medium">Qualifications :</label>
             <div className="flex-1">
-              <input id="exam-year" className="border-0 border-b-2 border-[#000000] rounded-none bg-transparent focus:ring-0 focus:border-[#253d90]  w-90" />
+              <textarea id="qualifications" className="border-0 border-b-2 border-[#000000] bg-transparent focus:ring-0 focus:border-[#253d90] w-90" />
             </div>
           </div>
 
@@ -132,7 +125,7 @@ export default function Form() {
           <div className="flex items-center gap-8">
             <label htmlFor="email" className="w-40 text-[#000000] font-medium">Email :</label>
             <div className="flex-1">
-              <input type="email" id="email" className="border-0 border-b-2 border-[#000000] rounded-none bg-transparent focus:ring-0 focus:border-[#253d90]  w-90" />
+              <input type="email" id="email" className="border-0 border-b-2 border-[#000000] bg-transparent focus:ring-0 focus:border-[#253d90] w-90" />
             </div>
           </div>
 
@@ -140,7 +133,7 @@ export default function Form() {
           <div className="flex items-center gap-8">
             <label htmlFor="nic" className="w-40 text-[#000000] font-medium">NIC :</label>
             <div className="flex-1">
-              <input id="nic" className="border-0 border-b-2 border-[#000000] rounded-none bg-transparent focus:ring-0 focus:border-[#253d90]  w-90" />
+              <input id="nic" className="border-0 border-b-2 border-[#000000] bg-transparent focus:ring-0 focus:border-[#253d90] w-90" />
             </div>
           </div>
 
@@ -148,7 +141,7 @@ export default function Form() {
           <div className="flex items-center gap-8">
             <label htmlFor="mobile" className="w-40 text-[#000000] font-medium">Mobile No :</label>
             <div className="flex-1">
-              <input id="mobile" className="border-0 border-b-2 border-[#000000] rounded-none bg-transparent focus:ring-0 focus:border-[#253d90]  w-90" />
+              <input id="mobile" className="border-0 border-b-2 border-[#000000] bg-transparent focus:ring-0 focus:border-[#253d90] w-90" />
             </div>
           </div>
 
@@ -156,7 +149,7 @@ export default function Form() {
           <div className="flex items-start gap-8">
             <label htmlFor="address" className="w-40 text-[#000000] font-medium pt-2">Address :</label>
             <div className="flex-1">
-              <input id="address" className="border-0 border-b-2 border-[#000000] rounded-none bg-transparent focus:ring-0 focus:border-[#253d90]  w-90" />
+              <input id="address" className="border-0 border-b-2 border-[#000000] bg-transparent focus:ring-0 focus:border-[#253d90] w-90" />
             </div>
           </div>
 
@@ -169,5 +162,5 @@ export default function Form() {
         </form>
       </div>
     </div>
-  )
+  );
 }
