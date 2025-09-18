@@ -25,7 +25,7 @@ const upload = multer({ storage });
 
 
 router.post("/add-student", upload.single("profilePhoto"), studentController.addStudent);
-router.get("/view_students",studentController.fetchStudents);
+router.get("/view-students",studentController.fetchStudents);
 router.get("/view-students/:id",studentController.fetchStudentbyID);
 router.put("/view-students/:id",studentController.updateStudentById);
 

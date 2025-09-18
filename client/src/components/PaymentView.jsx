@@ -1,52 +1,67 @@
-import React, { useState } from "react";
-import { Samplepayments } from "./PaymentData";
+import React, { useState, useEffect } from "react";
+import SearchBar from "./Searchbar";
 
-const paymentData = Samplepayments
-
-export default function ViewPayment() {
+export default function PaymentView() {
+  const [paymentData, setPaymentData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/api/payments");
+        const data = await res.json();
+        setPaymentData(data);
+      } catch (err) {
+        console.error("Error fetching payments:", err);
+      }
+    };
+
+    fetchPayments();
+  }, []);
+
   const filteredData = paymentData.filter((item) =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    item.student_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="min-h-screen bg-[#e3edf9] p-[30px]">
-
-      <input
-        type="text"
-        placeholder="Search by name..."
+    <div className="min-h-screen bg-[#e3edf9] p-6">
+      <SearchBar
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="p-[10px] w-[300px] mb-[20px] border border-[#ccc] rounded"
+        onSearch={() => {
+          console.log("Search for:", searchTerm);
+        }}
       />
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse bg-white">
-          <thead style={{ backgroundColor: "#e3edf9" }}>
-            <tr>
-              <th style={thStyle}>Name</th>
-              <th style={thStyle}>Student ID</th>
-              <th style={thStyle}>Date</th>
-              <th style={thStyle}>Time</th>
-              <th style={thStyle}>Course</th>
-              <th style={thStyle}>Payment</th>
+      <div className="overflow-x-auto mt-6">
+        <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden">
+          <thead>
+            <tr className="bg-[#121c3e] text-white text-left">
+              <th className="py-3 px-4 font-semibold">Name</th>
+              <th className="py-3 px-4 font-semibold">Student ID</th>
+              <th className="py-3 px-4 font-semibold">Date</th>
+              <th className="py-3 px-4 font-semibold">Time</th>
+              <th className="py-3 px-4 font-semibold">Course</th>
+              <th className="py-3 px-4 font-semibold">Payment</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white text-[#121c3e]">
             {filteredData.map((item, index) => (
-              <tr key={index}>
-                <td style={tdStyle}>{item.name}</td>
-                <td style={tdStyle}>{item.studentId}</td>
-                <td style={tdStyle}>{item.date}</td>
-                <td style={tdStyle}>{item.time}</td>
-                <td style={tdStyle}>{item.course}</td>
-                <td style={tdStyle}>{item.payment}</td>
+              <tr
+                key={index}
+                className="border-b hover:bg-gray-100 transition duration-150 ease-in-out"
+              >
+                <td className="py-3 px-4">{item.student_name}</td>
+                <td className="py-3 px-4">{item.student_id}</td>
+                <td className="py-3 px-4">{new Date(item.created_at).toLocaleDateString()}</td>
+                <td className="py-3 px-4">{new Date(item.created_at).toLocaleTimeString()}</td>
+                <td className="py-3 px-4">{item.course_module}</td>
+                <td className="py-3 px-4">{item.amount}</td>
               </tr>
             ))}
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan="6" className="py-5 text-center text-[#121c3e]">
+                <td colSpan="6" className="py-6 text-center text-[#121c3e]">
                   No records found.
                 </td>
               </tr>
@@ -57,17 +72,3 @@ export default function ViewPayment() {
     </div>
   );
 }
-
-const thStyle = {
-  padding: "12px",
-  textAlign: "left",
-  fontWeight: "bold",
-  color: "#121c3e",
-  borderBottom: "1px solid #ccc",
-};
-
-const tdStyle = {
-  padding: "12px",
-  borderBottom: "1px solid #eee",
-  color: "#121c3e",
-};

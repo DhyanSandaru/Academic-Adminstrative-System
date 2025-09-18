@@ -58,7 +58,6 @@ export default function Login() {
                     <button type="submit" className="bg-yellow-400 rounded-lg">Sign in</button>
                 
                 </form>
-                <Link to="/dashboard" ><p>Dashboard</p></Link>
             </div>
 
         </main>

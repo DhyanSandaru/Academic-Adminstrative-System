@@ -13,10 +13,14 @@ app.use('/lecturers', express.static(path.join(__dirname, 'routes/lecturers')));
 const loginRoute = require('./routes/LoginRoute.js');
 const studentsRoute = require('./routes/StudentsRoutes.js');
 const lecturerRoute = require('./routes/LecturerRoutes.js')
+const paymentRoute = require('./routes/PaymentRoute.js');
+const adminRoutes = require('./routes/AdminRoutes.js');
 
+app.use('/api', adminRoutes);
 app.use('/', loginRoute);
 app.use('/', studentsRoute);
 app.use('/',lecturerRoute)
+app.use('/api',paymentRoute)
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

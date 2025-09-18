@@ -37,9 +37,16 @@ export default function LecturerProfile() {
 
   const handleUpdate = async () => {
     try {
+      const formattedData = {
+          ...studentData,
+          name: formData.name,
+          nic: formData.nic,
+          gender: formData.gender,
+          profilePhoto: formData.profilePhoto
+        }
       const response = await axios.put(
-        `http://localhost:8000/view_students/${formData.studentId}`,
-        formData
+        `http://localhost:8000/view-students/${studentData.studentId}`,
+        formattedData
       );
 
       if (response.status >= 200 && response.status < 300) {
@@ -64,12 +71,7 @@ export default function LecturerProfile() {
       <h2 className='text-lg'>Personal Details</h2>
       {/* Edit Button */}
       <div className="flex justify-end mb-6 mr-5">
-         <button
-          onClick={handleUpdate}
-          className="flex items-center gap-2 text-white bg-green-500 py-1 px-3 rounded hover:bg-green-600 mr-3"
-        >
-          Edit
-        </button>
+       
         <button
           onClick={handleUpdate}
           className="flex items-center gap-2 text-white bg-green-500 py-1 px-3 rounded hover:bg-green-600 mr-3"
@@ -109,8 +111,8 @@ export default function LecturerProfile() {
             type="text"
             name="name"
             value={formData.studentId}
-            onChange={handleChange}
-            className="bg-blue-200 rounded-lg w-[30%] mx-auto p-2 outline-none text-center"
+            readOnly
+            className="bg-blue-100 rounded-lg w-[30%] mx-auto p-2 outline-none text-center cursor-not-allowed"
           />
         </div>
 

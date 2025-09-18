@@ -29,7 +29,7 @@ export default function LecturerProfile() {
           mobile: response.data.mobile ?? '',
           address: response.data.address ?? '',
           examYear: response.data.examYear ?? '',
-          subjects: response.data.subjects ?? []
+          courses: response.data.courses ?? []
         };
 
         setLecturerData(validatedData);
@@ -56,7 +56,7 @@ export default function LecturerProfile() {
 
   return (
     <lecturerContext.Provider value={{ lecturerData, setLecturerData }}>
-      <LecturerLayout>
+      <LecturerLayout title={lecturerData.name}>
         <LecturerPersonalDetails />
         <LecturerContactDetails />
         <LecturerSubjectDetails />

@@ -16,7 +16,7 @@ export default function LecturerEducationDetails() {
   useEffect(() => {
     if (lecturerData) {
       const formatted = {
-        examYear: lecturerData.examYear || '',
+        examYear: lecturerData.examYear || '',     
         qualifications: lecturerData.qualifications || '',
         teachingModules: lecturerData.courses?.join(', ') || ''
       };
@@ -45,7 +45,7 @@ export default function LecturerEducationDetails() {
       };
 
       const response = await axios.put(
-        `http://localhost:8000/view_lecturers/${lecturerData.lecturerId}`,
+        `http://localhost:8000/view-lecturers/${lecturerData.lecturerId}`,
         updatedData
       );
 
@@ -96,7 +96,7 @@ export default function LecturerEducationDetails() {
 
       {/* Teaching Modules */}
       <div className='flex flex-col justify-start m-3'>
-        <p className='text-left ml-2'>Teaching Modules (comma-separated)</p>
+        <p className='text-left ml-2'>Teaching Modules</p>
         <input
           type="text"
           name="teachingModules"

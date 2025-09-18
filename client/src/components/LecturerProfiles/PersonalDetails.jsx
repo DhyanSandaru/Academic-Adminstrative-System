@@ -36,9 +36,16 @@ export default function LecturerProfile() {
 
   const handleUpdate = async () => {
     try {
+      const formattedData = {
+        ...lecturerData,
+        name: formData.name,
+        nic: formData.nic,
+        gender: formData.gender,
+        profilePhoto: formData.profilePhoto
+      }
       const response = await axios.put(
         `http://localhost:8000/view-lecturers/${lecturerData.lecturerId}`,
-        formData
+        formattedData
       );
 
       if (response.status >= 200 && response.status < 300) {

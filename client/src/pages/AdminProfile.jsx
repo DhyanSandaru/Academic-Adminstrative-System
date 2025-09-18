@@ -1,14 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddAdminForm from "./AdminForm.jsx";
 import Layout from "../components/Layout.jsx"; 
+import axios from "axios";
 
 export default function AdminProfile() {
   const [showForm, setShowForm] = useState(false);
+  const [adminData, setAdminData] = useState(null);
+
+  // Fetch admin data
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        // Replace 'admin123' with a dynamic username if needed
+        const res = await axios.get("http://localhost:8000/api/admins/admin123");
+        setAdminData(res.data);
+      } catch (err) {
+        console.error("Failed to fetch admin data:", err);
+      }
+    };
+    fetchAdmin();
+  }, []);
 
   return (
     <Layout title="Admin Profile">
       <div className="min-h-screen bg-[#e3edf9] p-6">
-        {/* Show Form (LecturerForm box style) */}
         {showForm ? (
           <div className="flex-1 p-8">
             <div className="max-w-4xl mx-auto bg-white rounded-lg p-8 shadow-sm">
@@ -17,7 +32,6 @@ export default function AdminProfile() {
           </div>
         ) : (
           <div className="flex justify-center">
-            {/* Main Content */}
             <div className="flex-1 max-w-4xl bg-white rounded-lg shadow p-8">
               <div className="flex justify-end mb-6">
                 <button
@@ -31,14 +45,16 @@ export default function AdminProfile() {
               {/* Profile Section */}
               <div className="text-center mb-8">
                 <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gray-200 flex items-center justify-center text-3xl text-white">
-                  A
+                  {adminData ? adminData.username.charAt(0).toUpperCase() : "A"}
                 </div>
 
                 <div className="mb-2">
                   <p className="text-sm font-medium mb-1 text-[#878585]">
                     Admin Username
                   </p>
-                  <h2 className="text-2xl font-bold text-black">admin123</h2>
+                  <h2 className="text-2xl font-bold text-black">
+                    {adminData ? adminData.username : "Loading..."}
+                  </h2>
                 </div>
 
                 <div className="mb-8">
@@ -56,7 +72,7 @@ export default function AdminProfile() {
                     Email
                   </p>
                   <p className="text-lg font-semibold text-black">
-                    admin@example.com
+                    {adminData ? adminData.email : "Loading..."}
                   </p>
                 </div>
                 <div className="text-center">
@@ -73,5 +89,5 @@ export default function AdminProfile() {
         )}
       </div>
     </Layout>
-  )
+  );
 }

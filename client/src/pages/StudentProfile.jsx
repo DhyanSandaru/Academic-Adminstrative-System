@@ -59,7 +59,7 @@ export default function StudentProfile(){
 
   return(
         <studentContext.Provider value={{studentData,setStudentData}}>
-            <ProfileLayout>
+            <ProfileLayout title={studentData.name}>
                 <PersonalDetails/>
                 <EducationDetails/>
                 <ContactDetails/>

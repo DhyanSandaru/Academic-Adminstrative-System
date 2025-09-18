@@ -35,8 +35,14 @@ export default function LecturerContactDetails() {
   };
 
   const handleUpdate = async () => {
+    const formattedData = {
+      ...lecturerData,
+      mobile: formData.phone,
+      email: formData.email,
+      address: formData.address
+    }
     try {
-      const response = await axios.put(`http://localhost:8000/view-lecturers/${lecturerData.lecturerId}`, lecturerData);
+      const response = await axios.put(`http://localhost:8000/view-lecturers/${lecturerData.lecturerId}`, formattedData);
 
       if (response.status >= 200 && response.status < 300) {
         alert("Contact details updated successfully");

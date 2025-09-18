@@ -98,10 +98,12 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
 
       {/* Logout Button */}
       <div className="p-4">
-        <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#ff0000] text-white rounded-lg font-medium hover:bg-red-600 transition-colors">
-          <img src="/images/log off.png" alt="Log Out" className="w-5 h-5" />
-          <span>Log Out</span>
-        </button>
+        <Link to="/">
+          <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#ff0000] text-white rounded-lg font-medium hover:bg-red-600 transition-colors">
+            <img src="/images/log off.png" alt="Log Out" className="w-5 h-5" />
+            <span>Log Out</span>
+          </button>
+        </Link>
       </div>
     </div>
   )

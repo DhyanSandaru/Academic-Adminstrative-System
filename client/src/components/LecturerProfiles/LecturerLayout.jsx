@@ -1,9 +1,9 @@
 import {Link} from 'react-scroll'
 import Layout from '../Layout';
 
-export default function ProfileLayout({ children }) {
+export default function ProfileLayout({ children,title}) {
   return (
-    <Layout>
+    <Layout title={title}>
       <div className="w-3/4 bg-[#e3edf9] p-6 flex flex-col gap-6 justify-center items-center">
         {/* Sidebar */}
         <div className="h-fit bg-white rounded-lg shadow">

@@ -44,7 +44,7 @@ export default function EducationDetails() {
       };
 
       const response = await axios.put(
-        `http://localhost:8000/view_students/${studentData.studentId}`,
+        `http://localhost:8000/view-students/${studentData.studentId}`,
         updatedData
       );
 

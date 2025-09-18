@@ -1,19 +1,20 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import Student from "../components/Student";
 import Layout from "../components/Layout";
+import SearchBar from '../components/Searchbar.jsx';
 import axios from "axios";
 
-// const studentData = [...Array(30).keys()];
 const itemsPerPage = 10;
 
 export default function ViewStudents() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [studentData,setStudentData] = useState([])
+  const [studentData, setStudentData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/view_students');
+        const response = await axios.get("http://localhost:8000/view-students");
         const validatedData = response.data.map(student => ({
           name: student.name ?? '',
           id: student.studentId ?? '',
@@ -21,46 +22,63 @@ export default function ViewStudents() {
           payment_status: student.status ?? ''
         }));
 
-        setStudentData(validatedData); 
+        setStudentData(validatedData);
       } catch (err) {
-          // Axios received a response from the serveR
-          if (err.response) {
-            const status = err.response.status;
-            const message = err.response.data?.message || "Server responded with an error";
-
-            console.error(`Server Error (${status}): ${message}`);
-            alert(message);
-          } 
-          // Request was made but no response received 
-          else if (err.request) {
-            console.error("No response from server. Possible network or CORS issue.");
-            alert("Network error or no response from server.");
-          } 
-          // Something else happened 
-          else {
-            console.error("Frontend error:", err.message);
-            alert("Something went wrong on the frontend.");
-          }
+        if (err.response) {
+          const status = err.response.status;
+          const message = err.response.data?.message || "Server responded with an error";
+          console.error(`Server Error (${status}): ${message}`);
+          alert(message);
+        } else if (err.request) {
+          console.error("No response from server. Possible network or CORS issue.");
+          alert("Network error or no response from server.");
+        } else {
+          console.error("Frontend error:", err.message);
+          alert("Something went wrong on the frontend.");
         }
+      }
     };
 
-  fetchData();
+    fetchData();
   }, []);
 
+  // Filter students by search term
+  const filteredStudents = studentData.filter(student =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const start = (currentPage - 1) * itemsPerPage;
   const end = start + itemsPerPage;
-  const currentStudents = studentData.slice(start, end);
+  const currentStudents = filteredStudents.slice(start, end);
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
 
-  const totalPages = Math.ceil(studentData.length / itemsPerPage);
-
-  return(
+  return (
     <Layout title="View Students">
       <div className="bg-white w-[80vw] p-4 flex flex-col justify-between rounded-xl">
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        {/* 🔍 Search bar */}
+         <div className="w-full flex justify-center mb-6">
+          <SearchBar
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // reset to page 1 on new search
+            }}
+            onSearch={() => {
+              console.log("Searching for:", searchTerm);
+            }}
+          />
+        </div>
 
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {currentStudents.map((student, index) => (
-            <Student key={index + start} name={student.name} studentId={student.id} courses="Chemistry, Maths" status={student.payment_status} profilePhoto={student.profilePhoto}/>
+            <Student
+              key={index + start}
+              name={student.name}
+              studentId={student.id}
+              courses="Chemistry, Maths"
+              status={student.payment_status}
+              profilePhoto={student.profilePhoto}
+            />
           ))}
         </div>
 
@@ -78,8 +96,7 @@ export default function ViewStudents() {
             </button>
           ))}
         </div>
-    </div>
+      </div>
     </Layout>
-  )
+  );
 }
-
