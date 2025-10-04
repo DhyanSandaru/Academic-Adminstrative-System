@@ -1,6 +1,6 @@
 import Badge from "./Badge"
 import { Link } from "react-router-dom"
-export default function Student({name, studentId, courses, status,profilePhoto}) {
+export default function Student({name, studentId, courses, status,profilePhoto,courses}) {
     return (
         <Link to={`/view-students/${studentId}`}>
             <div className="w-60 flex flex-col items-center justify-center transition-transform duration-200 ease-in-out hover:scale-105 cursor-pointer">

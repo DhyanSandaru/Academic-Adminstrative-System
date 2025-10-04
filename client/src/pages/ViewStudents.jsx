@@ -19,7 +19,8 @@ export default function ViewStudents() {
           name: student.name ?? '',
           id: student.studentId ?? '',
           profilePhoto: student.profilePhoto ?? '',
-          payment_status: student.status ?? ''
+          payment_status: student.status ?? '',
+          courses: student.courses?.join(', ') || ''
         }));
 
         setStudentData(validatedData);
@@ -75,9 +76,9 @@ export default function ViewStudents() {
               key={index + start}
               name={student.name}
               studentId={student.id}
-              courses="Chemistry, Maths"
+              courses={student.courses}
               status={student.payment_status}
-              profilePhoto={student.profilePhoto}
+              profilePhoto={student.profilePhoto} 
             />
           ))}
         </div>

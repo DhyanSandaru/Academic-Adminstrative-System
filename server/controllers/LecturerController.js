@@ -128,6 +128,29 @@ exports.fetchLecturerById = async (req, res) => {
   }
 };
 
+// GET /lecturers/by-course/:courseName
+exports.fetchLecturersByCourse = async (req, res) => {
+  const courseName = req.params.course;
+
+  try {
+    const [rows] = await db.query(
+      `
+      SELECT l.lecturer_id, l.lecturer_name, l.email, l.mobile
+      FROM lecturers l
+      JOIN lecturer_modules lm ON l.lecturer_id = lm.lecturer_id
+      JOIN modules m ON lm.module_id = m.module_id
+      WHERE TRIM(LOWER(m.name)) = TRIM(LOWER(?))
+      `,
+      [courseName]
+    );
+
+    res.json(rows); // returns an array of lecturers
+  } catch (err) {
+    console.error("Error fetching lecturers for course:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 // Update lecturer by ID
 exports.updateLecturerById = async (req, res) => {
   const {

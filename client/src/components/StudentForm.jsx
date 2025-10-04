@@ -1,17 +1,12 @@
 import { useState } from "react"
 import axios from "axios";
+import AddCourses from "./AddCourses";
 
 export default function Form() {
 
   const [courseModules, setCourseModules] = useState([]);
   const [profilePhoto, setProfilePhoto] = useState(null);
-
-  const addCourseModule = () => {
-    const newModule = prompt("Enter module name:");
-    if (newModule) {
-      setCourseModules([...courseModules, newModule]);
-    }
-  };
+  const [showCoursePopup, setShowCoursePopup] = useState(false);
 
   const removeCourseModule = (moduleToRemove) => {
     setCourseModules(courseModules.filter(module => module !== moduleToRemove));
@@ -75,27 +70,24 @@ export default function Form() {
             <div className="flex-1 flex items-center gap-4">
               <div id="course-modules" className="flex-1 flex flex-wrap gap-2">
                 {courseModules.map((module) => (
-                  <div
-                    key={module}
-                    className="bg-[#253d90] hover:bg-[#1e2f7a] text-white py-1 rounded-md flex items-center pl-2"
-                  >
+                  <div key={module} className="bg-[#253d90] hover:bg-[#1e2f7a] text-white py-1 rounded-md flex items-center pl-2">
                     {module}
                     <button
                       type="button"
                       onClick={() => removeCourseModule(module)}
                       className="hover:bg-white/20 rounded-full"
                     >
-                      <img src="\images\x.png" alt="close" className="w-3"/>
+                      <img src="\images\x.png" alt="close" className="w-3" />
                     </button>
                   </div>
                 ))}
               </div>
               <button
                 type="button"
-                onClick={addCourseModule}
+                onClick={() => setShowCoursePopup(true)}
                 className="bg-[#ffffff] hover:bg-[#ffffffe4] text-white rounded-lg flex items-center justify-center"
               >
-                <img src="\images\plus.png" alt="plus_icon" className="w-5"/>
+                <img src="\images\plus.png" alt="plus_icon" className="w-5" />
               </button>
             </div>
           </div>
@@ -168,6 +160,17 @@ export default function Form() {
           </div>
         </form>
       </div>
+
+      {/* Render AddCourses Popup */}
+      {showCoursePopup && (
+        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-xs flex items-center justify-center z-50">
+          <AddCourses
+            selectedCourses={courseModules}
+            setSelectedCourses={setCourseModules}
+            handleClose={() => setShowCoursePopup(false)}
+          />
+        </div>
+      )}
     </div>
   )
 }

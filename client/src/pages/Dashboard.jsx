@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../components/Layout";
+import AddCourses from "../components/AddCourses.jsx";
 import CalculateSalary from "../components/CalculateSalary.jsx";
+import PaymentReceipt from '../components/PaymentReceipt.jsx'
 
 export default function Dashboard() {
   const [showGreeting, setShowGreeting] = useState(true);
   const [displayedText, setDisplayedText] = useState("");
+
   const fullText = "Heello admin123, welcome back!";
 
  useEffect(() => {
@@ -40,7 +43,6 @@ export default function Dashboard() {
   // Show the real dashboard content after animation
   return (
     <Layout title="Dashboard">
-      <CalculateSalary />
     </Layout>
   );
 }

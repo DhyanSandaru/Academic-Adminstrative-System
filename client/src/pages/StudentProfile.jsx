@@ -15,7 +15,7 @@ export default function StudentProfile(){
   useEffect(() => {
     const fetchStudentbyID = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/view-students/${student_id}`);
+        const response = await axios.get(`http://localhost:8000/view-students/id/${student_id}`);
 
         const validatedData = {
           name: response.data.name ?? '',

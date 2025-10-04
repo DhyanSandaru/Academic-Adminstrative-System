@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const dotenv = require('dotenv')
+dotenv.config();
 
 const app = express();
-const port = 8000;
+const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
@@ -15,12 +17,16 @@ const studentsRoute = require('./routes/StudentsRoutes.js');
 const lecturerRoute = require('./routes/LecturerRoutes.js')
 const paymentRoute = require('./routes/PaymentRoute.js');
 const adminRoutes = require('./routes/AdminRoutes.js');
+const timetableRoutes = require('./routes/TimetableRoutes.js')
+const courseRoutes = require('./routes/CourseRoutes.js')
 
 app.use('/api', adminRoutes);
 app.use('/', loginRoute);
 app.use('/', studentsRoute);
-app.use('/',lecturerRoute)
-app.use('/api',paymentRoute)
+app.use('/',lecturerRoute);
+app.use('/',paymentRoute);
+app.use('/',timetableRoutes);
+app.use('/',courseRoutes);
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
