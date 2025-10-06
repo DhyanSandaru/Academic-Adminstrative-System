@@ -19,6 +19,7 @@ const paymentRoute = require('./routes/PaymentRoute.js');
 const adminRoutes = require('./routes/AdminRoutes.js');
 const timetableRoutes = require('./routes/TimetableRoutes.js')
 const courseRoutes = require('./routes/CourseRoutes.js')
+const verificationRoutes = require('./routes/VerificationRoutes.js');
 
 app.use('/api', adminRoutes);
 app.use('/', loginRoute);
@@ -27,6 +28,8 @@ app.use('/',lecturerRoute);
 app.use('/',paymentRoute);
 app.use('/',timetableRoutes);
 app.use('/',courseRoutes);
+app.use('/api', verificationRoutes);
+
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

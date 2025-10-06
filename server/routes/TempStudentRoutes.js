@@ -6,7 +6,7 @@ const fs = require('fs');
 const studentController = require('../controllers/StudentController.js');
 
 // Ensure target folder exists
-const studentDir = path.join(__dirname, '/students');
+const studentDir = path.join(__dirname, '/temp-students');
 if (!fs.existsSync(studentDir)) {
   fs.mkdirSync(studentDir, { recursive: true });
 }
@@ -21,16 +21,9 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-// router.post('/students', express.static(path.join(__dirname, 'public/students')));
-
 
 router.post("/add-student", upload.single("profilePhoto"), studentController.addStudent);
 router.get("/view-students",studentController.fetchStudents);
-router.get("/view-students/name/:name",studentController.fetchStudents);
-router.get("/view-students/id/:id",studentController.fetchStudentbyID);
-router.put("/view-students/:id",studentController.updateStudentById);
 
-router.
 
 module.exports = router;
-
