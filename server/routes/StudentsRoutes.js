@@ -30,7 +30,5 @@ router.get("/view-students/name/:name",studentController.fetchStudents);
 router.get("/view-students/id/:id",studentController.fetchStudentbyID);
 router.put("/view-students/:id",studentController.updateStudentById);
 
-router.
-
 module.exports = router;
 
