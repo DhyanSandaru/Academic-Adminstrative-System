@@ -46,11 +46,16 @@ export default function StudentForm() {
     formData.append("courseModules", JSON.stringify(courseModules));
 
     try {
-      const res = await axios.post("http://localhost:8000/api/student-registration", formData);
-      setFormStatus("Registration successful!");
+      const res = await axios.post("http://localhost:8000/add-request", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+      setFormStatus("Registration submitted for approval.");
       form.reset();
       setProfilePhoto(null);
       setCourseModules([]);
+      setStep(1);
     } catch (err) {
       setFormStatus("Submission failed.");
       console.error(err);

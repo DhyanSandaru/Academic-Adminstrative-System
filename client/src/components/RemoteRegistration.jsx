@@ -1,78 +1,178 @@
 import axios from "axios";
 import { Sparkles, X } from "lucide-react";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function RemoteReg(){
-    const [newCode,setNewCode] = useState("")
-    const [showCodePopup,setShowCodePopup] = useState(false)
+export default function RemoteReg() {
+  const [newCode, setNewCode] = useState("");
+  const [showCodePopup, setShowCodePopup] = useState(false);
+  const [requests, setRequests] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
-    const fetchNewCode = async () => {
-        try{
-            const response = await axios.get("http://localhost:8000/api/new-code")
-            setNewCode(response.data.code);
-        }
-        catch(err){
-             if (err.response) {
-                // server responded with a status != 2xx
-                console.error("Server error:", err.response.status, err.response.data);
-            } else if (err.request) {
-                // request made but no response received
-                console.error("No response received", err.request);
-            } else {
-                // anything else
-                console.error("Error:", err.message);
-            }
-        }
+  // Fetch code
+  const fetchNewCode = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/new-code");
+      setNewCode(response.data.code);
+    } catch (err) {
+      console.error("Error fetching code:", err);
     }
+  };
 
-    useEffect(() => {
-    if (showCodePopup) {
-        fetchNewCode();
+  // Fetch all pending requests
+  const fetchRequests = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/view-requests");
+      setRequests(response.data);
+    } catch (err) {
+      console.error("Error fetching requests:", err);
     }
-    }, [showCodePopup]);
+  };
 
+  const handleApprove = async () => {
+    try {
+      await axios.post(`http://localhost:8000/approve-request/${selectedRequest.id}`);
+      setSelectedRequest(null);
+      fetchRequests(); // Refresh list
+    } catch (err) {
+      alert("Approval failed");
+      console.error(err);
+    }
+  };
 
-    return(
-        <div className="rounded-xl w-full p-10 flex flex-col gap-5">
-            <div className="flex flex-row gap-8 items-center w-full bg-white p-8 rounded-xl">
-                <p className="text-black text-lg">Generate a new code</p>
-                <button
-                className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md flex items-center gap-2"
-                onClick={() => setShowCodePopup(true)}
-                >
-                <Sparkles />
-                <span className="font-semibold text-md">Generate</span>
-                </button>
+  const handleReject = async () => {
+    try {
+      await axios.delete(`http://localhost:8000/reject-request/${selectedRequest.id}`);
+      setSelectedRequest(null);
+      fetchRequests(); // Refresh list
+    } catch (err) {
+      alert("Rejection failed");
+      console.error(err);
+    }
+  };
 
-            </div>
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
-            <div className="rounded-xl bg-white p-8">
-                <h2 className="text-black border-b-2 border-gray-300">Current Requests</h2>
+  useEffect(() => {
+    if (showCodePopup) fetchNewCode();
+  }, [showCodePopup]);
 
-            </div>
-            {showCodePopup && (
-                <div className="fixed inset-0 z-50  backdrop-blur-md flex justify-center items-center">
-                    <div className="bg-white w-[90%] max-w-md rounded-lg shadow-xl flex flex-col justify-center items-center p-6 relative">
-                        <button
-                        onClick={() => setShowCodePopup(false)}
-                        className="absolute top-3 right-3 hover:bg-gray-200 rounded-full p-1"
-                        >
-                        <X className="text-black w-5 h-5" />
-                        </button>
+  return (
+    <div className="rounded-xl w-full p-10 flex flex-col gap-5">
+      {/* Code Generator */}
+      <div className="flex flex-row gap-8 items-center w-full bg-white p-8 rounded-xl">
+        <p className="text-black text-lg">Generate a new code</p>
+        <button
+          className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-md flex items-center gap-2"
+          onClick={() => setShowCodePopup(true)}
+        >
+          <Sparkles />
+          <span className="font-semibold text-md">Generate</span>
+        </button>
+      </div>
 
-                        <p className="text-black my-3 text-lg font-semibold">New code generated!</p>
+      {/* Request List */}
+      <div className="rounded-xl bg-white p-8">
+        <h2 className="text-black border-b-2 border-gray-300 mb-6 text-lg font-semibold">
+          Current Requests
+        </h2>
 
-                        <div className="bg-blue-500 rounded-lg px-6 py-3 w-full text-center">
-                        <p className="text-white text-lg font-semibold tracking-wider">{newCode}</p>
-                        </div>
-
-                        <p className="text-black my-3 text-sm text-center px-4">
-                        This code can be used to access the registration portal.
-                        </p>
-                    </div>
+        {requests.length === 0 ? (
+          <p className="text-gray-500">No pending requests.</p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {requests.map((req) => (
+              <div
+                key={req.id}
+                className="flex items-center justify-around bg-gray-100 rounded-lg p-4 shadow hover:bg-gray-200 cursor-pointer"
+                onClick={() => setSelectedRequest(req)}
+              >
+                <img
+                  src={`http://localhost:8000${req.profile_photo}`}
+                  alt="student"
+                  className="w-20 h-20 rounded-full object-cover mr-6"
+                />
+                <div className="flex flex-col">
+                  <p className="font-semibold text-lg text-black">{req.student_name}</p>
+                  <p className="text-sm text-gray-700">Exam Year: {req.exam_year}</p>
+                  <p className="text-sm text-gray-700">
+                    Modules: {JSON.parse(req.course_modules).join(", ")}
+                  </p>
                 </div>
-            )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Code Popup */}
+      {showCodePopup && (
+        <div className="fixed inset-0 z-50 backdrop-blur-md flex justify-center items-center">
+          <div className="bg-white w-[90%] max-w-md rounded-lg shadow-xl flex flex-col justify-center items-center p-6 relative">
+            <button
+              onClick={() => setShowCodePopup(false)}
+              className="absolute top-3 right-3 hover:bg-gray-200 rounded-full p-1"
+            >
+              <X className="text-black w-5 h-5" />
+            </button>
+            <p className="text-black my-3 text-lg font-semibold">New code generated!</p>
+            <div className="bg-blue-500 rounded-lg px-6 py-3 w-full text-center">
+              <p className="text-white text-lg font-semibold tracking-wider">{newCode}</p>
+            </div>
+            <p className="text-black my-3 text-sm text-center px-4">
+              This code can be used to access the registration portal.
+            </p>
+          </div>
         </div>
-    )
+      )}
+
+      {/* Request Detail Popup */}
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-full max-w-2xl relative shadow-xl">
+            <button
+              onClick={() => setSelectedRequest(null)}
+              className="absolute top-3 right-3 hover:bg-gray-200 rounded-full p-1"
+            >
+              <X className="text-black w-5 h-5" />
+            </button>
+
+            <div className="flex gap-6">
+              <img
+                src={`http://localhost:8000${selectedRequest.profile_photo}`}
+                alt="student"
+                className="w-32 h-32 object-cover rounded-lg"
+              />
+              <div className="flex-1 space-y-2 text-black">
+                <h3 className="text-xl font-bold text-black">{selectedRequest.student_name}</h3>
+                <p><b>Gender:</b> {selectedRequest.gender}</p>
+                <p><b>Exam Year:</b> {selectedRequest.exam_year}</p>
+                <p><b>NIC:</b> {selectedRequest.nic}</p>
+                <p><b>Email:</b> {selectedRequest.email}</p>
+                <p><b>Mobile:</b> {selectedRequest.mobile}</p>
+                <p><b>Address:</b> {selectedRequest.address}</p>
+                <p><b>Modules:</b> {JSON.parse(selectedRequest.course_modules).join(", ")}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-4">
+              <button
+                onClick={handleReject}
+                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded"
+              >
+                Reject
+              </button>
+              <button
+                onClick={handleApprove}
+                className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded"
+              >
+                Approve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

@@ -11,6 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/students', express.static(path.join(__dirname, 'routes/students')));
 app.use('/lecturers', express.static(path.join(__dirname, 'routes/lecturers')));
+app.use('/temp-students', express.static(path.join(__dirname, 'routes/temp-students')));
 
 const loginRoute = require('./routes/LoginRoute.js');
 const studentsRoute = require('./routes/StudentsRoutes.js');
@@ -20,6 +21,7 @@ const adminRoutes = require('./routes/AdminRoutes.js');
 const timetableRoutes = require('./routes/TimetableRoutes.js')
 const courseRoutes = require('./routes/CourseRoutes.js')
 const verificationRoutes = require('./routes/VerificationRoutes.js');
+const requestRoutes = require('./routes/RegRequstRoutes.js')
 
 app.use('/api', adminRoutes);
 app.use('/', loginRoute);
@@ -29,6 +31,7 @@ app.use('/',paymentRoute);
 app.use('/',timetableRoutes);
 app.use('/',courseRoutes);
 app.use('/api', verificationRoutes);
+app.use('/',requestRoutes)
 
 
 app.listen(port, () => {
