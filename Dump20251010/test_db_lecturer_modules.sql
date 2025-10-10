@@ -16,30 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `admin_accounts`
+-- Table structure for table `lecturer_modules`
 --
 
-DROP TABLE IF EXISTS `admin_accounts`;
+DROP TABLE IF EXISTS `lecturer_modules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `admin_accounts` (
-  `admin_id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`admin_id`),
-  UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `lecturer_modules` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `lecturer_id` varchar(20) DEFAULT NULL,
+  `module_id` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `lecturer_id` (`lecturer_id`),
+  KEY `module_id` (`module_id`),
+  CONSTRAINT `lecturer_modules_ibfk_1` FOREIGN KEY (`lecturer_id`) REFERENCES `lecturers` (`lecturer_id`) ON DELETE CASCADE,
+  CONSTRAINT `lecturer_modules_ibfk_2` FOREIGN KEY (`module_id`) REFERENCES `modules` (`module_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `admin_accounts`
+-- Dumping data for table `lecturer_modules`
 --
 
-LOCK TABLES `admin_accounts` WRITE;
-/*!40000 ALTER TABLE `admin_accounts` DISABLE KEYS */;
-INSERT INTO `admin_accounts` VALUES (1,'admin123','1234','admin@example.com');
-/*!40000 ALTER TABLE `admin_accounts` ENABLE KEYS */;
+LOCK TABLES `lecturer_modules` WRITE;
+/*!40000 ALTER TABLE `lecturer_modules` DISABLE KEYS */;
+INSERT INTO `lecturer_modules` VALUES (1,'L2023A_L001','M001'),(2,'L2023A_L001','M002'),(3,'L2022O_L001','M002');
+/*!40000 ALTER TABLE `lecturer_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -51,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-27  7:12:15
+-- Dump completed on 2025-10-10  9:47:45

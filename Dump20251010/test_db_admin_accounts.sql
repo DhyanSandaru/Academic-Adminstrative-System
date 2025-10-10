@@ -16,37 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `lecturers`
+-- Table structure for table `admin_accounts`
 --
 
-DROP TABLE IF EXISTS `lecturers`;
+DROP TABLE IF EXISTS `admin_accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `lecturers` (
-  `lecturer_id` varchar(20) NOT NULL,
-  `lecturer_name` varchar(100) DEFAULT NULL,
-  `profile_photo` varchar(255) DEFAULT NULL,
-  `gender` varchar(20) DEFAULT NULL,
-  `qualifications` text,
+CREATE TABLE `admin_accounts` (
+  `admin_id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
-  `nic` varchar(20) DEFAULT NULL,
-  `mobile` varchar(20) DEFAULT NULL,
-  `address` varchar(255) DEFAULT NULL,
-  `exam_year` varchar(20) DEFAULT NULL,
-  PRIMARY KEY (`lecturer_id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `nic` (`nic`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`admin_id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `lecturers`
+-- Dumping data for table `admin_accounts`
 --
 
-LOCK TABLES `lecturers` WRITE;
-/*!40000 ALTER TABLE `lecturers` DISABLE KEYS */;
-INSERT INTO `lecturers` VALUES ('L2022O_L001','Kamal Nuwan','/lecturers/1758038091938-61561591.jpg','female','BSc Hons in Physical Science','sunamihora@gmail.com','199867568934','0119119119','Madamulana, Hambanthota','2022 O/L'),('L2023A_L001','Ishara Sanjula','/lecturers/1757987074830-715389176.jpg','male','phD in Mathematics\r\nBsc hons in Computer Science ','isharasanjula123@gmail.com','20025832892','0724975128','Lake Road, Kurunegala.','2023 A/L'),('L2026001','Dhyan Sandaru','/lecturers/1758078618130-321626778.jpg','male','4 years Experience','Dhyan@gmail.com','20031254875','0789966554','Colombo','2026');
-/*!40000 ALTER TABLE `lecturers` ENABLE KEYS */;
+LOCK TABLES `admin_accounts` WRITE;
+/*!40000 ALTER TABLE `admin_accounts` DISABLE KEYS */;
+INSERT INTO `admin_accounts` VALUES (1,'admin123','1234','admin@example.com');
+/*!40000 ALTER TABLE `admin_accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -58,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-27  7:12:15
+-- Dump completed on 2025-10-10  9:47:44

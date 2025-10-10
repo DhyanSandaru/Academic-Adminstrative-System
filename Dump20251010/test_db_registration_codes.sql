@@ -16,32 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `lecturer_modules`
+-- Table structure for table `registration_codes`
 --
 
-DROP TABLE IF EXISTS `lecturer_modules`;
+DROP TABLE IF EXISTS `registration_codes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `lecturer_modules` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `lecturer_id` varchar(20) DEFAULT NULL,
-  `module_id` varchar(20) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `lecturer_id` (`lecturer_id`),
-  KEY `module_id` (`module_id`),
-  CONSTRAINT `lecturer_modules_ibfk_1` FOREIGN KEY (`lecturer_id`) REFERENCES `lecturers` (`lecturer_id`) ON DELETE CASCADE,
-  CONSTRAINT `lecturer_modules_ibfk_2` FOREIGN KEY (`module_id`) REFERENCES `modules` (`module_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `registration_codes` (
+  `code` varchar(10) NOT NULL,
+  `used` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `lecturer_modules`
+-- Dumping data for table `registration_codes`
 --
 
-LOCK TABLES `lecturer_modules` WRITE;
-/*!40000 ALTER TABLE `lecturer_modules` DISABLE KEYS */;
-INSERT INTO `lecturer_modules` VALUES (1,'L2023A_L001','M001'),(2,'L2023A_L001','M002'),(3,'L2022O_L001','M002');
-/*!40000 ALTER TABLE `lecturer_modules` ENABLE KEYS */;
+LOCK TABLES `registration_codes` WRITE;
+/*!40000 ALTER TABLE `registration_codes` DISABLE KEYS */;
+INSERT INTO `registration_codes` VALUES ('I9oEz',1,'2025-10-07 05:01:42','2025-10-07 10:46:43'),('K4L9e',1,'2025-10-07 03:44:26','2025-10-07 09:29:26'),('KHk09',1,'2025-10-06 23:59:12','2025-10-07 05:44:13'),('zh69Z',1,'2025-10-06 16:01:13','2025-10-06 21:46:14'),('zMk4q',1,'2025-10-07 03:36:51','2025-10-07 09:21:51');
+/*!40000 ALTER TABLE `registration_codes` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-27  7:12:14
+-- Dump completed on 2025-10-10  9:47:44
