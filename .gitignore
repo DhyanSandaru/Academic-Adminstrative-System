@@ -16,3 +16,4 @@ Thumbs.db
 
 .env
 serviceAccountKey.json
+firebase.js
