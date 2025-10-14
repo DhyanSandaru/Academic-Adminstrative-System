@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-export default function SidebarLink({ to, icon, label }) {
+export default function SidebarLink({ to, Icon, label }) {
   const { pathname } = useLocation();
   const isActive = pathname === to;
 
@@ -13,8 +13,8 @@ export default function SidebarLink({ to, icon, label }) {
         ${isActive ? "bg-[#ffc20e] text-[#121c3e]" : "hover:bg-[#253d90] text-white"}
       `}
     >
-      <img src={icon} alt={label} className="w-7 h-7" />
-      <span className='font-semibol text-white '>{label}</span>
+       <Icon className="w-6 h-6 text-white" />
+      <span className='font-semibol text-white'>{label}</span>
     </Link>
   );
 }

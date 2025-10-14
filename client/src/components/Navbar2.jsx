@@ -1,7 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
 import SidebarLink from './SideBarLink';
-
+import { CalendarDays, LayoutDashboard, Power } from 'lucide-react';
+import { IoPersonAdd,IoReceiptSharp } from 'react-icons/io5';
+import { FaUserGraduate } from 'react-icons/fa6';
+import { LiaUserPlusSolid } from 'react-icons/lia';
+import { FaUserTie, FaMoneyCheckAlt } from 'react-icons/fa';
 
 export default function Navbar({ isOpen,setIsopen,admin }) {
   const initial = admin ? admin.charAt(0).toUpperCase() : 'A'
@@ -33,12 +37,12 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
           <div className="space-y-1">
             <SidebarLink
               to="/dashboard"
-              icon="/images/dashboard-icon.png"
+              Icon={LayoutDashboard}
               label="Dashboard" 
             />
             <SidebarLink
               to="/timetable"
-              icon="/images/timetable-icon.png"
+              Icon={CalendarDays}
               label="Time Table" 
             />
           </div>
@@ -50,12 +54,12 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
           <div className="space-y-1">
            <SidebarLink
               to="/add-student"
-              icon="/images/add_student.png"
+              Icon={IoPersonAdd}
               label="Add Student" 
             />
             <SidebarLink
               to="/view-students"
-              icon="/images/view-students.png"
+              Icon={FaUserGraduate}
               label="View Students" 
             />
           </div>
@@ -67,12 +71,12 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
           <div className="space-y-1">
           <SidebarLink
               to="/add-lecturer"
-              icon="/images/add-lecturer.png"
+              Icon={LiaUserPlusSolid}
               label="Add Lecturer" 
             />
            <SidebarLink
               to="/view-lecturers"
-              icon="/images/view-lecturers.png"
+              Icon={FaUserTie}
               label="View Lecturers" 
             />
           </div>
@@ -84,12 +88,12 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
           <div className="space-y-1">
            <SidebarLink
               to="/add-payment"
-              icon="/images/add-payment.png"
+              Icon={FaMoneyCheckAlt}
               label="Add Payments" 
             />
            <SidebarLink
               to="/view-payment"
-              icon="/images/view-payments.png"
+              Icon={IoReceiptSharp}
               label="View Payments" 
             />
           </div>
@@ -100,7 +104,7 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
       <div className="p-4">
         <Link to="/">
           <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#ff0000] text-white rounded-lg font-medium hover:bg-red-600 transition-colors">
-            <img src="/images/log off.png" alt="Log Out" className="w-5 h-5" />
+            <Power className='text-white'/>
             <span>Log Out</span>
           </button>
         </Link>

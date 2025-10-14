@@ -29,6 +29,11 @@ export default function RemoteReg() {
   };
 
   const handleApprove = async () => {
+    const confirmApprove = window.confirm(
+      `Are you sure you want to APPROVE the registration of "${selectedRequest.student_name}"?`
+    );
+    if (!confirmApprove) return;
+
     try {
       await axios.post(`http://localhost:8000/approve-request/${selectedRequest.id}`);
       setSelectedRequest(null);
@@ -40,15 +45,21 @@ export default function RemoteReg() {
   };
 
   const handleReject = async () => {
+    const confirmReject = window.confirm(
+      `Are you sure you want to REJECT the registration of "${selectedRequest.student_name}"?`
+    );
+    if (!confirmReject) return;
+
     try {
       await axios.delete(`http://localhost:8000/reject-request/${selectedRequest.id}`);
       setSelectedRequest(null);
-      fetchRequests(); // Refresh list
+      fetchRequests(); // Refresh listuu
     } catch (err) {
       alert("Rejection failed");
       console.error(err);
     }
   };
+
 
   useEffect(() => {
     fetchRequests();

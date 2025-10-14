@@ -1,11 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const dotenv = require('dotenv')
+const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
+const { verifyFirebaseToken } = require('./middleware/verifyFirebaseToken');
+const { adminFirestore } = require('./firebaseAdmin');
+const { syncToFirestore } = require('./sync/syncService');
+
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 8000;
+setInterval(syncToFirestore, 5 * 60 * 1000);
 
 app.use(cors());
 app.use(express.json());
@@ -22,6 +28,7 @@ const timetableRoutes = require('./routes/TimetableRoutes.js')
 const courseRoutes = require('./routes/CourseRoutes.js')
 const verificationRoutes = require('./routes/VerificationRoutes.js');
 const requestRoutes = require('./routes/RegRequstRoutes.js')
+const syncRoutes = require('./routes/SyncRoute');
 
 app.use('/api', adminRoutes);
 app.use('/', loginRoute);
@@ -31,7 +38,8 @@ app.use('/',paymentRoute);
 app.use('/',timetableRoutes);
 app.use('/',courseRoutes);
 app.use('/api', verificationRoutes);
-app.use('/',requestRoutes)
+app.use('/',requestRoutes);
+app.use('/api', syncRoutes);
 
 
 app.listen(port, () => {

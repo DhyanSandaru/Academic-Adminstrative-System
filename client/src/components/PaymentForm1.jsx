@@ -6,7 +6,8 @@ export default function PaymentForm1() {
 
   const [receiptData, setReceiptData] = useState(null);
   const [fetchedData,setFetchedData] = useState([]);
-  const [showSuggestions,setShowSuggestions] = useState(false);
+  const [showNameSuggestions, setShowNameSuggestions] = useState(false);
+  const [showIdSuggestions, setShowIdSuggestions] = useState(false);
   const[formData, setFormData] = useState({
     studentName: "",
     studentId: "",
@@ -121,44 +122,82 @@ export default function PaymentForm1() {
                   name="studentName"
                   value={formData.studentName}
                   onChange={handleChange}
-                  onFocus={() => setShowSuggestions(true)}
-                  onBlur={() => setShowSuggestions(false)}
+                  onFocus={() => setShowNameSuggestions(true)}
+                  onBlur={() => setShowNameSuggestions(false)}
                   required
                 />
-                {showSuggestions && fetchedData.length > 0 && (
-                <div className="absolute text-black text-left top-full left-0 w-full bg-white border border-gray-300 rounded shadow-md z-50 max-h-48 overflow-y-auto">
-                  {fetchedData
-                    .filter(item =>
-                      item.studentName.toLowerCase().includes(formData.studentName.toLowerCase())
-                    )
-                    .map((item, index) => (
-                      <p
-                        key={index}
-                        onMouseDown={() => {
-                          setSelectedStudent(item); // store selected student
-                          setShowSuggestions(false);
-                          setShowCoursePopup(true); // open popup
-                        }}
-                        className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
-                      >
-                        {item.studentName}
-                      </p>
-                    ))}
-                </div>
-              )}
+                 {showNameSuggestions && fetchedData.length > 0 && (
+                    <div className="absolute text-black text-left top-full left-0 w-full bg-white border border-gray-300 rounded shadow-md z-30 max-h-48 overflow-y-auto">
+                      {fetchedData
+                        .filter((item) =>
+                          item.studentName
+                            .toLowerCase()
+                            .includes(formData.studentName.toLowerCase())
+                        )
+                        .map((item, index) => (
+                          <p
+                            key={index}
+                            onMouseDown={() => {
+                              setSelectedStudent(item);
+                              setFormData({
+                                ...formData,
+                                studentName: item.studentName,
+                                studentId: item.studentId,
+                              });
+                              setShowCoursePopup(true);
+                            }}
+                            className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                          >
+                            {item.studentName} - {item.studentId}
+                          </p>
+                        ))}
+                    </div>
+                  )}
 
               </div>
 
-              <div className="flex flex-col">
-                <label className="text-gray-700 font-medium mb-2">Student ID :</label>
+              <div className="flex flex-col relative">
+                <label className="text-gray-700 font-medium mb-2">
+                    Student ID :
+                </label>
                 <input
                   type="text"
                   className="border-b-2 border-gray-300 focus:outline-none focus:border-blue-700 py-2"
                   name="studentId"
                   value={formData.studentId}
                   onChange={handleChange}
+                  onFocus={() => setShowIdSuggestions(true)}
+                  onBlur={() => setShowIdSuggestions(false)}
                   required
                 />
+                {showIdSuggestions && fetchedData.length > 0 && (
+                    <div className="absolute text-black text-left top-full left-0 w-full bg-white border border-gray-300 rounded shadow-md z-50 max-h-48 overflow-y-auto">
+                      {fetchedData
+                        .filter((item) =>
+                          item.studentId
+                            .toLowerCase()
+                            .includes(formData.studentId.toLowerCase())
+                        )
+                        .map((item, index) => (
+                          <p
+                            key={index}
+                            onMouseDown={() => {
+                              setSelectedStudent(item);
+                              setFormData({
+                                ...formData,
+                                studentName: item.studentName,
+                                studentId: item.studentId,
+                              });
+                              setShowCoursePopup(true);
+                            }}
+                            className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                          >
+                            {item.studentId} - {item.studentName}
+                          </p>
+                        ))}
+                    </div>
+                  )}
+                
               </div>
 
               <div className="flex flex-col">
@@ -229,7 +268,7 @@ export default function PaymentForm1() {
                               alert("Failed to load lecturers.");
                             }
                           }}
-                          className="w-full text-left px-4 py-2 my-1 bg-blue-400 rounded hover:bg-blue-200"
+                          className="w-full text-left px-4 py-2 my-1 bg-blue-400 rounded hover:bg-blue-500"
                         >
                           {course}
                         </button>
@@ -256,7 +295,7 @@ export default function PaymentForm1() {
                               setSelectedCourse(null);
                               setAvailableLecturers([]);
                             }}
-                            className="w-full text-left px-4 py-2 my-1 bg-blue-400 rounded hover:bg-blue-200"
+                            className="w-full text-left px-4 py-2 my-1 bg-blue-400 rounded hover:bg-blue-500"
                           >
                             {lecturer.lecturer_name}
                           </button>

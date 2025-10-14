@@ -9,7 +9,7 @@ export default function SearchBar({ value, onChange, onSearch, loading }) {
         name="search"
         value={value}
         onChange={onChange}
-        className="flex-5/7 text-center outline-none"
+        className="flex-5/7 text-center outline-none text-black"
       />
       <button
         type="button"
