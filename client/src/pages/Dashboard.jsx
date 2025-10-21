@@ -12,6 +12,24 @@ export default function Dashboard() {
 
   const fullText = "Heello admin123, welcome back!";
 
+  const handleBackup = async () => {
+    try {
+      const res = await axios.post('http://localhost:8000/sync-all', {
+        excludeTable: 'payments' // example table to skip
+      });
+      if (res.data.ok) alert(res.data.message);
+    } catch (err) {
+      console.error(err);
+      alert('Sync failed!');
+    }
+  };
+  const registrationStatusData = [
+  { label: "male", count: 340 },
+  { label: "female", count: 100 },
+  { label: "other", count: 5 }
+];
+
+
   useEffect(() => {
     let index = 0;
 
@@ -45,10 +63,26 @@ export default function Dashboard() {
   // Show the real dashboard content after animation
   return (
     <Layout title="Dashboard">
-      <div className="">
-        <div className="bg-white p-5 rounded-xl text-start">
-          <p className="text-gray-500">Welcome back</p>
-          <h2 className="text-black font-semibold">Admin123</h2>
+      <div className="bg-white px-5 py-8 rounded-lg shadow-md w-full flex flex-col md:flex-row justify-around items-start md:items-center gap-4 mb-6">
+        <div className="flex flex-col">
+          <p className="text-gray-500 text-lg">Welcome back,</p>
+          <h2 className="text-black font-semibold text-2xl">Admin123</h2>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-6 mt-4 md:mt-0">
+          <div className="flex flex-col items-start">
+            <span className="text-gray-500">Current Date</span>
+            <span className="text-black font-medium">{new Date().toLocaleDateString(undefined, {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}</span>
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="text-gray-500">Current Time</span>
+            <span className="text-black font-medium">{new Date().toLocaleTimeString()}</span>
+          </div>
         </div>
       </div>
       <div className="flex flex-row gap-3 flex-wrap     overflow-hidden w-full">
@@ -201,12 +235,12 @@ export default function Dashboard() {
             <div className="h-[20rem] w-[25rem]">
               <Doughnut
                 data={{
-                  labels: paymentData.map((data) => data.label),
+                  labels: registrationStatusData.map((data) => data.label),
                   datasets: [
                     {
-                      label: "Payment Distribution",
-                      data: paymentData.map((data) => data.amount),
-                      backgroundColor: ["#8280ff","#a974db"],
+                      label: "Student Registration Status",
+                      data: registrationStatusData.map((data) => data.count),
+                      backgroundColor: ["#ffcc00", "#ff6666", "#66ccff"],
                       borderRadius: 5,
                     },
                   ],
@@ -218,13 +252,46 @@ export default function Dashboard() {
                     legend: {
                       position: "bottom",
                     },
+                    tooltip: {
+                      callbacks: {
+                        label: function(context) {
+                          return `${context.label}: ${context.parsed}`;
+                        }
+                      }
+                    }
                   },
                 }}
               />
             </div>
-            
+
           </div>
         </div>
+         {/* <div className="bg-white px-5 py-8 rounded-lg shadow-md w-full mt-6 flex flex-col gap-4 min-h-[150px]">
+              <h3 className="text-xl font-semibold text-black">Backup Management</h3>
+              <p className="text-gray-500">
+                Manage your database backups, export data, or sync with remote storage.
+              </p>
+              <div className="flex gap-3 flex-wrap">
+                <button
+                  onClick={handleBackup}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                >
+                  Sync / Backup DB
+                </button>
+                <button
+                  onClick={() => alert("Export feature coming soon!")}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+                >
+                  Export Data
+                </button>
+                <button
+                  onClick={() => alert("View backup logs coming soon!")}
+                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+                >
+                  Backup Logs
+                </button>
+              </div>
+            </div> */}
 
       </div>
     </Layout>

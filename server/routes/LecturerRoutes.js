@@ -25,7 +25,7 @@ const upload = multer({ storage });
 router.post("/add-lecturer", upload.single("profilePhoto"), LecturerController.addLecturer);
 router.get("/view-lecturers", LecturerController.fetchLecturers);
 router.get("/view-lecturers/:course", LecturerController.fetchLecturersByCourse)
-router.get("/view-lecturers/:id",LecturerController.fetchLecturerById);
+router.get("/view-lecturers/id/:id",LecturerController.fetchLecturerById);
 router.put("/view-lecturers/:id",LecturerController.updateLecturerById);
 
 module.exports = router;

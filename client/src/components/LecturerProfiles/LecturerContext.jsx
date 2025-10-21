@@ -1,4 +1,4 @@
 import { createContext } from "react"
 
-const lecturerContext = createContext(undefined)
-export default lecturerContext
+const LecturerContext = createContext(undefined)
+export default LecturerContext

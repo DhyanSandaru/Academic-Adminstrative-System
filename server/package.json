@@ -5,7 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-    "test-email": "nodemon testEmail.js"
+    "test-email": "nodemon testEmail.js",
+    "backup": "node server/scripts/runBackup.js backup",
+    "backup:list": "node server/scripts/runBackup.js list",
+    "backup:restore": "node server/scripts/runBackup.js restore"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +21,8 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "firebase": "^12.4.0",
+    "firebase-admin": "^13.5.0",
     "multer": "^2.0.2",
     "mysql": "^2.18.1",
     "mysql2": "^3.14.2",

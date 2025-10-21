@@ -72,5 +72,30 @@ button:focus-visible {
 }
 
 input, textarea, select {
-   /* or any dark color you want */
+  color: #000000 /* or any dark color you want */
+}
+
+.fc-timegrid-axis {
+  background-color: #ffffff; /* keep the column white */
+  color: #000000; /* force black text */
+}
+
+
+/* Make event text wrap and allow cells to grow */
+.fc-timegrid-event {
+  white-space: normal !important;
+  height: auto !important;
+  min-height: 30px !important;
+}
+
+/* Allow cell rows to grow vertically */
+.fc-timegrid-slot {
+  height: auto !important;
+  min-height: 40px !important;
+  color: #000000;
+}
+
+/* Optional: prevent overflow clipping inside cells */
+.fc-timegrid-col-frame {
+  overflow: visible !important;
 }

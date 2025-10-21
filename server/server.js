@@ -3,15 +3,11 @@ const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
-const { verifyFirebaseToken } = require('./middleware/verifyFirebaseToken');
-const { adminFirestore } = require('./firebaseAdmin');
-const { syncToFirestore } = require('./sync/syncService');
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 8000;
-setInterval(syncToFirestore, 5 * 60 * 1000);
 
 app.use(cors());
 app.use(express.json());
@@ -23,14 +19,13 @@ const loginRoute = require('./routes/LoginRoute.js');
 const studentsRoute = require('./routes/StudentsRoutes.js');
 const lecturerRoute = require('./routes/LecturerRoutes.js')
 const paymentRoute = require('./routes/PaymentRoute.js');
-const adminRoutes = require('./routes/AdminRoutes.js');
 const timetableRoutes = require('./routes/TimetableRoutes.js')
 const courseRoutes = require('./routes/CourseRoutes.js')
 const verificationRoutes = require('./routes/VerificationRoutes.js');
 const requestRoutes = require('./routes/RegRequstRoutes.js')
-const syncRoutes = require('./routes/SyncRoute');
+const backupRoutes = require('./routes/BackupRoutes.js')
+const adminRoutes = require('./routes/AdminRoutes.js');
 
-app.use('/api', adminRoutes);
 app.use('/', loginRoute);
 app.use('/', studentsRoute);
 app.use('/',lecturerRoute);
@@ -39,10 +34,10 @@ app.use('/',timetableRoutes);
 app.use('/',courseRoutes);
 app.use('/api', verificationRoutes);
 app.use('/',requestRoutes);
-app.use('/api', syncRoutes);
+app.use('/api/backup',backupRoutes);
+app.use('/api', adminRoutes);
 
-
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
 

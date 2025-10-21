@@ -7,13 +7,11 @@ export default function LecturerForm() {
 
   const addCourseModule = () => {
     const newModule = prompt("Enter subject name:");
-    if (newModule) {
-      setCourseModules([...courseModules, newModule]);
-    }
+    if (newModule) setCourseModules([...courseModules, newModule]);
   };
 
   const removeCourseModule = (moduleToRemove) => {
-    setCourseModules(courseModules.filter((module) => module !== moduleToRemove));
+    setCourseModules(courseModules.filter((m) => m !== moduleToRemove));
   };
 
   const handleSubmit = async (e) => {
@@ -31,6 +29,11 @@ export default function LecturerForm() {
     formData.append("address", form["address"].value);
     formData.append("examYear", form["exam-year"].value);
     formData.append("exam", form["exam"].value);
+    formData.append("guardianName", form["guardian-name"].value);
+    formData.append("guardianRelationship", form["guardian-relationship"].value);
+    formData.append("guardianContact", form["guardian-contact"].value);
+    formData.append("guardianAddress", form["guardian-address"].value);
+    formData.append("guardianOccupation", form["guardian-occupation"].value);
     formData.append("courseModules", JSON.stringify(courseModules));
 
     try {
@@ -46,18 +49,18 @@ export default function LecturerForm() {
   };
 
   return (
-    <div className="flex-1 p-8 bg-[#0f172a] min-h-screen text-white rounded-2xl shadow-md">
+    <div className="flex-1 p-8 bg-gray-50 min-h-screen text-gray-900 rounded-2xl shadow-md">
       <form onSubmit={handleSubmit} className="space-y-12 w-3xl max-w-5xl mx-auto p-5">
         {/* Profile Section */}
-        <div className="border-b border-white/10 pb-12 flex flex-col">
+        <div className="border-b border-gray-200 pb-12 flex flex-col">
           <h2 className="text-xl font-semibold">Profile</h2>
-          <p className="mt-1 text-md text-gray-400">
+          <p className="mt-1 text-md text-gray-600">
             Basic details about the lecturer and their subjects.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-x-6 gap-y-8">
             {/* Lecturer Name */}
-            <div className="sm:col-span-3">
+            <div className="sm:col-span-3 w-full">
               <label htmlFor="lecturer-name" className="block text-md font-medium">
                 Lecturer Name
               </label>
@@ -65,25 +68,25 @@ export default function LecturerForm() {
                 <input
                   id="lecturer-name"
                   type="text"
-                  className="block w-md rounded-md bg-white/5 px-3 py-1.5 text-white outline-1 outline-white/10 focus:outline-white placeholder:text-gray-500"
+                  className="block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
             </div>
 
             {/* Profile Photo */}
-            <div className="sm:col-span-3">
+            <div className="sm:col-span-3 w-full">
               <label htmlFor="profile-photo" className="block text-md font-medium">
                 Profile Photo
               </label>
-              <div className="w-full my-5 flex flex-col items-center justify-between gap-y-5 ">
+              <div className="w-full my-5 flex flex-col items-center justify-between gap-y-5">
                 {profilePhoto ? (
                   <img
                     src={URL.createObjectURL(profilePhoto)}
                     alt="preview"
-                    className="w-40 h-40 rounded-full object-cover"
+                    className="w-40 h-40 rounded-full object-cover border border-gray-300"
                   />
                 ) : (
-                  <div className="w-40 h-40 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 text-sm">
+                  <div className="w-40 h-40 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
                     No Photo
                   </div>
                 )}
@@ -96,7 +99,7 @@ export default function LecturerForm() {
                 />
                 <label
                   htmlFor="profile-photo"
-                  className="cursor-pointer rounded-md bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/20"
+                  className="cursor-pointer rounded-md bg-indigo-100 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-200"
                 >
                   Change
                 </label>
@@ -104,7 +107,7 @@ export default function LecturerForm() {
             </div>
 
             {/* Subjects Taught */}
-            <div className="col-span-full">
+            <div className="col-span-full w-full">
               <label className="block text-md font-medium">Subjects Taught</label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {courseModules.map((module) => (
@@ -116,7 +119,7 @@ export default function LecturerForm() {
                     <button
                       type="button"
                       onClick={() => removeCourseModule(module)}
-                      className="ml-2 text-white hover:text-gray-200"
+                      className="ml-2 hover:text-gray-300"
                     >
                       ✕
                     </button>
@@ -125,7 +128,7 @@ export default function LecturerForm() {
                 <button
                   type="button"
                   onClick={addCourseModule}
-                  className="rounded-md bg-white/10 px-3 py-1 text-sm font-medium hover:bg-white/20"
+                  className="rounded-md bg-indigo-100 text-indigo-700 px-3 py-1 text-sm font-medium hover:bg-indigo-200"
                 >
                   + Add Subject
                 </button>
@@ -135,24 +138,23 @@ export default function LecturerForm() {
         </div>
 
         {/* Personal Information Section */}
-        <div className="border-b border-white/10 pb-12 flex flex-col items-center">
+        <div className="border-b border-gray-200 pb-12 flex flex-col items-center">
           <h2 className="text-lg font-semibold">Personal Information</h2>
-          <p className="mt-1 text-md text-gray-400">
+          <p className="mt-1 text-md text-gray-600">
             Contact details and identification information.
           </p>
-
-          {/* Gender */}
-          <div className="sm:col-span-3">
-            <label className="block text-md font-medium">Gender</label>
-            <div className="mt-2 flex gap-x-6">
-              {["male", "female", "other"].map((g) => (
-                <label key={g} className="flex items-center gap-x-2 text-md">
-                  <input type="radio" name="gender" value={g} className="text-indigo-500" />
-                  {g.charAt(0).toUpperCase() + g.slice(1)}
-                </label>
-              ))}
+           {/* Gender */}
+            <div className="mt-5">
+              <label className="block text-md font-medium">Gender</label>
+              <div className="mt-2 flex gap-x-6">
+                {["male", "female", "other"].map((g) => (
+                  <label key={g} className="flex items-center gap-x-2 text-md">
+                    <input type="radio" name="gender" value={g} className="text-indigo-500" />
+                    {g.charAt(0).toUpperCase() + g.slice(1)}
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
 
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
 
@@ -162,11 +164,10 @@ export default function LecturerForm() {
                 Exam & Year
               </label>
               <div className="mt-2 flex gap-4">
-                {/* Exam Dropdown */}
                 <select
                   id="exam"
                   name="exam"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline-1 outline-white/10 focus:outline-indigo-500"
+                  className="block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="">Select Exam</option>
                   <option value="O/L">O/L</option>
@@ -175,11 +176,10 @@ export default function LecturerForm() {
                   <option value="Other">Other</option>
                 </select>
 
-                {/* Year Dropdown */}
                 <select
                   id="exam-year"
                   name="exam-year"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline-1 outline-white/10 focus:outline-indigo-500"
+                  className="block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="">Select Year</option>
                   <option value="2025">2025</option>
@@ -191,78 +191,134 @@ export default function LecturerForm() {
               </div>
             </div>
 
-
             {/* Email */}
             <div className="sm:col-span-3">
-              <label htmlFor="email" className="block text-md font-medium">
-                Email
-              </label>
-              <div className="mt-2">
-                <input
-                  id="email"
-                  type="email"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline-1 outline-white/10 focus:outline-indigo-500 placeholder:text-gray-500"
-                />
-              </div>
+              <label htmlFor="email" className="block text-md font-medium">Email</label>
+              <input
+                id="email"
+                type="email"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
 
             {/* NIC */}
             <div className="sm:col-span-3">
-              <label htmlFor="nic" className="block text-md font-medium">
-                NIC
-              </label>
-              <div className="mt-2">
-                <input
-                  id="nic"
-                  type="text"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline-1 outline-white/10 focus:outline-indigo-500 placeholder:text-gray-500"
-                />
-              </div>
+              <label htmlFor="nic" className="block text-md font-medium">NIC</label>
+              <input
+                id="nic"
+                type="text"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
 
             {/* Mobile */}
             <div className="sm:col-span-3">
-              <label htmlFor="mobile" className="block text-md font-medium">
-                Mobile No
-              </label>
-              <div className="mt-2">
-                <input
-                  id="mobile"
-                  type="text"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline-1 outline-white/10 focus:outline-indigo-500 placeholder:text-gray-500"
-                />
-              </div>
+              <label htmlFor="mobile" className="block text-md font-medium">Mobile No</label>
+              <input
+                id="mobile"
+                type="text"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
 
             {/* Qualifications */}
             <div className="col-span-full">
-              <label htmlFor="qualifications" className="block text-md font-medium">
-                Qualifications
-              </label>
-              <div className="mt-2">
-                <textarea
-                  id="qualifications"
-                  rows="3"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline-1 outline-white/10 focus:outline-indigo-500 placeholder:text-gray-500"
-                ></textarea>
-              </div>
+              <label htmlFor="qualifications" className="block text-md font-medium">Qualifications</label>
+              <textarea
+                id="qualifications"
+                rows="3"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              ></textarea>
             </div>
 
             {/* Address */}
             <div className="col-span-full">
-              <label htmlFor="address" className="block text-md font-medium">
-                Address
-              </label>
-              <div className="mt-2">
-                <input
-                  id="address"
-                  type="text"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline-1 outline-white/10 focus:outline-indigo-500 placeholder:text-gray-500"
-                />
-              </div>
+              <label htmlFor="address" className="block text-md font-medium">Address</label>
+              <input
+                id="address"
+                type="text"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
           </div>
         </div>
+
+        {/* Education Details Section */}
+        <div className="border-b border-gray-200 pb-12 flex flex-col items-center">
+          <h2 className="text-lg font-semibold">Education Details</h2>
+          <p className="mt-1 text-md text-gray-600">
+            Academic background and professional experience of the lecturer.
+          </p>
+
+          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            {/* Highest Qualification */}
+            <div className="sm:col-span-3">
+              <label htmlFor="highest-qualification" className="block text-md font-medium">
+                Highest Qualification
+              </label>
+              <input
+                id="highest-qualification"
+                type="text"
+                placeholder="e.g., M.Sc. in Computer Science"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* University / Institute */}
+            <div className="sm:col-span-3">
+              <label htmlFor="institute" className="block text-md font-medium">
+                University / Institute
+              </label>
+              <input
+                id="institute"
+                type="text"
+                placeholder="e.g., University of Colombo"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Field of Study */}
+            <div className="sm:col-span-3">
+              <label htmlFor="field" className="block text-md font-medium">
+                Field of Study
+              </label>
+              <input
+                id="field"
+                type="text"
+                placeholder="e.g., Software Engineering"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Years of Experience */}
+            <div className="sm:col-span-3">
+              <label htmlFor="experience" className="block text-md font-medium">
+                Years of Teaching Experience
+              </label>
+              <input
+                id="experience"
+                type="number"
+                min="0"
+                placeholder="e.g., 5"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Additional Certifications */}
+            <div className="col-span-full">
+              <label htmlFor="certifications" className="block text-md font-medium">
+                Additional Certifications
+              </label>
+              <textarea
+                id="certifications"
+                rows="3"
+                placeholder="e.g., CELTA, PMP, Microsoft Certified Trainer, etc."
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
 
         {/* Submit */}
         <div className="flex justify-center">

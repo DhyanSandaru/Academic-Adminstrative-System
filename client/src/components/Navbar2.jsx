@@ -6,6 +6,7 @@ import { IoPersonAdd,IoReceiptSharp } from 'react-icons/io5';
 import { FaUserGraduate } from 'react-icons/fa6';
 import { LiaUserPlusSolid } from 'react-icons/lia';
 import { FaUserTie, FaMoneyCheckAlt } from 'react-icons/fa';
+import { CloudUpload } from 'lucide-react';
 
 export default function Navbar({ isOpen,setIsopen,admin }) {
   const initial = admin ? admin.charAt(0).toUpperCase() : 'A'
@@ -98,6 +99,16 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
             />
           </div>
         </div>
+
+        <div className="mb-6">
+          <h4 className="text-gray-300 text-sm font-medium mb-3 px-2">Backup Management</h4>
+           <SidebarLink
+              to="/manage-backups"
+              Icon={CloudUpload}
+              label="Manage Backups" 
+            />
+        </div>
+
       </nav>
 
       {/* Logout Button */}

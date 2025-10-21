@@ -1,53 +1,40 @@
+// server/controllers/AdminController.js
 const db = require('../DBconfig.js');
-const bcrypt = require('bcrypt');
+const path = require('path');
+const fs = require('fs');
 
-// Add Admin (only store username, email, password)
+// Create a new admin with profile photo
 exports.addAdmin = async (req, res) => {
+  const { name, email, password } = req.body;
+  const profilePhoto = req.file ? req.file.filename : null;
+
+  if (!name || !email || !password || !profilePhoto) {
+    return res.status(400).json({ message: 'All fields are required including profile photo' });
+  }
+
   try {
-    const { adminName, email, password } = req.body;
-
-    if (!adminName || !email || !password) {
-      return res.status(400).json({ message: 'All fields are required.' });
-    }
-
-    // Check if email exists
-    const [existing] = await db.query(`SELECT * FROM admins WHERE email = ?`, [email]);
-    if (existing.length > 0) {
-      return res.status(409).json({ message: 'Admin already exists with this email.' });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insert only required fields
-    await db.query(
-      `INSERT INTO admins (username, email, password) VALUES (?, ?, ?)`,
-      [adminName, email, hashedPassword]
+    const [result] = await db.query(
+      'INSERT INTO admins (name, email, password, profile_photo) VALUES (?, ?, ?, ?)',
+      [name, email, password, profilePhoto]
     );
 
-    res.status(200).json({ message: 'Admin registered successfully!' });
-  } catch (err) {
-    console.error("Error creating admin:", err);
-    res.status(500).json({ message: 'Failed to register admin.' });
+    res.status(201).json({
+      message: 'Admin added successfully',
+      adminId: result.insertId
+    });
+  } catch (error) {
+    console.error('Error adding admin:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-
-exports.fetchAdminByUsername = async (req, res) => {
-  const username = req.params.username; // from frontend
+// Optional: get all admins
+exports.getAdmins = async (req, res) => {
   try {
-    const [rows] = await db.query(
-      "SELECT admin_id, username, email FROM admins WHERE username = ?",
-      [username]
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
-
-    res.json(rows[0]); // send admin data
-  } catch (err) {
-    console.error("Error fetching admin:", err);
-    res.status(500).json({ message: "Internal server error" });
+    const [rows] = await db.query('SELECT * FROM admin_accounts');
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching admins:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };

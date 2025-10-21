@@ -14,6 +14,7 @@ import LecturerProfile from './pages/LecturerProfile.jsx'
 import AdminProfile from './pages/AdminProfile.jsx'
 import AddStudentForm from './pages/AddStudentForm.jsx'
 import RegisterbyCode from './pages/RegisterbyCode.jsx'
+import BackupManagement from './pages/BackupManagement.jsx';
 
 export default function App() {
   return (
@@ -38,7 +39,9 @@ export default function App() {
         <Route path="/timetable" element={<TimeTable/>}/>
 
         <Route path="view-payment" element={<ViewPayment/>}/>
-        <Route path="add-payment" element={<AddPayment/>}/>
+        <Route path="/add-payment" element={<AddPayment/>}/>
+
+        <Route path="/manage-backups" element={<BackupManagement/>}/>
         
       </Routes>
     </Router>

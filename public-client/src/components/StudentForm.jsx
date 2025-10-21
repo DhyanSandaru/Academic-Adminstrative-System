@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import AddCourses from "./AddCourses.jsx";
 import { CirclePlus } from 'lucide-react';
+import { BACKEND_URL } from "./config.js";
 
 export default function StudentForm() {
   const [step, setStep] = useState(1);
@@ -18,7 +19,7 @@ export default function StudentForm() {
   const handleCodeSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:8000/api/validate-code", { code });
+      const res = await axios.post(`${BACKEND_URL}/api/validate-code`, { code });
       if (res.data.valid) {
         setStep(2);
       } else {
@@ -46,7 +47,7 @@ export default function StudentForm() {
     formData.append("courseModules", JSON.stringify(courseModules));
 
     try {
-      const res = await axios.post("http://localhost:8000/add-request", formData, {
+      const res = await axios.post(`${BACKEND_URL}/add-request`, formData, {
         headers: {
           "Content-Type": "multipart/form-data"
         }

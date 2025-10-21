@@ -20,7 +20,7 @@ export default function ViewLecturers() {
           name: lecturer.name ?? '',
           id: lecturer.lecturerId ?? '',
           profilePhoto: lecturer.profilePhoto ?? '',
-          courses: lecturer.courses?.join(", ") ?? ''
+          courses: lecturer.courses ?? ''
         }));
 
         setLecturerData(validatedData);

@@ -65,25 +65,43 @@ exports.fetchLecturers = async (req, res) => {
   try {
     const [rows] = await db.query(`SELECT * FROM lecturers`);
 
-    const formattedData = rows.map(lecturer => ({
-      name: lecturer.lecturer_name,
-      lecturerId: lecturer.lecturer_id,
-      profilePhoto: lecturer.profile_photo,
-      gender: lecturer.gender,
-      examYear: lecturer.exam_year,
-      qualifications: lecturer.qualifications,
-      email: lecturer.email,
-      nic: lecturer.nic,
-      mobile: lecturer.mobile,
-      address: lecturer.address
-    }));
+    const formattedData = await Promise.all(
+      rows.map(async (lecturer) => {
+        // Fetch all subjects taught by this lecturer
+        const [subjectRows] = await db.query(
+          `
+          SELECT m.name
+          FROM lecturer_modules lm
+          JOIN modules m ON lm.module_id = m.module_id
+          WHERE lm.lecturer_id = ?
+          `,
+          [lecturer.lecturer_id]
+        );
+
+        const courses = subjectRows.map(row => row.name);
+
+        return {
+          name: lecturer.lecturer_name,
+          lecturerId: lecturer.lecturer_id,
+          profilePhoto: lecturer.profile_photo,
+          gender: lecturer.gender,
+          qualifications: lecturer.qualifications,
+          email: lecturer.email,
+          nic: lecturer.nic,
+          mobile: lecturer.mobile,
+          address: lecturer.address,
+          courses
+        };
+      })
+    );
 
     res.json(formattedData);
   } catch (err) {
-    console.error("Error fetching lecturers", err);
+    console.error("Error fetching lecturers:", err);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 // Fetch single lecturer by ID
 exports.fetchLecturerById = async (req, res) => {

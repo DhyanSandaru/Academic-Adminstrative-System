@@ -1,6 +1,7 @@
 const db = require('../DBconfig.js'); // make sure the path is correct
 const {mailSender} = require('../NodeMailer.js')
 const {fetchStudentEmailbyId} = require('../models/StudentModel.js');
+const {updatePaymentStatus} = require('../utils/paymentHelper.js')
 
 // Add Payment
 exports.addPayment = async (req, res) => {
@@ -39,7 +40,13 @@ exports.addPayment = async (req, res) => {
       console.error("Email sending failed:", mailErr);
     }
 
-    res.status(200).json({ message: 'Payment added successfully!', ref_no });
+    const status = await updatePaymentStatus(studentId);
+
+     res.status(200).json({
+      message: 'Payment added successfully!',
+      ref_no,
+      payment_status: status
+    });
   } catch (err) {
     console.error('Error inserting payment:', err);
     res.status(500).json({ error: 'Failed to insert payment.' });

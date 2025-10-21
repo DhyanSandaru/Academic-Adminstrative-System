@@ -6,7 +6,7 @@ import LecturerSubjectDetails from "../components/LecturerProfiles/EducationDeta
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import lecturerContext from "../components/LecturerProfiles/LecturerContext.jsx";
+import LecturerContext from "../components/LecturerProfiles/LecturerContext.jsx";
 
 export default function LecturerProfile() {
   
@@ -16,7 +16,7 @@ export default function LecturerProfile() {
   useEffect(() => {
     const fetchLecturerById = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/view-lecturers/${lecturer_id}`);
+        const response = await axios.get(`http://localhost:8000/view-lecturers/id/${lecturer_id}`);
 
         const validatedData = {
           name: response.data.name ?? '',
@@ -55,12 +55,12 @@ export default function LecturerProfile() {
   if (!lecturerData) return <p>Loading...</p>;
 
   return (
-    <lecturerContext.Provider value={{ lecturerData, setLecturerData }}>
+    <LecturerContext.Provider value={{ lecturerData, setLecturerData }}>
       <LecturerLayout title={lecturerData.name}>
         <LecturerPersonalDetails />
         <LecturerContactDetails />
         <LecturerSubjectDetails />
       </LecturerLayout>
-    </lecturerContext.Provider>
+    </LecturerContext.Provider>
   );
 }

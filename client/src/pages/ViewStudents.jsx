@@ -10,6 +10,7 @@ export default function ViewStudents() {
   const [currentPage, setCurrentPage] = useState(1);
   const [studentData, setStudentData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchBy, setSearchBy] = useState("name");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,7 +21,8 @@ export default function ViewStudents() {
           id: student.studentId ?? '',
           profilePhoto: student.profilePhoto ?? '',
           payment_status: student.status ?? '',
-          courses: student.courses?.join(', ') || ''
+          courses: student.courses?? '',
+          gender: student.gender?? ''
         }));
 
         setStudentData(validatedData);
@@ -43,10 +45,15 @@ export default function ViewStudents() {
     fetchData();
   }, []);
 
-  // Filter students by search term
-  const filteredStudents = studentData.filter(student =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 🔍 Filter logic based on selected field
+  const filteredStudents = studentData.filter(student => {
+    if (searchBy === "name") {
+      return student.name.toLowerCase().includes(searchTerm.toLowerCase());
+    } else if (searchBy === "id") {
+      return student.id.toLowerCase().includes(searchTerm.toLowerCase());
+    }
+    return true;
+  });
 
   const start = (currentPage - 1) * itemsPerPage;
   const end = start + itemsPerPage;
@@ -56,34 +63,46 @@ export default function ViewStudents() {
   return (
     <Layout title="View Students">
       <div className="bg-white w-[80vw] p-4 flex flex-col justify-between rounded-xl">
-        {/* 🔍 Search bar */}
-         <div className="w-full flex justify-center mb-6">
+
+        {/* 🔍 Search bar + Filter dropdown */}
+        <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
           <SearchBar
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1); // reset to page 1 on new search
+              setCurrentPage(1);
             }}
-            onSearch={() => {
-              console.log("Searching for:", searchTerm);
-            }}
+            onSearch={() => console.log("Searching for:", searchTerm)}
           />
+
+          {/* 🔽 Dropdown to choose filter type */}
+          <select
+            value={searchBy}
+            onChange={(e) => setSearchBy(e.target.value)}
+            className="border border-gray-300 rounded-lg p-2 w-40 text-gray-700 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          >
+            <option value="name">Search by Name</option>
+            <option value="id">Search by ID</option>
+          </select>
         </div>
 
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        {/* 🧑‍🎓 Student Cards */}
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 justify-items-center">
           {currentStudents.map((student, index) => (
             <Student
               key={index + start}
               name={student.name}
               studentId={student.id}
               courses={student.courses}
-              status={student.payment_status}
-              profilePhoto={student.profilePhoto} 
+              status="Pending"
+              profilePhoto={student.profilePhoto}
+              gender={student.gender}
             />
           ))}
         </div>
 
-        {/* Pagination */}
+
+        {/* 📄 Pagination */}
         <div className="flex justify-center mt-4">
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
