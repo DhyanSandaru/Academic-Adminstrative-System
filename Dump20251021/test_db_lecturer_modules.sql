@@ -16,28 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `modules`
+-- Table structure for table `lecturer_modules`
 --
 
-DROP TABLE IF EXISTS `modules`;
+DROP TABLE IF EXISTS `lecturer_modules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `modules` (
-  `module_id` varchar(20) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  PRIMARY KEY (`module_id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `lecturer_modules` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `lecturer_id` varchar(20) DEFAULT NULL,
+  `module_id` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `lecturer_id` (`lecturer_id`),
+  KEY `module_id` (`module_id`),
+  CONSTRAINT `lecturer_modules_ibfk_1` FOREIGN KEY (`lecturer_id`) REFERENCES `lecturers` (`lecturer_id`) ON DELETE CASCADE,
+  CONSTRAINT `lecturer_modules_ibfk_2` FOREIGN KEY (`module_id`) REFERENCES `modules` (`module_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `modules`
+-- Dumping data for table `lecturer_modules`
 --
 
-LOCK TABLES `modules` WRITE;
-/*!40000 ALTER TABLE `modules` DISABLE KEYS */;
-INSERT INTO `modules` VALUES ('M001','Chemistry'),('M003','Maths'),('M002','Physics');
-/*!40000 ALTER TABLE `modules` ENABLE KEYS */;
+LOCK TABLES `lecturer_modules` WRITE;
+/*!40000 ALTER TABLE `lecturer_modules` DISABLE KEYS */;
+INSERT INTO `lecturer_modules` VALUES (1,'L2023A_L001','M001'),(2,'L2023A_L001','M002'),(3,'L2022O_L001','M002');
+/*!40000 ALTER TABLE `lecturer_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-10  9:47:44
+-- Dump completed on 2025-10-21 16:08:31

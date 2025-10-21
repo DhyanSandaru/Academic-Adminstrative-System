@@ -24,14 +24,12 @@ DROP TABLE IF EXISTS `student_modules`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `student_modules` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `student_id` varchar(20) DEFAULT NULL,
-  `module_id` varchar(20) DEFAULT NULL,
+  `student_id` varchar(20) NOT NULL,
+  `module_id` varchar(20) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `student_id` (`student_id`),
-  KEY `module_id` (`module_id`),
-  CONSTRAINT `student_modules_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE,
-  CONSTRAINT `student_modules_ibfk_2` FOREIGN KEY (`module_id`) REFERENCES `modules` (`module_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `student_modules_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,7 +38,7 @@ CREATE TABLE `student_modules` (
 
 LOCK TABLES `student_modules` WRITE;
 /*!40000 ALTER TABLE `student_modules` DISABLE KEYS */;
-INSERT INTO `student_modules` VALUES (3,'S2024A_L001','M003'),(4,'S2024A_L001','M002'),(5,'S2022A_L001','M001'),(6,'S2022A_L001','M003'),(7,'S2023A_L001','M003'),(8,'S2022A_L002','M001'),(9,'S2023A_L002','M002'),(10,'S2023A_L003','M002'),(11,'S2022A_L003','M001');
+INSERT INTO `student_modules` VALUES (1,'S-2022-001','M002'),(2,'S-2022-001','M001');
 /*!40000 ALTER TABLE `student_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-10  9:47:45
+-- Dump completed on 2025-10-21 16:08:32

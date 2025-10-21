@@ -16,32 +16,35 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `lecturer_modules`
+-- Table structure for table `pending_requests`
 --
 
-DROP TABLE IF EXISTS `lecturer_modules`;
+DROP TABLE IF EXISTS `pending_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `lecturer_modules` (
+CREATE TABLE `pending_requests` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `lecturer_id` varchar(20) DEFAULT NULL,
-  `module_id` varchar(20) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `lecturer_id` (`lecturer_id`),
-  KEY `module_id` (`module_id`),
-  CONSTRAINT `lecturer_modules_ibfk_1` FOREIGN KEY (`lecturer_id`) REFERENCES `lecturers` (`lecturer_id`) ON DELETE CASCADE,
-  CONSTRAINT `lecturer_modules_ibfk_2` FOREIGN KEY (`module_id`) REFERENCES `modules` (`module_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `student_name` varchar(100) DEFAULT NULL,
+  `profile_photo` varchar(255) DEFAULT NULL,
+  `gender` varchar(10) DEFAULT NULL,
+  `exam_year` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `nic` varchar(20) DEFAULT NULL,
+  `mobile` varchar(15) DEFAULT NULL,
+  `address` text,
+  `course_modules` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `lecturer_modules`
+-- Dumping data for table `pending_requests`
 --
 
-LOCK TABLES `lecturer_modules` WRITE;
-/*!40000 ALTER TABLE `lecturer_modules` DISABLE KEYS */;
-INSERT INTO `lecturer_modules` VALUES (1,'L2023A_L001','M001'),(2,'L2023A_L001','M002'),(3,'L2022O_L001','M002');
-/*!40000 ALTER TABLE `lecturer_modules` ENABLE KEYS */;
+LOCK TABLES `pending_requests` WRITE;
+/*!40000 ALTER TABLE `pending_requests` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pending_requests` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-10  9:47:45
+-- Dump completed on 2025-10-21 16:08:31

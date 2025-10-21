@@ -16,30 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `admin_accounts`
+-- Table structure for table `registration_codes`
 --
 
-DROP TABLE IF EXISTS `admin_accounts`;
+DROP TABLE IF EXISTS `registration_codes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `admin_accounts` (
-  `admin_id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`admin_id`),
-  UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `registration_codes` (
+  `code` varchar(10) NOT NULL,
+  `used` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `admin_accounts`
+-- Dumping data for table `registration_codes`
 --
 
-LOCK TABLES `admin_accounts` WRITE;
-/*!40000 ALTER TABLE `admin_accounts` DISABLE KEYS */;
-INSERT INTO `admin_accounts` VALUES (1,'admin123','1234','admin@example.com');
-/*!40000 ALTER TABLE `admin_accounts` ENABLE KEYS */;
+LOCK TABLES `registration_codes` WRITE;
+/*!40000 ALTER TABLE `registration_codes` DISABLE KEYS */;
+INSERT INTO `registration_codes` VALUES ('5kWfI',0,'2025-10-14 09:49:44','2025-10-14 15:34:45'),('6JgR0',1,'2025-10-11 06:24:14','2025-10-11 12:09:15'),('I9oEz',1,'2025-10-07 05:01:42','2025-10-07 10:46:43'),('K4L9e',1,'2025-10-07 03:44:26','2025-10-07 09:29:26'),('KHk09',1,'2025-10-06 23:59:12','2025-10-07 05:44:13'),('sG9f0',1,'2025-10-16 09:09:12','2025-10-16 14:54:13'),('zh69Z',1,'2025-10-06 16:01:13','2025-10-06 21:46:14'),('zMk4q',1,'2025-10-07 03:36:51','2025-10-07 09:21:51');
+/*!40000 ALTER TABLE `registration_codes` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -51,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-10  9:47:44
+-- Dump completed on 2025-10-21 16:08:32

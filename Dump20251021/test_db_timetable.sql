@@ -24,14 +24,15 @@ DROP TABLE IF EXISTS `timetable`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `timetable` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `day` int NOT NULL,
-  `start_time` time NOT NULL,
-  `duration` int DEFAULT '2',
-  `subject` varchar(255) DEFAULT NULL,
-  `professor` varchar(255) DEFAULT NULL,
-  `grade` varchar(50) DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `day` varchar(15) NOT NULL,
+  `start_time` time DEFAULT NULL,
+  `end_time` time NOT NULL,
+  `subject` varchar(100) NOT NULL,
+  `professor` varchar(100) NOT NULL,
+  `grade` varchar(20) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,7 +41,7 @@ CREATE TABLE `timetable` (
 
 LOCK TABLES `timetable` WRITE;
 /*!40000 ALTER TABLE `timetable` DISABLE KEYS */;
-INSERT INTO `timetable` VALUES (1,3,'10:00:00',2,'Chemistry','Nuwan Pradeep','11');
+INSERT INTO `timetable` VALUES (6,'2025-10-20','Sunday','11:00:00','13:00:00','Maths','Nuwan Pradeep','10'),(7,'2025-10-19','Sunday','09:00:00','11:00:00','Physics','Sandeesh Fernando','11'),(8,'2025-10-21','Monday','11:00:00','14:00:00','Computer Science','J.K.Perera','10');
 /*!40000 ALTER TABLE `timetable` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-10  9:47:44
+-- Dump completed on 2025-10-21 16:08:32

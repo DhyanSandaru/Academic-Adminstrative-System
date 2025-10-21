@@ -16,35 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `pending_requests`
+-- Table structure for table `admin_accounts`
 --
 
-DROP TABLE IF EXISTS `pending_requests`;
+DROP TABLE IF EXISTS `admin_accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `pending_requests` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `student_name` varchar(100) DEFAULT NULL,
-  `profile_photo` varchar(255) DEFAULT NULL,
-  `gender` varchar(10) DEFAULT NULL,
-  `exam_year` varchar(20) DEFAULT NULL,
+CREATE TABLE `admin_accounts` (
+  `admin_id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
-  `nic` varchar(20) DEFAULT NULL,
-  `mobile` varchar(15) DEFAULT NULL,
-  `address` text,
-  `course_modules` text,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`admin_id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `pending_requests`
+-- Dumping data for table `admin_accounts`
 --
 
-LOCK TABLES `pending_requests` WRITE;
-/*!40000 ALTER TABLE `pending_requests` DISABLE KEYS */;
-/*!40000 ALTER TABLE `pending_requests` ENABLE KEYS */;
+LOCK TABLES `admin_accounts` WRITE;
+/*!40000 ALTER TABLE `admin_accounts` DISABLE KEYS */;
+INSERT INTO `admin_accounts` VALUES (1,'admin123','1234','admin@example.com');
+/*!40000 ALTER TABLE `admin_accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -56,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-10  9:47:44
+-- Dump completed on 2025-10-21 16:08:31
