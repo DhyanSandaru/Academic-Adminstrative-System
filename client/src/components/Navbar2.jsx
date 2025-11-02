@@ -7,12 +7,13 @@ import { FaUserGraduate } from 'react-icons/fa6';
 import { LiaUserPlusSolid } from 'react-icons/lia';
 import { FaUserTie, FaMoneyCheckAlt } from 'react-icons/fa';
 import { CloudUpload } from 'lucide-react';
+import { LuBookPlus,LuBookCopy } from 'react-icons/lu';
 
 export default function Navbar({ isOpen,setIsopen,admin }) {
   const initial = admin ? admin.charAt(0).toUpperCase() : 'A'
 
   return (
-    <div className={`h-screen bg-[#121c3e] text-white flex flex-col transition-all duration-300 
+    <div className={`h-screen bg-[#121c3e] text-white flex flex-col transition-all duration-300 overflow-auto
   ${isOpen ? "w-72" : "w-0 overflow-hidden"}`}>
 
       {/* Admin Profile */}
@@ -106,6 +107,20 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
               to="/manage-backups"
               Icon={CloudUpload}
               label="Manage Backups" 
+            />
+        </div>
+
+        <div className="mb-6">
+          <h4 className="text-gray-300 text-sm font-medium mb-3 px-2">Course Management</h4>
+           <SidebarLink
+              to="/add-course"
+              Icon={LuBookPlus}
+              label="Add Courses" 
+            />
+           <SidebarLink
+              to="/view-courses"
+              Icon={LuBookCopy}
+              label="View Courses" 
             />
         </div>
 

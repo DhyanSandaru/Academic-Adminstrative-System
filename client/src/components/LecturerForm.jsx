@@ -1,14 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
+import AddCourses from "./AddCourses";
 
 export default function LecturerForm() {
   const [courseModules, setCourseModules] = useState([]);
   const [profilePhoto, setProfilePhoto] = useState(null);
+   const [showCoursePopup, setShowCoursePopup] = useState(false);
 
-  const addCourseModule = () => {
-    const newModule = prompt("Enter subject name:");
-    if (newModule) setCourseModules([...courseModules, newModule]);
-  };
 
   const removeCourseModule = (moduleToRemove) => {
     setCourseModules(courseModules.filter((m) => m !== moduleToRemove));
@@ -19,25 +17,31 @@ export default function LecturerForm() {
     const form = e.target;
     const formData = new FormData();
 
+    // === Profile Section ===
     formData.append("lecturerName", form["lecturer-name"].value);
     formData.append("profilePhoto", profilePhoto);
-    formData.append("gender", form["gender"].value);
-    formData.append("qualifications", form["qualifications"].value);
+    formData.append("courseModules", JSON.stringify(courseModules));
+
+    // === Personal Information Section ===
+    const gender = form.querySelector('input[name="gender"]:checked')?.value || "";
+    formData.append("gender", gender);
     formData.append("email", form["email"].value);
     formData.append("nic", form["nic"].value);
     formData.append("mobile", form["mobile"].value);
     formData.append("address", form["address"].value);
-    formData.append("examYear", form["exam-year"].value);
-    formData.append("exam", form["exam"].value);
-    formData.append("guardianName", form["guardian-name"].value);
-    formData.append("guardianRelationship", form["guardian-relationship"].value);
-    formData.append("guardianContact", form["guardian-contact"].value);
-    formData.append("guardianAddress", form["guardian-address"].value);
-    formData.append("guardianOccupation", form["guardian-occupation"].value);
-    formData.append("courseModules", JSON.stringify(courseModules));
+    formData.append("emergency-contact", form["emergency-contact"].value);
+
+    // === Education Details Section ===
+    formData.append("highestQualification", form["highest-qualification"].value);
+    formData.append("institute", form["institute"].value);
+    formData.append("fieldOfStudy", form["field"].value);
+    formData.append("experience", form["experience"].value);
+    formData.append("certifications", form["certifications"].value);
 
     try {
-      const res = await axios.post("http://localhost:8000/add-lecturer", formData);
+      const res = await axios.post("http://localhost:8000/add-lecturer", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       alert(res.data.message || "Lecturer added successfully!");
       form.reset();
       setCourseModules([]);
@@ -47,6 +51,7 @@ export default function LecturerForm() {
       alert(err.response?.data?.message || "Submission Failed");
     }
   };
+
 
   return (
     <div className="flex-1 p-8 bg-gray-50 min-h-screen text-gray-900 rounded-2xl shadow-md">
@@ -108,7 +113,7 @@ export default function LecturerForm() {
 
             {/* Subjects Taught */}
             <div className="col-span-full w-full">
-              <label className="block text-md font-medium">Subjects Taught</label>
+              <label className="block text-md font-medium">Course Modules</label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {courseModules.map((module) => (
                   <div
@@ -127,10 +132,10 @@ export default function LecturerForm() {
                 ))}
                 <button
                   type="button"
-                  onClick={addCourseModule}
+                  onClick={() => setShowCoursePopup(true)}
                   className="rounded-md bg-indigo-100 text-indigo-700 px-3 py-1 text-sm font-medium hover:bg-indigo-200"
                 >
-                  + Add Subject
+                  + Add Module
                 </button>
               </div>
             </div>
@@ -156,40 +161,7 @@ export default function LecturerForm() {
               </div>
             </div>
 
-          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-
-            {/* Exam & Year */}
-            <div className="sm:col-span-3">
-              <label htmlFor="exam" className="block text-md font-medium">
-                Exam & Year
-              </label>
-              <div className="mt-2 flex gap-4">
-                <select
-                  id="exam"
-                  name="exam"
-                  className="block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">Select Exam</option>
-                  <option value="O/L">O/L</option>
-                  <option value="A/L">A/L</option>
-                  <option value="IELTS">IELTS</option>
-                  <option value="Other">Other</option>
-                </select>
-
-                <select
-                  id="exam-year"
-                  name="exam-year"
-                  className="block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">Select Year</option>
-                  <option value="2025">2025</option>
-                  <option value="2024">2024</option>
-                  <option value="2023">2023</option>
-                  <option value="2022">2022</option>
-                  <option value="2021">2021</option>
-                </select>
-              </div>
-            </div>
+          <div className="mt-10 w-[85%] grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
 
             {/* Email */}
             <div className="sm:col-span-3">
@@ -221,15 +193,16 @@ export default function LecturerForm() {
               />
             </div>
 
-            {/* Qualifications */}
-            <div className="col-span-full">
-              <label htmlFor="qualifications" className="block text-md font-medium">Qualifications</label>
-              <textarea
-                id="qualifications"
-                rows="3"
+             {/*Emergency Contact */}
+            <div className="sm:col-span-3">
+              <label htmlFor="emergency-contact" className="block text-md font-medium">Emergency Contact</label>
+              <input
+                id="emergency-contact"
+                type="text"
                 className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
-              ></textarea>
+              />
             </div>
+
 
             {/* Address */}
             <div className="col-span-full">
@@ -250,7 +223,7 @@ export default function LecturerForm() {
             Academic background and professional experience of the lecturer.
           </p>
 
-          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+          <div className="mt-10 w-[85%] grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             {/* Highest Qualification */}
             <div className="sm:col-span-3">
               <label htmlFor="highest-qualification" className="block text-md font-medium">
@@ -330,6 +303,15 @@ export default function LecturerForm() {
           </button>
         </div>
       </form>
+      {showCoursePopup && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <AddCourses
+            selectedCourses={courseModules}
+            setSelectedCourses={setCourseModules}
+            handleClose={() => setShowCoursePopup(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

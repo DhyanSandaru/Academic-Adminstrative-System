@@ -73,7 +73,7 @@ exports.fetchPaymentsByID = async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      `SELECT course_module, created_at, lecturer, amount
+      `SELECT ref_no, student_name, student_id, course_module, lecturer, amount, created_at
        FROM payments
        WHERE student_id = ?
        ORDER BY created_at DESC`,

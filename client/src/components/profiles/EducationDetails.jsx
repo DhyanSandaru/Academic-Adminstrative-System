@@ -1,104 +1,186 @@
-import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
-import studentContext from './StudentContext.jsx'; // adjust path if needed
+import studentContext from './StudentContext.jsx';
+import { GraduationCap } from 'lucide-react';
+import AddCourses from '../AddCourses.jsx';
 
 export default function EducationDetails() {
-  const { studentData, setStudentData } = useContext(studentContext);
+  const { studentData, updateStudent, saving } = useContext(studentContext);
 
   const [formData, setFormData] = useState({
+    exam: '',
     examYear: '',
-    courses: ''
+    previousEducation: '',
+    grade: ''
   });
 
-  const [originalData, setOriginalData] = useState(null);
+  const [courseModules, setCourseModules] = useState([]);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [showCoursePopup, setShowCoursePopup] = useState(false);
 
-  // Initialize form data when studentData is available
   useEffect(() => {
     if (studentData) {
-      const formatted = {
+      setFormData({
+        exam: studentData.exam || '',
         examYear: studentData.examYear || '',
-        courses: studentData.courses?.join(', ') || ''
-      };
-      setFormData(formatted);
-      setOriginalData(formatted);
+        previousEducation: studentData.previousEducation || '',
+        grade: studentData.grade || ''
+      });
+      setCourseModules(studentData.courses || []);
     }
   }, [studentData]);
+
+  const removeCourseModule = (moduleToRemove) => {
+    setCourseModules(prev => prev.filter(m => m !== moduleToRemove));
+    setHasChanges(true);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setHasChanges(true);
   };
 
-  const handleUpdate = async () => {
-    try {
-      // Rebuild courses array from comma-separated input
-      const updatedCourses = formData.courses
-        .split(',')
-        .map(course => course.trim())
-        .filter(course => course.length > 0);
+  // FIXED: Now properly saves courseModules array
+  const handleSave = async () => {
+    const result = await updateStudent({
+      exam: formData.exam,
+      examYear: formData.examYear,
+      previousEducation: formData.previousEducation,
+      grade: formData.grade,
+      courses: courseModules 
+    });
 
-      const updatedData = {
-        ...studentData,
-        examYear: formData.examYear,
-        courses: updatedCourses
-      };
-
-      const response = await axios.put(
-        `http://localhost:8000/view-students/${studentData.studentId}`,
-        updatedData
-      );
-
-      if (response.status >= 200 && response.status < 300) {
-        alert('Education details updated successfully');
-        setStudentData(updatedData);
-        setOriginalData(formData);
-      } else {
-        alert('Failed to update');
-        setFormData(originalData);
-      }
-    } catch (err) {
-      console.error('Update error:', err);
-      alert('Error while updating education details.');
-      setFormData(originalData);
+    if (result.success) {
+      alert('Education details updated successfully');
+      setHasChanges(false);
+    } else {
+      alert(result.message);
     }
   };
 
-  if (!studentData) return <p>Loading...</p>;
+  // Track course changes
+  useEffect(() => {
+    if (JSON.stringify(courseModules) !== JSON.stringify(studentData?.courses)) {
+      setHasChanges(true);
+    }
+  }, [courseModules, studentData]);
 
   return (
-    <div className='flex flex-col gap-6 bg-white w-full pt-20 pb-30 rounded-lg shadow-md'>
-      <h2 className='text-lg'>Education Details</h2>
-
-      {/* Exam Year */}
-      <div className='flex flex-col justify-start m-3'>
-        <p className='text-left ml-2'>Exam Year</p>
-        <input
-          type="text"
-          name="examYear"
-          value={formData.examYear}
-          onChange={handleChange}
-          className="bg-blue-200 rounded-lg w-[80%] m-1 p-2 outline-none"
-        />
+    <div id='education-details' className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-gradient-to-r from-purple-600 to-purple-800 px-8 py-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <GraduationCap className="text-white" size={28} />
+            <h2 className="text-2xl font-bold text-white">Education Details</h2>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving || !hasChanges}
+            className="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
       </div>
 
-      {/* Courses */}
-      <div className='flex flex-col justify-start m-3'>
-        <p className='text-left ml-2'>Enrolled Courses</p>
-        <input
-          type="text"
-          name="courses"
-          value={formData.courses}
-          onChange={handleChange}
-          className="bg-blue-200 rounded-lg w-[80%] m-1 p-2 outline-none"
-        />
-      </div>
+      <div className="p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Examination</label>
+            <input
+              type="text"
+              name="exam"
+              value={formData.exam}
+              onChange={handleChange}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+              placeholder="e.g., A/L, O/L"
+            />
+          </div>
 
-      <button
-        onClick={handleUpdate}
-        className='bg-green-500 mt-5 ml-4 w-30 duration-300 ease-out transform hover:scale-105 hover:bg-green-600 text-white py-2 px-6 rounded'
-      >
-        Update
-      </button>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Exam Year</label>
+            <input
+              type="text"
+              name="examYear"
+              value={formData.examYear}
+              onChange={handleChange}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+              placeholder="e.g., 2024"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Grade/Results</label>
+            <input
+              type="text"
+              name="grade"
+              value={formData.grade}
+              onChange={handleChange}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+              placeholder="e.g., 3A"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Previous School/Institution</label>
+            <input
+              type="text"
+              name="previousEducation"
+              value={formData.previousEducation}
+              onChange={handleChange}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+              placeholder="School name"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Enrolled Courses</label>
+            <div className="mt-2 flex flex-col items-center flex-wrap gap-3">
+              <div className='border-2 border-gray-300 rounded-lg flex flex-row flex-wrap gap-3 w-full p-3 min-h-[60px]'> 
+                {courseModules.length > 0 ? (
+                  courseModules.map((module) => (
+                    <div
+                      key={module}
+                      className="bg-indigo-600 text-white px-3 py-1 rounded-md flex items-center h-fit"
+                    >
+                      <span className="mr-2">{module}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeCourseModule(module)}
+                        className="hover:text-gray-300 font-bold"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-center w-full py-3">No courses added yet</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCoursePopup(true)}
+                className="rounded-md bg-indigo-100 text-indigo-700 px-4 py-2 text-sm font-medium hover:bg-indigo-200 transition-colors"
+              >
+                + Add Module
+              </button>
+            </div> 
+          </div>
+        </div>
+
+        {showCoursePopup && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <AddCourses
+              selectedCourses={courseModules}
+              setSelectedCourses={(courses) => {
+                setCourseModules(courses);
+                setHasChanges(true);
+              }}
+              handleClose={() => setShowCoursePopup(false)}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

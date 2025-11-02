@@ -1,6 +1,7 @@
 // client/src/components/HandleBackup.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ArchiveRestore, RotateCcw, SearchCode, Trash } from 'lucide-react';
 
 function HandleBackup() {
   const [backups, setBackups] = useState([]);
@@ -153,7 +154,18 @@ function HandleBackup() {
           disabled={loading}
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold transition"
         >
-          {loading ? '⏳ Processing...' : '📦 Create Backup'}
+          {loading ? (
+            <div className='flex flex-row'>
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600 text-lg">Processing...</p>
+            </div>
+        ) 
+          : (
+            <div className='flex flex-row gap-2'>
+              <ArchiveRestore/>
+              <span>Create Backup</span>
+            </div>
+        )}
         </button>
       </div>
 
@@ -193,23 +205,26 @@ function HandleBackup() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleViewDetails(backup.backupId)}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded transition"
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded transition flex flex-row gap-2"
                   >
-                    👁️ Details
+                    <SearchCode/>
+                    Details
                   </button>
                   <button
                     onClick={() => handleRestore(backup.backupId)}
                     disabled={loading}
-                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded transition"
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded transition flex flex-row gap-2"
                   >
-                    🔄 Restore
+                    <RotateCcw/>
+                    Restore
                   </button>
                   <button
                     onClick={() => handleDelete(backup.backupId)}
                     disabled={loading}
-                    className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-4 py-2 rounded transition"
+                    className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-4 py-2 rounded transition flex flex-row gap-2"
                   >
-                    🗑️ Delete
+                    <Trash />
+                    Delete
                   </button>
                 </div>
               </div>
@@ -235,7 +250,7 @@ function HandleBackup() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-600">Backup ID</p>
-                <p className="font-mono text-sm bg-gray-100 p-2 rounded">{selectedBackup.id}</p>
+                <p className="font-mono text-sm bg-gray-100 p-2 rounded text-black">{selectedBackup.id}</p>
               </div>
 
               <div>
@@ -247,7 +262,7 @@ function HandleBackup() {
 
               <div>
                 <p className="text-sm text-gray-600">Timestamp</p>
-                <p className="font-semibold">{formatDate(selectedBackup.timestamp)}</p>
+                <p className="font-semibold text-black">{formatDate(selectedBackup.timestamp)}</p>
               </div>
 
               <div>
@@ -256,7 +271,7 @@ function HandleBackup() {
                   {Object.entries(selectedBackup.tables || {}).map(([tableName, info]) => (
                     <div key={tableName} className="bg-gray-50 p-3 rounded border border-gray-200">
                       <div className="flex justify-between items-center">
-                        <span className="font-semibold">{tableName}</span>
+                        <span className="font-semibold text-gray-700">{tableName}</span>
                         <span className={`text-xs px-2 py-1 rounded ${
                           info.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         }`}>

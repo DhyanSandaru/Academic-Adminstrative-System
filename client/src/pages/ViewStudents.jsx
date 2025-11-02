@@ -20,7 +20,7 @@ export default function ViewStudents() {
           name: student.name ?? '',
           id: student.studentId ?? '',
           profilePhoto: student.profilePhoto ?? '',
-          payment_status: student.status ?? '',
+          payment_status: student.payment_status ?? '',
           courses: student.courses?? '',
           gender: student.gender?? ''
         }));

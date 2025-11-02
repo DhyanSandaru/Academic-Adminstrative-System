@@ -13,7 +13,7 @@ export default function HorizontalSlider({ slides, width = 400 }) {
   };
 
   return (
-    <div className="relative max-w-[90vw] mx-auto">
+    <div className="relative max-w-full mx-auto">
       {/* Left Arrow */}
       <button
         onClick={goLeft}

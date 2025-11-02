@@ -26,7 +26,7 @@ router.post("/add-lecturer", upload.single("profilePhoto"), LecturerController.a
 router.get("/view-lecturers", LecturerController.fetchLecturers);
 router.get("/view-lecturers/:course", LecturerController.fetchLecturersByCourse)
 router.get("/view-lecturers/id/:id",LecturerController.fetchLecturerById);
-router.put("/view-lecturers/:id",LecturerController.updateLecturerById);
+router.put("/update-lecturers/:id",upload.single("profilePhoto"),LecturerController.updateLecturerById);
 
 module.exports = router;
 

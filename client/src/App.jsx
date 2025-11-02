@@ -15,6 +15,8 @@ import AdminProfile from './pages/AdminProfile.jsx'
 import AddStudentForm from './pages/AddStudentForm.jsx'
 import RegisterbyCode from './pages/RegisterbyCode.jsx'
 import BackupManagement from './pages/BackupManagement.jsx';
+import AddNewCourse from './pages/AddNewCourse.jsx'
+import ViewCourses from './pages/ViewCourses.jsx'
 
 export default function App() {
   return (
@@ -42,6 +44,9 @@ export default function App() {
         <Route path="/add-payment" element={<AddPayment/>}/>
 
         <Route path="/manage-backups" element={<BackupManagement/>}/>
+
+        <Route path="/add-course" element={<AddNewCourse/>}/>
+        <Route path="/view-courses" element={<ViewCourses/>}/>
         
       </Routes>
     </Router>

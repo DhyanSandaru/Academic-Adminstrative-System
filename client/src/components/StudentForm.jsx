@@ -299,7 +299,6 @@ export default function Form() {
           </div>
         </div>
 
-        {/* ================= GUARDIAN INFORMATION ================= */}
         <div className="border-b border-gray-200 pb-12 flex flex-col items-center">
           <h2 className="text-lg font-semibold">Guardian Information</h2>
           <p className="mt-1 text-md text-gray-600">
@@ -307,7 +306,7 @@ export default function Form() {
           </p>
 
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 w-full">
-            <div className="sm:col-span-3">
+            <div className="sm:col-span-full">
               <label htmlFor="guardian-name" className="block text-md font-medium">
                 Guardian Name
               </label>
@@ -342,7 +341,6 @@ export default function Form() {
           </div>
         </div>
 
-        {/* ================= SUBMIT BUTTON ================= */}
         <div className="mt-8 flex justify-center">
           <button
             type="submit"
@@ -353,7 +351,6 @@ export default function Form() {
         </div>
       </form>
 
-      {/* ================= COURSE POPUP ================= */}
       {showCoursePopup && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <AddCourses

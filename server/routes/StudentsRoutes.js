@@ -28,7 +28,7 @@ router.post("/add-student", upload.single("profilePhoto"), studentController.add
 router.get("/view-students",studentController.fetchStudents);
 router.get("/view-students/name/:name",studentController.fetchStudents);
 router.get("/view-students/id/:id",studentController.fetchStudentbyID);
-router.put("/view-students/:id",studentController.updateStudentById);
+router.put("/view-students/:id",upload.single("profilePhoto"),studentController.updateStudentById);
 
 module.exports = router;
 

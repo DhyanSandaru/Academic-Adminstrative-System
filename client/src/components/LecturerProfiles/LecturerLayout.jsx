@@ -1,46 +1,70 @@
-import {Link} from 'react-scroll'
+import { useCallback } from 'react';
 import Layout from '../Layout';
+import { User, Phone, GraduationCap, DollarSign } from 'lucide-react';
 
-export default function ProfileLayout({ children,title}) {
+export default function LecturerLayout({ children, title }) {
+  const smoothScroll = useCallback((id) => {
+    const section = document.getElementById(id);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
   return (
     <Layout title={title}>
-      <div className="w-3/4 bg-[#e3edf9] p-6 flex flex-col gap-6 justify-center items-center">
-        {/* Sidebar */}
-        <div className="h-fit bg-white rounded-lg shadow">
-          <div className="p-6 space-x-4 flex flex-row">
-            <Link to='/view-lecturers/personal-details'>
-              <button className="w-full justify-center text-black font-medium py-3 rounded-lg bg-[#ffc20e]">
-              Personal Details
-            </button>
-            </Link>
+      <div className="w-full bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen p-6">
+        <div className="max-w-5xl mx-auto">
+          {/* Navigation Tabs */}
+          <div className="bg-white rounded-xl shadow-lg p-2 mb-6 sticky top-4 z-10">
+            <div className="flex flex-wrap gap-2">
+              <div className="flex-1 min-w-[200px]">
+                <button 
+                  className="w-full flex items-center justify-center gap-2 text-white font-semibold py-3 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 transition-all duration-200 shadow-md"
+                  onClick={() => smoothScroll("personal-details")}
+                >
+                  <User size={20} />
+                  Personal Details
+                </button>
+              </div>
 
-            <Link to='/view-lecturers/contact-details'>
-               <button className="w-full justify-center font-medium py-3 rounded-lg bg-[#e3edf9] text-black">
-              Contact Details
-            </button>
-            </Link>
-           
-           <Link to='/view-lecturers/education-details'>
-              <button className="w-full justify-center font-medium py-3 rounded-lg bg-[#e3edf9] text-black">
-                Education Details
-              </button>
-            </Link>
-          
-            <Link to='/view-lecturers/calculate-salary'>
-              <button className="w-full justify-center font-medium py-3 rounded-lg bg-[#e3edf9] text-black">
-                Calculate Salary
-              </button>
-            </Link>
-            
+              <div className="flex-1 min-w-[200px]">
+                <button 
+                  className="w-full flex items-center justify-center gap-2 font-semibold py-3 px-4 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
+                  onClick={() => smoothScroll("contact-details")}
+                >
+                  <Phone size={20} />
+                  Contact Details
+                </button>
+              </div>
+
+              <div className="flex-1 min-w-[200px]">
+                <button 
+                  className="w-full flex items-center justify-center gap-2 font-semibold py-3 px-4 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
+                  onClick={() => smoothScroll("education-details")}
+                >
+                  <GraduationCap size={20} />
+                  Education Details
+                </button>
+              </div>
+
+              <div className="flex-1 min-w-[200px]">
+                <button 
+                  className="w-full flex items-center justify-center gap-2 font-semibold py-3 px-4 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
+                  onClick={() => smoothScroll("salary-calculator")}
+                >
+                  <DollarSign size={20} />
+                  Salary Calculator
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Page Content */}
+          <div className="space-y-6">
+            {children}
           </div>
         </div>
-
-        {/* Page-specific content */}
-        <div className="rounded-lg shadow text-black flex flex-col gap-10 w-full">
-          {children}
-        </div>
-    </div>
+      </div>
     </Layout>
-    
   );
 }

@@ -1,39 +1,73 @@
 const db = require('../DBconfig.js');
 
-// Add a new lecturer
+// ==============================
+// ADD LECTURER
+// ==============================
 exports.addLecturer = async (req, res) => {
   try {
     const {
-      lecturerName,
+      name,
       gender,
-      qualifications,
       email,
       nic,
       mobile,
       address,
-      examYear
+      highestQualification,
+      institute,
+      fieldOfStudy,
+      experience,
+      certifications
     } = req.body;
 
     const courseModules = JSON.parse(req.body.courseModules || "[]");
+
+    // If file uploaded, save the relative path
     const profilePhoto = req.file ? `/lecturers/${req.file.filename}` : null;
 
-    const sanitizedExamYear = examYear.replace(/\s+/g, "").replace(/\//g, "_");
+    // Generate joined year automatically
+    const joinedYear = new Date().getFullYear();
 
+    // Generate lecturer_id (e.g., L-2025-001)
     const [rows] = await db.query(
-      `SELECT COUNT(*) as count FROM lecturers WHERE exam_year = ? AND lecturer_id LIKE ?`,
-      [examYear, `L${sanitizedExamYear}%`]
+      `SELECT COUNT(*) AS count 
+       FROM lecturers 
+       WHERE joined_year = ? 
+       AND lecturer_id LIKE ?`,
+      [joinedYear, `L-${joinedYear}-%`]
     );
 
     const count = rows[0].count;
     const serialStr = (count + 1).toString().padStart(3, "0");
-    const lecturerId = `L${sanitizedExamYear}${serialStr}`;
+    const lecturerId = `L-${joinedYear}-${serialStr}`;
 
+    // Current timestamp
+    const createdAt = new Date();
+
+    // Insert new lecturer
     await db.query(
-      `INSERT INTO lecturers (lecturer_id, lecturer_name, profile_photo, gender, qualifications, email, nic, mobile, address,exam_year)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [lecturerId, lecturerName, profilePhoto, gender, qualifications, email, nic, mobile, address, examYear]
+      `INSERT INTO lecturers 
+      (lecturer_id, lecturer_name, profile_photo, gender, email, nic, mobile, address, highest_qualification, institute, field_of_study, experience, certifications, joined_year, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        lecturerId,
+        name,
+        profilePhoto,
+        gender,
+        email,
+        nic,
+        mobile,
+        address,
+        highestQualification,
+        institute,
+        fieldOfStudy,
+        experience,
+        certifications,
+        joinedYear,
+        createdAt
+      ]
     );
 
+    // Link lecturer to course modules
     for (const moduleName of courseModules) {
       const [moduleRows] = await db.execute(
         'SELECT module_id FROM modules WHERE LOWER(name) = LOWER(?)',
@@ -41,7 +75,7 @@ exports.addLecturer = async (req, res) => {
       );
 
       if (moduleRows.length === 0) {
-        console.warn(`Module "${moduleName}" not found. Skipping.`);
+        console.warn(`⚠️ Module "${moduleName}" not found. Skipping.`);
         continue;
       }
 
@@ -53,21 +87,22 @@ exports.addLecturer = async (req, res) => {
       );
     }
 
-    res.status(200).json({ message: "Lecturer added successfully!" });
+    res.status(200).json({ message: "✅ Lecturer added successfully!" });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error adding lecturer:", err);
     res.status(500).json({ message: "Failed to insert lecturer." });
   }
 };
 
-// Fetch all lecturers
+// ==============================
+// FETCH ALL LECTURERS
+// ==============================
 exports.fetchLecturers = async (req, res) => {
   try {
     const [rows] = await db.query(`SELECT * FROM lecturers`);
 
     const formattedData = await Promise.all(
       rows.map(async (lecturer) => {
-        // Fetch all subjects taught by this lecturer
         const [subjectRows] = await db.query(
           `
           SELECT m.name
@@ -78,18 +113,23 @@ exports.fetchLecturers = async (req, res) => {
           [lecturer.lecturer_id]
         );
 
-        const courses = subjectRows.map(row => row.name);
+        const courses = subjectRows.map((row) => row.name);
 
         return {
           name: lecturer.lecturer_name,
           lecturerId: lecturer.lecturer_id,
           profilePhoto: lecturer.profile_photo,
           gender: lecturer.gender,
-          qualifications: lecturer.qualifications,
           email: lecturer.email,
           nic: lecturer.nic,
           mobile: lecturer.mobile,
           address: lecturer.address,
+          highestQualification: lecturer.highest_qualification,
+          institute: lecturer.institute,
+          fieldOfStudy: lecturer.field_of_study,
+          experience: lecturer.experience,
+          certifications: lecturer.certifications,
+          joinedYear: lecturer.joined_year,
           courses
         };
       })
@@ -98,12 +138,13 @@ exports.fetchLecturers = async (req, res) => {
     res.json(formattedData);
   } catch (err) {
     console.error("Error fetching lecturers:", err);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
-
-// Fetch single lecturer by ID
+// ==============================
+// FETCH SINGLE LECTURER BY ID
+// ==============================
 exports.fetchLecturerById = async (req, res) => {
   const id = req.params.id;
 
@@ -116,37 +157,46 @@ exports.fetchLecturerById = async (req, res) => {
 
     const lecturer = rows[0];
 
-    const [moduleRows] = await db.query(`
+    const [moduleRows] = await db.query(
+      `
       SELECT m.name 
       FROM lecturer_modules lm
       JOIN modules m ON lm.module_id = m.module_id
       WHERE lm.lecturer_id = ?
-    `, [id]);
+      `,
+      [id]
+    );
 
-    const courses = moduleRows.map(row => row.name);
+    const courses = moduleRows.map((row) => row.name);
 
     const formattedData = {
-      name: lecturer.lecturer_name,
-      lecturerId: lecturer.lecturer_id,
-      profilePhoto: lecturer.profile_photo,
+      lecturer_name: lecturer.lecturer_name,
+      lecturer_id: lecturer.lecturer_id,
+      profile_photo: lecturer.profile_photo,
       gender: lecturer.gender,
-      examYear: lecturer.exam_year,
-      qualifications: lecturer.qualifications,
       email: lecturer.email,
       nic: lecturer.nic,
       mobile: lecturer.mobile,
       address: lecturer.address,
+      highest_qualification: lecturer.highest_qualification,
+      institute: lecturer.institute,
+      field_of_study: lecturer.field_of_study,
+      experience: lecturer.experience,
+      certifications: lecturer.certifications,
+      joined_year: lecturer.joined_year,
       courses
     };
 
     res.json(formattedData);
   } catch (err) {
-    console.error("Error fetching lecturer", err);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching lecturer:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// GET /lecturers/by-course/:courseName
+// ==============================
+// FETCH LECTURERS BY COURSE
+// ==============================
 exports.fetchLecturersByCourse = async (req, res) => {
   const courseName = req.params.course;
 
@@ -162,41 +212,103 @@ exports.fetchLecturersByCourse = async (req, res) => {
       [courseName]
     );
 
-    res.json(rows); // returns an array of lecturers
+    res.json(rows);
   } catch (err) {
     console.error("Error fetching lecturers for course:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// Update lecturer by ID
+// ==============================
+// UPDATE LECTURER BY ID
+// ==============================
 exports.updateLecturerById = async (req, res) => {
-  const {
-    lecturerId,
-    name,
-    profilePhoto,
-    gender,
-    examYear,
-    qualifications,
-    email,
-    nic,
-    mobile,
-    address
-  } = req.body;
-
   try {
-    const [rows] = await db.query(`SELECT * FROM lecturers WHERE lecturer_id = ?`, [lecturerId]);
+    const {
+      lecturerId,
+      name,
+      gender,
+      email,
+      nic,
+      mobile,
+      address,
+      highestQualification,
+      institute,
+      fieldOfStudy,
+      experience,
+      certifications
+    } = req.body;
+
+    const courseModules = JSON.parse(req.body.courseModules || "[]");
+    const profilePhoto = req.file
+      ? `/lecturers/${req.file.filename}`
+      : req.body.profilePhoto; // keep previous one if no new upload
+
+    // Check lecturer existence
+    const [rows] = await db.query(
+      `SELECT * FROM lecturers WHERE lecturer_id = ?`,
+      [lecturerId]
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "Lecturer not found" });
     }
 
+    // Update lecturer data
     await db.query(
       `UPDATE lecturers 
-       SET lecturer_name = ?, gender = ?, profile_photo = ?, exam_year = ?, qualifications = ?, email = ?, nic = ?, mobile = ?, address = ?
+       SET lecturer_name = ?, 
+           profile_photo = ?, 
+           gender = ?, 
+           email = ?, 
+           nic = ?, 
+           mobile = ?, 
+           address = ?, 
+           highest_qualification = ?, 
+           institute = ?, 
+           field_of_study = ?, 
+           experience = ?, 
+           certifications = ?
        WHERE lecturer_id = ?`,
-      [name, gender, profilePhoto, examYear, qualifications, email, nic, mobile, address, lecturerId]
+      [
+        name,
+        profilePhoto,
+        gender,
+        email,
+        nic,
+        mobile,
+        address,
+        highestQualification,
+        institute,
+        fieldOfStudy,
+        experience,
+        certifications,
+        lecturerId
+      ]
     );
+
+    // Update course modules (optional)
+    if (courseModules.length > 0) {
+      await db.query(
+        `DELETE FROM lecturer_modules WHERE lecturer_id = ?`,
+        [lecturerId]
+      );
+
+      for (const moduleName of courseModules) {
+        const [moduleRows] = await db.execute(
+          'SELECT module_id FROM modules WHERE LOWER(name) = LOWER(?)',
+          [moduleName]
+        );
+
+        if (moduleRows.length > 0) {
+          const moduleID = moduleRows[0].module_id;
+          await db.execute(
+            `INSERT INTO lecturer_modules (lecturer_id, module_id) VALUES (?, ?)`,
+            [lecturerId, moduleID]
+          );
+        }
+      }
+    }
 
     res.status(200).json({ message: "Lecturer updated successfully!" });
   } catch (err) {
@@ -204,3 +316,4 @@ exports.updateLecturerById = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
