@@ -16,47 +16,35 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `students`
+-- Table structure for table `pending_requests`
 --
 
-DROP TABLE IF EXISTS `students`;
+DROP TABLE IF EXISTS `pending_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `students` (
+CREATE TABLE `pending_requests` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `student_id` varchar(20) NOT NULL,
-  `student_name` varchar(100) NOT NULL,
+  `student_name` varchar(100) DEFAULT NULL,
   `profile_photo` varchar(255) DEFAULT NULL,
-  `gender` enum('Male','Female','Other') NOT NULL,
-  `dob` date DEFAULT NULL,
-  `ethnicity` varchar(50) DEFAULT NULL,
-  `exam` varchar(20) DEFAULT NULL,
-  `exam_year` year NOT NULL,
+  `gender` varchar(10) DEFAULT NULL,
+  `exam_year` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `nic` varchar(20) DEFAULT NULL,
   `mobile` varchar(15) DEFAULT NULL,
   `address` text,
-  `guardian_name` varchar(100) DEFAULT NULL,
-  `guardian_mobile` varchar(15) DEFAULT NULL,
-  `guardian_relation` varchar(50) DEFAULT NULL,
-  `previous_education` varchar(150) DEFAULT NULL,
-  `grade` varchar(20) DEFAULT NULL,
-  `submitted_at` date NOT NULL,
-  `payment_status` enum('Pending','Paid') NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `student_id` (`student_id`),
-  UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `course_modules` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `students`
+-- Dumping data for table `pending_requests`
 --
 
-LOCK TABLES `students` WRITE;
-/*!40000 ALTER TABLE `students` DISABLE KEYS */;
-INSERT INTO `students` VALUES (6,'S-2022-001','Dhyan Sandaru','/students/1760982172773-116110604.jpg','Male','2003-10-24','Sinhala','A/L',2022,'dhyansithru@gmail.com','200329812865','0779418450','Thunthota, Dummalasuriya','W.A.J.S.Herath','0776439372','Father','KDU','Undergraduate','2025-10-20','Pending');
-/*!40000 ALTER TABLE `students` ENABLE KEYS */;
+LOCK TABLES `pending_requests` WRITE;
+/*!40000 ALTER TABLE `pending_requests` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pending_requests` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -68,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-21 16:08:32
+-- Dump completed on 2025-11-02 17:53:12

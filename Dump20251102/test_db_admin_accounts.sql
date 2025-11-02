@@ -16,30 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `student_modules`
+-- Table structure for table `admin_accounts`
 --
 
-DROP TABLE IF EXISTS `student_modules`;
+DROP TABLE IF EXISTS `admin_accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `student_modules` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `student_id` varchar(20) NOT NULL,
-  `module_id` varchar(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `student_id` (`student_id`),
-  CONSTRAINT `student_modules_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `admin_accounts` (
+  `admin_id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`admin_id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `student_modules`
+-- Dumping data for table `admin_accounts`
 --
 
-LOCK TABLES `student_modules` WRITE;
-/*!40000 ALTER TABLE `student_modules` DISABLE KEYS */;
-INSERT INTO `student_modules` VALUES (1,'S-2022-001','M002'),(2,'S-2022-001','M001');
-/*!40000 ALTER TABLE `student_modules` ENABLE KEYS */;
+LOCK TABLES `admin_accounts` WRITE;
+/*!40000 ALTER TABLE `admin_accounts` DISABLE KEYS */;
+INSERT INTO `admin_accounts` VALUES (1,'admin123','1234','admin@example.com');
+/*!40000 ALTER TABLE `admin_accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-21 16:08:32
+-- Dump completed on 2025-11-02 17:53:13

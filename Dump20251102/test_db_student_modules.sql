@@ -16,29 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `registration_codes`
+-- Table structure for table `student_modules`
 --
 
-DROP TABLE IF EXISTS `registration_codes`;
+DROP TABLE IF EXISTS `student_modules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `registration_codes` (
-  `code` varchar(10) NOT NULL,
-  `used` tinyint(1) DEFAULT '0',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `expires_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `student_modules` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `student_id` varchar(20) NOT NULL,
+  `module_id` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `student_id` (`student_id`),
+  CONSTRAINT `student_modules_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `registration_codes`
+-- Dumping data for table `student_modules`
 --
 
-LOCK TABLES `registration_codes` WRITE;
-/*!40000 ALTER TABLE `registration_codes` DISABLE KEYS */;
-INSERT INTO `registration_codes` VALUES ('5kWfI',0,'2025-10-14 09:49:44','2025-10-14 15:34:45'),('6JgR0',1,'2025-10-11 06:24:14','2025-10-11 12:09:15'),('I9oEz',1,'2025-10-07 05:01:42','2025-10-07 10:46:43'),('K4L9e',1,'2025-10-07 03:44:26','2025-10-07 09:29:26'),('KHk09',1,'2025-10-06 23:59:12','2025-10-07 05:44:13'),('sG9f0',1,'2025-10-16 09:09:12','2025-10-16 14:54:13'),('zh69Z',1,'2025-10-06 16:01:13','2025-10-06 21:46:14'),('zMk4q',1,'2025-10-07 03:36:51','2025-10-07 09:21:51');
-/*!40000 ALTER TABLE `registration_codes` ENABLE KEYS */;
+LOCK TABLES `student_modules` WRITE;
+/*!40000 ALTER TABLE `student_modules` DISABLE KEYS */;
+INSERT INTO `student_modules` VALUES (1,'S-2022-001','M002'),(2,'S-2022-001','M001');
+/*!40000 ALTER TABLE `student_modules` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -50,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-21 16:08:32
+-- Dump completed on 2025-11-02 17:53:12
