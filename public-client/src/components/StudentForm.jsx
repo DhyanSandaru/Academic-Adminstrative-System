@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { CirclePlus, X } from 'lucide-react';
 import axios from "axios";
 import AddCourses from "./AddCourses.jsx";
-import { CirclePlus } from 'lucide-react';
 import { BACKEND_URL } from "./config.js";
 
 export default function StudentForm() {
@@ -11,17 +11,45 @@ export default function StudentForm() {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [courseModules, setCourseModules] = useState([]);
   const [showCoursePopup, setShowCoursePopup] = useState(false);
+  
+  // Form fields state
+  const [formData, setFormData] = useState({
+    studentName: '',
+    gender: '',
+    dob: '',
+    ethnicity: '',
+    exam: '',
+    examYear: '',
+    email: '',
+    nic: '',
+    mobile: '',
+    address: '',
+    previousEducation: '',
+    grade: '',
+    guardianName: '',
+    guardianMobile: '',
+    guardianRelation: ''
+  });
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   const removeCourseModule = (moduleToRemove) => {
     setCourseModules(courseModules.filter((module) => module !== moduleToRemove));
   };
 
-  const handleCodeSubmit = async (e) => {
-    e.preventDefault();
+  const handleCodeSubmit = async () => {
+    if (!code) {
+      setFormStatus("Please enter a valid code.");
+      return;
+    }
+    
     try {
       const res = await axios.post(`${BACKEND_URL}/api/validate-code`, { code });
       if (res.data.valid) {
         setStep(2);
+        setFormStatus(null);
       } else {
         setFormStatus("Invalid or expired code.");
       }
@@ -31,226 +59,478 @@ export default function StudentForm() {
     }
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData();
+  const handleFormSubmit = async () => {
+    // Validate required fields
+    if (!formData.studentName || !profilePhoto || courseModules.length === 0 || 
+        !formData.gender || !formData.dob || !formData.ethnicity || 
+        !formData.exam || !formData.examYear || !formData.email || 
+        !formData.nic || !formData.mobile || !formData.address || 
+        !formData.previousEducation || !formData.grade || 
+        !formData.guardianName || !formData.guardianMobile || !formData.guardianRelation) {
+      setFormStatus("Please fill in all required fields.");
+      return;
+    }
 
-    formData.append("studentName", form["student-name"].value);
-    formData.append("profilePhoto", profilePhoto);
-    formData.append("gender", form["gender"].value);
-    formData.append("examYear", form["exam-year"].value);
-    formData.append("email", form["email"].value);
-    formData.append("nic", form["nic"].value);
-    formData.append("mobile", form["mobile"].value);
-    formData.append("address", form["address"].value);
-    formData.append("courseModules", JSON.stringify(courseModules));
+    const formDataToSend = new FormData();
+    
+    formDataToSend.append("studentName", formData.studentName);
+    formDataToSend.append("profilePhoto", profilePhoto);
+    formDataToSend.append("gender", formData.gender);
+    formDataToSend.append("dob", formData.dob);
+    formDataToSend.append("ethnicity", formData.ethnicity);
+    formDataToSend.append("exam", formData.exam);
+    formDataToSend.append("examYear", formData.examYear);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("nic", formData.nic);
+    formDataToSend.append("mobile", formData.mobile);
+    formDataToSend.append("address", formData.address);
+    formDataToSend.append("guardianName", formData.guardianName);
+    formDataToSend.append("guardianMobile", formData.guardianMobile);
+    formDataToSend.append("guardianRelation", formData.guardianRelation);
+    formDataToSend.append("previousEducation", formData.previousEducation);
+    formDataToSend.append("grade", formData.grade);
+    formDataToSend.append("courseModules", JSON.stringify(courseModules));
 
     try {
-      const res = await axios.post(`${BACKEND_URL}/add-request`, formData, {
+      const res = await axios.post(`${BACKEND_URL}/add-request`, formDataToSend, {
         headers: {
           "Content-Type": "multipart/form-data"
         }
       });
-      setFormStatus("Registration submitted for approval.");
-      form.reset();
-      setProfilePhoto(null);
-      setCourseModules([]);
-      setStep(1);
+      setFormStatus("Registration submitted for approval successfully!");
+      
+      // Reset after delay
+      setTimeout(() => {
+        setFormData({
+          studentName: '',
+          gender: '',
+          dob: '',
+          ethnicity: '',
+          exam: '',
+          examYear: '',
+          email: '',
+          nic: '',
+          mobile: '',
+          address: '',
+          previousEducation: '',
+          grade: '',
+          guardianName: '',
+          guardianMobile: '',
+          guardianRelation: ''
+        });
+        setProfilePhoto(null);
+        setCourseModules([]);
+        setStep(1);
+        setFormStatus(null);
+        setCode('');
+      }, 3000);
     } catch (err) {
-      setFormStatus("Submission failed.");
       console.error(err);
+      setFormStatus(err.response?.data?.message || "Submission failed. Please try again.");
     }
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="bg-white rounded-xl text-black p-5 flex flex-col justify-center items-center mb-5 shadow-md">
-        <h2 className="font-semibold text-2xl text-blue-900">Welcome to remote registration portal</h2>
-        <p className="font-sans text-red-500">(Please stay connected to the wifi network until you are finished with submisson)</p>
-      </div>
-      {step === 1 && (
-        <div className="bg-white p-8 rounded-lg shadow-md">
-          <h2 className="text-black text-xl font-semibold mb-4 text-center">Enter Access Code</h2>
-          <form onSubmit={handleCodeSubmit} className="flex flex-col items-center gap-4">
-            <input
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Enter code"
-              required
-              className="border border-gray-300 px-4 py-2 rounded w-full max-w-xs"
-            />
-            <button type="submit" className="bg-[#253d90] text-white px-6 py-2 rounded hover:bg-[#1e2f7a]">
-              Validate Code
-            </button>
-          </form>
-          {formStatus && <p className="text-red-600 mt-4">{formStatus}</p>}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-indigo-100">
+          <h1 className="font-bold text-2xl sm:text-3xl text-indigo-900 text-center mb-2">
+            Remote Registration Portal
+          </h1>
+          <p className="text-sm sm:text-base text-red-500 text-center font-medium">
+            Please stay connected to WiFi until submission is complete
+          </p>
         </div>
-      )}
 
-      {step === 2 && (
-        <div className="bg-white p-8 rounded-lg shadow space-y-8 w-2xl">
-          <form onSubmit={handleFormSubmit} className="space-y-8">
-
-            {/* Student Name */}
-            <div className="flex items-center gap-8">
-              <label htmlFor="student-name" className="w-40 text-black font-medium">Student Name:</label>
-              <div className="flex-1">
-                <input
-                  id="student-name"
-                  name="student-name"
-                  required
-                  className="border-b-2 border-black bg-transparent focus:ring-0 focus:border-[#253d90] w-full"
-                />
+        {step === 1 && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
               </div>
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+                Enter Access Code
+              </h2>
+              <p className="text-sm text-gray-600">
+                Please enter the code provided by your institution
+              </p>
             </div>
 
-            {/* Profile Photo */}
-            <div className="flex items-center gap-8">
-              <label htmlFor="profile-photo" className="w-40 text-black font-medium">Profile Photo:</label>
-              <div className="flex-1 flex flex-row">
-                <input
-                  id="profile-photo"
-                  name="profilePhoto"
-                  type="file"
-                  accept="image/*"
-                  required
-                  onChange={(e) => setProfilePhoto(e.target.files[0])}
-                  className="w-full cursor-pointer"
-                />             
-              </div>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Enter your access code"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition text-center text-lg tracking-wider font-semibold"
+              />
+              <button 
+                onClick={handleCodeSubmit}
+                className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-md hover:shadow-lg"
+              >
+                Validate Code
+              </button>
             </div>
+            
+            {formStatus && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm text-center">
+                {formStatus}
+              </div>
+            )}
+          </div>
+        )}
 
-            {/* Course Modules */}
-            <div className="flex items-start gap-8">
-              <label htmlFor="course-modules" className="w-40 text-black font-medium pt-2">Course Modules:</label>
-              <div className="flex-1 flex items-center justify-between border-b-2 border-black">
-                <div className="flex flex-wrap gap-2">
-                  {courseModules.map((module) => (
-                    <div key={module} className="bg-[#253d90] text-white py-1 px-2 rounded flex items-center">
-                      {module}
-                      <button
-                        type="button"
-                        onClick={() => removeCourseModule(module)}
-                        className="ml-2"
-                      >
-                        <img src="/images/x.png" alt="remove" className="w-3" />
-                      </button>
-                    </div>
-                  ))}
+        {step === 2 && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+            <div className="space-y-8">
+              
+              {/* Profile Section */}
+              <div className="space-y-6">
+                <div className="border-b border-gray-200 pb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Profile</h3>
+                  <p className="text-sm text-gray-600 mt-1">Basic details and selected modules</p>
                 </div>
+
+                {/* Student Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Student Name *
+                  </label>
+                  <input
+                    value={formData.studentName}
+                    onChange={(e) => handleInputChange('studentName', e.target.value)}
+                    placeholder="Enter your full name"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                  />
+                </div>
+
+                {/* Profile Photo */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Profile Photo *
+                  </label>
+                  <div className="flex flex-col items-center gap-4">
+                    {profilePhoto ? (
+                      <img
+                        src={URL.createObjectURL(profilePhoto)}
+                        alt="preview"
+                        className="w-32 h-32 rounded-full object-cover border-4 border-indigo-100"
+                      />
+                    ) : (
+                      <div className="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center">
+                        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    )}
+                    <input
+                      id="profile-photo"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setProfilePhoto(e.target.files[0])}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="profile-photo"
+                      className="cursor-pointer bg-indigo-100 text-indigo-700 px-6 py-2 rounded-lg font-medium hover:bg-indigo-200 transition"
+                    >
+                      {profilePhoto ? 'Change Photo' : 'Upload Photo'}
+                    </label>
+                  </div>
+                </div>
+
+                {/* Course Modules */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Course Modules *
+                  </label>
+                  <div className="border-2 border-gray-200 rounded-xl p-4 min-h-[80px] flex flex-wrap gap-2">
+                    {courseModules.length === 0 ? (
+                      <p className="text-gray-400 text-sm w-full text-center py-4">
+                        No modules selected yet
+                      </p>
+                    ) : (
+                      courseModules.map((module) => (
+                        <div
+                          key={module}
+                          className="bg-indigo-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium"
+                        >
+                          {module}
+                          <button
+                            onClick={() => removeCourseModule(module)}
+                            className="hover:bg-indigo-700 rounded p-0.5"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setShowCoursePopup(true)}
+                    className="mt-3 w-full sm:w-auto bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg font-medium hover:bg-indigo-200 transition flex items-center justify-center gap-2"
+                  >
+                    <CirclePlus size={20} />
+                    Add Modules
+                  </button>
+                </div>
+              </div>
+
+              {/* Personal Information */}
+              <div className="space-y-6">
+                <div className="border-b border-gray-200 pb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Personal Information</h3>
+                  <p className="text-sm text-gray-600 mt-1">Identification and contact details</p>
+                </div>
+
+                {/* Gender */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Gender *
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {["male", "female", "other"].map((g) => (
+                      <button
+                        key={g}
+                        onClick={() => handleInputChange('gender', g)}
+                        className={`p-3 border-2 rounded-xl font-medium text-sm sm:text-base  text-black transition ${
+                          formData.gender === g
+                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                            : 'border-gray-200 hover:border-indigo-300'
+                        }`}
+                      >
+                        {g.charAt(0).toUpperCase() + g.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* DOB & Ethnicity */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Date of Birth *
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.dob}
+                      onChange={(e) => handleInputChange('dob', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ethnicity *
+                    </label>
+                    <input
+                      value={formData.ethnicity}
+                      onChange={(e) => handleInputChange('ethnicity', e.target.value)}
+                      placeholder="e.g., Sri Lankan"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                    />
+                  </div>
+                </div>
+
+                {/* Exam & Year */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Exam & Year *
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <select
+                      value={formData.exam}
+                      onChange={(e) => handleInputChange('exam', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition bg-white"
+                    >
+                      <option value="">Select Exam</option>
+                      <option value="O/L">O/L</option>
+                      <option value="A/L">A/L</option>
+                      <option value="IELTS">IELTS</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <select
+                      value={formData.examYear}
+                      onChange={(e) => handleInputChange('examYear', e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition bg-white"
+                    >
+                      <option value="">Select Year</option>
+                      {Array.from({ length: 10 }, (_, i) => 2025 - i).map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="your.email@example.com"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                  />
+                </div>
+
+                {/* NIC */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    NIC *
+                  </label>
+                  <input
+                    value={formData.nic}
+                    onChange={(e) => handleInputChange('nic', e.target.value)}
+                    placeholder="Enter NIC number"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                  />
+                </div>
+
+                {/* Mobile */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Mobile Number *
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.mobile}
+                    onChange={(e) => handleInputChange('mobile', e.target.value)}
+                    placeholder="07X XXX XXXX"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                  />
+                </div>
+
+                {/* Address */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Address *
+                  </label>
+                  <textarea
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    rows={3}
+                    placeholder="Enter your full address"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* Education Details */}
+              <div className="space-y-6">
+                <div className="border-b border-gray-200 pb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Education Details</h3>
+                  <p className="text-sm text-gray-600 mt-1">Previous education information</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Previous School/Institution *
+                    </label>
+                    <input
+                      value={formData.previousEducation}
+                      onChange={(e) => handleInputChange('previousEducation', e.target.value)}
+                      placeholder="Enter institution name"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Current Grade *
+                    </label>
+                    <input
+                      value={formData.grade}
+                      onChange={(e) => handleInputChange('grade', e.target.value)}
+                      placeholder="e.g., Grade 10"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Guardian Information */}
+              <div className="space-y-6">
+                <div className="border-b border-gray-200 pb-4">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Guardian Information</h3>
+                  <p className="text-sm text-gray-600 mt-1">Parent or guardian contact details</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Guardian Name *
+                  </label>
+                  <input
+                    value={formData.guardianName}
+                    onChange={(e) => handleInputChange('guardianName', e.target.value)}
+                    placeholder="Enter guardian's full name"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Guardian Mobile *
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.guardianMobile}
+                      onChange={(e) => handleInputChange('guardianMobile', e.target.value)}
+                      placeholder="07X XXX XXXX"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Relationship *
+                    </label>
+                    <input
+                      value={formData.guardianRelation}
+                      onChange={(e) => handleInputChange('guardianRelation', e.target.value)}
+                      placeholder="e.g., Father, Mother"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-4">
                 <button
-                  type="button"
-                  onClick={() => setShowCoursePopup(true)}
-                  className="bg-white border border-gray-300 px-2 py-1 rounded"
+                  onClick={handleFormSubmit}
+                  className="w-full bg-indigo-600 text-white py-4 rounded-xl font-semibold text-lg hover:bg-indigo-700 transition shadow-lg hover:shadow-xl"
                 >
-                    <CirclePlus className="text-black"/>
+                  Submit Registration
                 </button>
               </div>
             </div>
 
-            {/* Gender */}
-            <div className="flex items-center gap-8">
-              <p className="w-40 text-black font-medium">Gender:</p>
-              <div className="flex gap-6">
-                {["male", "female", "other"].map((g) => (
-                  <label key={g} className="flex items-center gap-2 text-black">
-                    <input type="radio" name="gender" value={g} required />
-                    {g.charAt(0).toUpperCase() + g.slice(1)}
-                  </label>
-                ))}
+            {formStatus && (
+              <div className="mt-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl text-green-700 text-center font-medium animate-pulse">
+                {formStatus}
               </div>
-            </div>
+            )}
+          </div>
+        )}
 
-            {/* Exam & Year */}
-            <div className="flex items-center gap-8">
-              <label htmlFor="exam-year" className="w-40 text-black font-medium">Exam & Year:</label>
-              <div className="flex-1">
-                <input
-                  id="exam-year"
-                  name="exam-year"
-                  required
-                  className="border-b-2 border-black bg-transparent focus:ring-0 focus:border-[#253d90] w-full"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="flex items-center gap-8">
-              <label htmlFor="email" className="w-40 text-black font-medium">Email:</label>
-              <div className="flex-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="border-b-2 border-black bg-transparent focus:ring-0 focus:border-[#253d90] w-full"
-                />
-              </div>
-            </div>
-
-            {/* NIC */}
-            <div className="flex items-center gap-8">
-              <label htmlFor="nic" className="w-40 text-black font-medium">NIC:</label>
-              <div className="flex-1">
-                <input
-                  id="nic"
-                  name="nic"
-                  required
-                  className="border-b-2 border-black bg-transparent focus:ring-0 focus:border-[#253d90] w-full"
-                />
-              </div>
-            </div>
-
-            {/* Mobile No */}
-            <div className="flex items-center gap-8">
-              <label htmlFor="mobile" className="w-40 text-black font-medium">Mobile No:</label>
-              <div className="flex-1">
-                <input
-                  id="mobile"
-                  name="mobile"
-                  required
-                  className="border-b-2 border-black bg-transparent focus:ring-0 focus:border-[#253d90] w-full"
-                />
-              </div>
-            </div>
-
-            {/* Address */}
-            <div className="flex items-start gap-8">
-              <label htmlFor="address" className="w-40 text-black font-medium pt-2">Address:</label>
-              <div className="flex-1">
-                <input
-                  id="address"
-                  name="address"
-                  required
-                  className="border-b-2 border-black bg-transparent focus:ring-0 focus:border-[#253d90] w-full"
-                />
-              </div>
-            </div>
-
-            {/* Confirm Button */}
-            <div className="text-center pt-4">
-              <button className="bg-[#253d90] hover:bg-[#1e2f7a] text-white px-12 py-3 rounded-lg text-lg font-medium">
-                Confirm
-              </button>
-            </div>
-          </form>
-
-          {/* Course Selection Popup */}
-          {showCoursePopup && (
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-              <AddCourses
-                selectedCourses={courseModules}
-                setSelectedCourses={setCourseModules}
-                handleClose={() => setShowCoursePopup(false)}
-              />
-            </div>
-          )}
-
-          {formStatus && <p className="text-center text-green-600">{formStatus}</p>}
-        </div>
-      )}
+        {/* Course Selection Popup */}
+        {showCoursePopup && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <AddCourses
+              selectedCourses={courseModules}
+              setSelectedCourses={setCourseModules}
+              handleClose={() => setShowCoursePopup(false)}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

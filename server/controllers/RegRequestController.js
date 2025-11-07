@@ -8,11 +8,19 @@ exports.AddRequest = async (req, res) => {
     const {
       studentName,
       gender,
+      dob,
+      ethnicity,
+      exam,
       examYear,
       email,
       nic,
       mobile,
-      address
+      address,
+      guardianName,
+      guardianMobile,
+      guardianRelation,
+      previousEducation,
+      grade
     } = req.body;
 
     const courseModules = JSON.parse(req.body.courseModules || "[]");
@@ -20,17 +28,25 @@ exports.AddRequest = async (req, res) => {
 
     await db.query(
       `INSERT INTO pending_requests 
-        (student_name, profile_photo, gender, exam_year, email, nic, mobile, address, course_modules)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (studentName, profile_photo, gender, dob, ethnicity, exam, examYear, email, nic, mobile, address, guardianName, guardianMobile, guardianRelation, previousEducation, grade, courseModules)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         studentName,
         profilePhoto,
         gender,
+        dob,
+        ethnicity,
+        exam,
         examYear,
         email,
         nic,
         mobile,
         address,
+        guardianName,
+        guardianMobile,
+        guardianRelation,
+        previousEducation,
+        grade,
         JSON.stringify(courseModules)
       ]
     );
@@ -64,7 +80,7 @@ exports.approveRequest = async (req, res) => {
     const filename = path.basename(data.profile_photo); // just the image name
 
     // Move photo from temp → public/students
-    const oldPath = path.join(__dirname, '../routes/temp-studets', filename);
+    const oldPath = path.join(__dirname, '../routes/temp-students', filename);
     const newPath = path.join(__dirname, '../routes/students', filename);
     try {
       fs.renameSync(oldPath, newPath); // move image file
@@ -74,16 +90,24 @@ exports.approveRequest = async (req, res) => {
 
     // Simulate request to addStudent
     req.body = {
-      studentName: data.student_name,
+      studentName: data.studentName,
       gender: data.gender,
-      examYear: data.exam_year,
+      dob: data.dob,
+      ethnicity: data.ethnicity,
+      exam: data.exam,
+      examYear: data.examYear,
       email: data.email,
       nic: data.nic,
       mobile: data.mobile,
       address: data.address,
-      courseModules: data.course_modules
+      guardianName: data.guardianName,
+      guardianMobile: data.guardianMobile,
+      guardianRelation: data.guardianRelation,
+      previousEducation: data.previousEducation,
+      grade: data.grade,
+      courseModules: data.courseModules
     };
-    req.file = { filename }; // pretend like it's coming from multer
+    req.file = { filename }; 
 
     // Call your existing controller
     const studentController = require('./StudentController.js');
@@ -103,7 +127,6 @@ exports.rejectRequest = async (req, res) => {
   try {
     const [rows] = await db.query("SELECT profile_photo FROM pending_requests WHERE id = ?", [id]);
 
-    // Delete associated image (optional cleanup)
     if (rows.length > 0 && rows[0].profile_photo) {
       const filename = path.basename(rows[0].profile_photo);
       const filePath = path.join(__dirname, '../temp-students', filename);

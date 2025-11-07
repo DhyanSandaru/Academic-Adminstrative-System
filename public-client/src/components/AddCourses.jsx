@@ -3,6 +3,7 @@ import SearchBar from "./Searchbar";
 import { useEffect } from "react";
 import axios from "axios";
 import { X } from 'lucide-react'
+import { BACKEND_URL } from "./config";
 
 export default function AddCourses({selectedCourses, setSelectedCourses, handleClose}){
     const [searchTerm,setSearchTerm] = useState("");
@@ -21,7 +22,7 @@ export default function AddCourses({selectedCourses, setSelectedCourses, handleC
     useEffect( () => {
         const fetchCourses = async () => {
             try{    
-            const response =  await axios.get(`http://localhost:8000/get-courses`);
+            const response =  await axios.get(`${BACKEND_URL}/get-courses`);
             const validatedData = response.data.map((course) => ({
                 courseName: course.name,
                 courseId: course.module_id,

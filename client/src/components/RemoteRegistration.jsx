@@ -53,13 +53,12 @@ export default function RemoteReg() {
     try {
       await axios.delete(`http://localhost:8000/reject-request/${selectedRequest.id}`);
       setSelectedRequest(null);
-      fetchRequests(); // Refresh listuu
+      fetchRequests(); // Refresh list
     } catch (err) {
       alert("Rejection failed");
       console.error(err);
     }
   };
-
 
   useEffect(() => {
     fetchRequests();
@@ -105,10 +104,10 @@ export default function RemoteReg() {
                   className="w-20 h-20 rounded-full object-cover mr-6"
                 />
                 <div className="flex flex-col">
-                  <p className="font-semibold text-lg text-black">{req.student_name}</p>
-                  <p className="text-sm text-gray-700">Exam Year: {req.exam_year}</p>
+                  <p className="font-semibold text-lg text-black">{req.studentName}</p>
+                  <p className="text-sm text-gray-700">Exam Year: {req.examYear}</p>
                   <p className="text-sm text-gray-700">
-                    Modules: {JSON.parse(req.course_modules).join(", ")}
+                    Modules: {JSON.parse(req.courseModules).join(", ")}
                   </p>
                 </div>
               </div>
@@ -141,7 +140,7 @@ export default function RemoteReg() {
       {/* Request Detail Popup */}
       {selectedRequest && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-full max-w-2xl relative shadow-xl">
+          <div className="bg-white p-6 rounded-lg w-full max-w-3xl relative shadow-xl max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedRequest(null)}
               className="absolute top-3 right-3 hover:bg-gray-200 rounded-full p-1"
@@ -149,22 +148,51 @@ export default function RemoteReg() {
               <X className="text-black w-5 h-5" />
             </button>
 
-            <div className="flex gap-6">
+            <div className="flex gap-6 mb-6">
               <img
                 src={`http://localhost:8000${selectedRequest.profile_photo}`}
                 alt="student"
                 className="w-32 h-32 object-cover rounded-lg"
               />
-              <div className="flex-1 space-y-2 text-black">
-                <h3 className="text-xl font-bold text-black">{selectedRequest.student_name}</h3>
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-black mb-4">{selectedRequest.studentName}</h3>
+              </div>
+            </div>
+
+            {/* Personal Information Section */}
+            <div className="space-y-3 text-black mb-6">
+              <h4 className="text-lg font-semibold border-b pb-2">Personal Information</h4>
+              <div className="grid grid-cols-2 gap-3">
                 <p><b>Gender:</b> {selectedRequest.gender}</p>
-                <p><b>Exam Year:</b> {selectedRequest.exam_year}</p>
+                <p><b>Date of Birth:</b> {selectedRequest.dob}</p>
                 <p><b>NIC:</b> {selectedRequest.nic}</p>
+                <p><b>Ethnicity:</b> {selectedRequest.ethnicity}</p>
                 <p><b>Email:</b> {selectedRequest.email}</p>
                 <p><b>Mobile:</b> {selectedRequest.mobile}</p>
-                <p><b>Address:</b> {selectedRequest.address}</p>
-                <p><b>Modules:</b> {JSON.parse(selectedRequest.course_modules).join(", ")}</p>
               </div>
+              <p><b>Address:</b> {selectedRequest.address}</p>
+            </div>
+
+            {/* Guardian Information Section */}
+            <div className="space-y-3 text-black mb-6">
+              <h4 className="text-lg font-semibold border-b pb-2">Guardian Information</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <p><b>Guardian Name:</b> {selectedRequest.guardianName}</p>
+                <p><b>Guardian Mobile:</b> {selectedRequest.guardianMobile}</p>
+                <p className="col-span-2"><b>Relation:</b> {selectedRequest.guardianRelation}</p>
+              </div>
+            </div>
+
+            {/* Academic Information Section */}
+            <div className="space-y-3 text-black mb-6">
+              <h4 className="text-lg font-semibold border-b pb-2">Academic Information</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <p><b>Previous Education:</b> {selectedRequest.previousEducation}</p>
+                <p><b>Grade:</b> {selectedRequest.grade}</p>
+                <p><b>Exam:</b> {selectedRequest.exam}</p>
+                <p><b>Exam Year:</b> {selectedRequest.examYear}</p>
+              </div>
+              <p><b>Course Modules:</b> {JSON.parse(selectedRequest.courseModules).join(", ")}</p>
             </div>
 
             <div className="mt-6 flex justify-end gap-4">

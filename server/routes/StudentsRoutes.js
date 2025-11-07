@@ -21,7 +21,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-// router.post('/students', express.static(path.join(__dirname, 'public/students')));
 
 
 router.post("/add-student", upload.single("profilePhoto"), studentController.addStudent);
