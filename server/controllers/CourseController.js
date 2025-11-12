@@ -1,22 +1,169 @@
 const db = require('../DBconfig.js')
 
-exports.fetchCourses = async (req,res) => {
-    try{
-        const [rows] = await db.query(
-            `SELECT modules.name,modules.module_id,lecturers.lecturer_name
-            FROM lecturer_modules
-            JOIN modules ON lecturer_modules.module_id = modules.module_id
-            JOIN lecturers ON lecturer_modules.lecturer_id = lecturers.lecturer_id`
-        )
+async function generateUniqueModuleId(courseName) {
+  const firstLetter = courseName.charAt(0).toUpperCase();
 
-        if(rows.length === 0){
-            return res.status(404).json({message: "Student not found"})
-        }
+  let uniqueId;
+  let exists = true;
 
-        res.json(rows)
+  while (exists) {
+    const randomNumber = Math.floor(100 + Math.random() * 900); // 3-digit number
+    uniqueId = `${firstLetter}${randomNumber}`;
+
+    const [rows] = await db.query(
+      "SELECT module_id FROM modules WHERE module_id = ?",
+      [uniqueId]
+    );
+
+    if (rows.length === 0) {
+      exists = false; // unique, exit loop
     }
-    catch(err){
-        console.error("Error fetching courses from database", err);
-        return res.status(500).json({message: "Internal server Error!"})
-    }
+  }
+
+  return uniqueId;
 }
+
+exports.addCourse = async (req, res) => {
+  try {
+    const {
+      courseName,
+      payment,
+      minAge,
+      maxAge,
+      description,
+      courseBanner,
+      lecturers, // array of { lecturerId, lecturerName }
+    } = req.body;
+
+    // Basic validation
+    if (
+      !courseName ||
+      !payment ||
+      !minAge ||
+      !maxAge ||
+      !description ||
+      !courseBanner ||
+      !Array.isArray(lecturers) ||
+      lecturers.length === 0
+    ) {
+      return res.status(400).json({ error: "All fields are required, including at least one lecturer." });
+    }
+
+    // 1️⃣ Generate unique module_id
+    const moduleId = await generateUniqueModuleId(courseName);
+
+    // 2️⃣ Insert into modules table
+    await db.query(
+      `INSERT INTO modules (module_id, name, payment, minAge, maxAge, description, courseBanner)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [moduleId, courseName, payment, minAge, maxAge, description, courseBanner]
+    );
+
+    // 3️⃣ Insert into lecturer_modules table
+    const lecturerModuleValues = lecturers.map(l => [l.lecturerId, moduleId]);
+    if (lecturerModuleValues.length > 0) {
+      await db.query(
+        `INSERT INTO lecturer_modules (lecturer_id, module_id) VALUES ?`,
+        [lecturerModuleValues]
+      );
+    }
+
+    res.status(200).json({ message: "Course and lecturers added successfully", moduleId });
+
+  } catch (error) {
+    console.error("Error adding course:", error);
+    res.status(500).json({ error: "Server error while adding course" });
+  }
+};
+
+exports.fetchCourses = async (req, res) => {
+  try {
+    // Fetch modules with associated lecturers
+    const [rows] = await db.query(
+      `SELECT 
+          m.module_id,
+          m.name AS course_name,
+          m.payment,
+          m.minAge,
+          m.maxAge,
+          m.description,
+          m.courseBanner,
+          GROUP_CONCAT(lm.lecturer_id SEPARATOR ',') AS lecturer_ids,
+          GROUP_CONCAT(le.lecturer_name SEPARATOR ', ') AS lecturer_names
+       FROM modules m
+       LEFT JOIN lecturer_modules lm ON m.module_id = lm.module_id
+       LEFT JOIN lecturers le ON lm.lecturer_id = le.lecturer_id
+       GROUP BY m.module_id, m.name, m.payment, m.minAge, m.maxAge, m.description, m.courseBanner
+       ORDER BY m.name ASC`
+    );
+
+    // Map each module to the frontend-friendly structure
+    const mappedCourses = rows.map(course => ({
+      module_id: course.module_id,
+      name: course.course_name,
+      lecturer: course.lecturer_names || "Not Assigned",
+      courseBanner: course.courseBanner,
+      payment: course.payment,
+      minAge: course.minAge,
+      maxAge: course.maxAge,
+      description: course.description
+    }));
+
+    res.status(200).json(mappedCourses);
+
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    res.status(500).json({ error: "Server error while fetching courses" });
+  }
+};
+
+exports.getCourseById = async (req, res) => {
+  try {
+    const { id } = req.params; // module_id passed in URL
+
+    // Fetch the course and related lecturers
+    const [rows] = await db.query(
+      `SELECT 
+          m.module_id,
+          m.name AS course_name,
+          m.payment,
+          m.minAge,
+          m.maxAge,
+          m.description,
+          m.courseBanner,
+          GROUP_CONCAT(lm.lecturer_id SEPARATOR ',') AS lecturer_ids,
+          GROUP_CONCAT(le.lecturer_name SEPARATOR ', ') AS lecturer_names
+       FROM modules m
+       LEFT JOIN lecturer_modules lm ON m.module_id = lm.module_id
+       LEFT JOIN lecturers le ON lm.lecturer_id = le.lecturer_id
+       WHERE m.module_id = ?
+       GROUP BY m.module_id, m.name, m.payment, m.minAge, m.maxAge, m.description, m.courseBanner`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+
+    const course = rows[0];
+
+    const courseData = {
+      module_id: course.module_id,
+      name: course.course_name,
+      lecturer: course.lecturer_names || "Not Assigned",
+      lecturer_ids: course.lecturer_ids ? course.lecturer_ids.split(",") : [],
+      courseBanner: course.courseBanner,
+      payment: course.payment,
+      minAge: course.minAge,
+      maxAge: course.maxAge,
+      description: course.description
+    };
+
+    res.status(200).json(courseData);
+
+  } catch (error) {
+    console.error("Error fetching course by ID:", error);
+    res.status(500).json({ error: "Server error while fetching course details" });
+  }
+};
+

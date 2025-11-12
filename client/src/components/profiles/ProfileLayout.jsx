@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import Layout from '../Layout';
-import { User, Phone, GraduationCap, CreditCard } from 'lucide-react';
+import { User, Phone, GraduationCap, CreditCard, Trash } from 'lucide-react';
+import axios from 'axios';
 
 export default function ProfileLayout({ children, title }) {
   // Memoized smooth scroll function to prevent recreation on every render
@@ -14,9 +15,9 @@ export default function ProfileLayout({ children, title }) {
   return (
     <Layout title={title}>
       <div className="w-full bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen p-6">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto flex flex-col items-center">
           {/* Navigation Tabs */}
-          <div className="bg-white rounded-xl shadow-lg p-2 mb-6 sticky top-4 z-10">
+          <div className="bg-white rounded-xl shadow-lg p-5 mb-6 sticky top-4 z-10">
             <div className="flex flex-wrap gap-2">
               <div className="flex-1 min-w-[200px]">
                 <button 
@@ -59,7 +60,7 @@ export default function ProfileLayout({ children, title }) {
               </div>
             </div>
           </div>
-
+            
           {/* Page Content */}
           <div className="space-y-6">
             {children}

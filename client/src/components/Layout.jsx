@@ -1,8 +1,11 @@
 import Navbar2 from "./Navbar2";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
+import ConnectionStatus from "./ConnectionStatus";
 
 export default function Layout({ children,title }) {
 
+    const {user} = useContext(AuthContext);
     const [sideBarOpen, setSideBarOpen] = useState(true);
 
     const toggleSidebar = () => {
@@ -11,7 +14,7 @@ export default function Layout({ children,title }) {
 
     return (
         <div className="flex h-screen overflow-hidden bg-[#e3edf9]">
-            <Navbar2 isOpen={sideBarOpen} setIsopen={setSideBarOpen} admin="admin123"/>
+            <Navbar2 isOpen={sideBarOpen} setIsopen={setSideBarOpen} admin={user.username}/>
             <div className="flex-1 flex flex-col overflow-auto">
                 {/* Header */}
                 <header className="bg-white px-6 py-4 flex items-center gap-4 border-b rounded-xl m-3">
@@ -22,6 +25,7 @@ export default function Layout({ children,title }) {
                         <img src="/images/add_student.png" alt="" className="w-8"/>
                         <h2 className="text-xl font-semibold text-[#000000]">{title}</h2>
                     </div>
+                    <ConnectionStatus/>
                 </header>
                 {/* Main Content */}
                 <main className="flex flex-col p-4 justify-center items-center gap-5">

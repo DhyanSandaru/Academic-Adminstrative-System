@@ -25,17 +25,26 @@ const verificationRoutes = require('./routes/VerificationRoutes.js');
 const requestRoutes = require('./routes/RegRequstRoutes.js')
 const backupRoutes = require('./routes/BackupRoutes.js')
 const adminRoutes = require('./routes/AdminRoutes.js');
+const dashboardRoutes = require('./routes/DashboardRoutes.js');
+const { 
+  initializeScheduledBackups, 
+  initializeCleanupSchedule 
+} = require('./utils/scheduledBackups.js');
 
 app.use('/', loginRoute);
 app.use('/', studentsRoute);
 app.use('/',lecturerRoute);
 app.use('/',paymentRoute);
 app.use('/',timetableRoutes);
-app.use('/',courseRoutes);
+app.use('/courses',courseRoutes);
 app.use('/api', verificationRoutes);
 app.use('/',requestRoutes);
 app.use('/api/backup',backupRoutes);
 app.use('/api', adminRoutes);
+app.use('/api/dashboard',dashboardRoutes);
+
+initializeScheduledBackups();
+initializeCleanupSchedule();
 
 app.listen(port, "0.0.0.0", () => {
     console.log(`Server is running on http://localhost:${port}`);

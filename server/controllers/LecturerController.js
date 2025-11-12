@@ -317,3 +317,21 @@ exports.updateLecturerById = async (req, res) => {
   }
 };
 
+exports.deleteLecturerById = async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    // Delete from student_modules first to maintain FK integrity
+    await db.query("DELETE FROM lecturer_modules WHERE lecturer_id = ?", [id]);
+    const [result] = await db.query("DELETE FROM lecturers WHERE lecturer_id = ?", [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Lecturer not found" });
+    }
+
+    res.status(200).json({ message: "Lecturer deleted successfully!" });
+  } catch (err) {
+    console.error("Error deleting lecturer:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

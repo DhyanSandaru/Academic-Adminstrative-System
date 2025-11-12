@@ -7,7 +7,7 @@ const { database } = require("../firebaseAdmin.js");
  * POST /api/backup/create
  */
 exports.backupToFirebase = async (req, res) => {
-  const { excludeTable="" } = req.body;
+  const { excludeTable } = req.body;
   const backupId = `backup_${Date.now()}`;
   const backupMetadata = {
     timestamp: new Date().toISOString(),

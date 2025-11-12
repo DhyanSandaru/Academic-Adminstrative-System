@@ -1,6 +1,6 @@
-import db from "../DBconfig.js";
+const db = require('../DBconfig.js');
 
-export async function updatePaymentStatus(studentId) {
+async function updatePaymentStatus(studentId) {
   // Get enrolled modules
   const [enrolledModules] = await db.execute(
     `SELECT module_id FROM student_modules WHERE student_id = ?`,
@@ -25,3 +25,5 @@ export async function updatePaymentStatus(studentId) {
 
   return allPaid ? 'Paid' : 'Pending';
 }
+
+module.exports = {updatePaymentStatus}

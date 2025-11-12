@@ -9,41 +9,34 @@ const themeStyles = {
 };
 
 export default function FlashCard({
-  icon: Icon, 
-  title, 
-  value, 
-  theme = "blue", 
+  icon: Icon,
+  title,
+  value,
+  theme = "blue",
   onRemove,
   changedNo,
-  percentage 
-})
-  {
-    const colors= themeStyles[theme] || themeStyles.blue;
-    return(
-      <div className="rounded-2xl shadow-md bg-white pl-6 pr-0 flex flex-row items-center justify-between gap-3 h-28">
-        <Icon className={`bg-${theme}-100 text-${theme}-700 p-2 rounded-4xl w-12 h-12 my-3`} />
-        <div className="flex flex-col items-start my-3">
-          <p className="text-gray-500 text-sm font-light">{title}</p>
-          <div className="flex flex-row gap-2 items-center">
-            <h2 className="text-black font-semibold text-xl">{value}</h2>
-            {changedNo && percentage && (
-              <p className="text-green-700">{`${percentage}%`}</p>
-            )}    
-          </div>
-          <br/>
+  percentage
+}) {
+  const colors = themeStyles[theme] || themeStyles.blue;
+  return (
+    <div className="rounded-xl bg-white h-auto w-full shadow-sm">
+      <h2 className="text-black text-md bg-gray-100 text-left w-full py-3 pl-2">
+        {title}
+      </h2>
+
+      <div className="flex flex-col bg-white">
+        <div className="flex flex-row items-center my-3 ml-5">
+          <Icon className={`bg-${theme}-100 text-${theme}-700 p-2 rounded-4xl w-12 h-12 my-3`} />
+          <h2 className="text-black text-4xl">{value}</h2>
           {changedNo && percentage && (
-              <p className="text-gray-500 text-xs">{`${changedNo} from last month`}</p>
-            )}    
-          
+            <p className="text-green-700 ml-auto self-start">{`${percentage}%`}</p>
+          )}
         </div>
-        <button 
-          onClick={onRemove}
-          className="hover:bg-red-400 text-white self-stretch flex items-center justify-center px-3 rounded-r-2xl"
-        >
-          <X className="text-black w-4" />
-        </button>
+
+        {changedNo && percentage && (
+          <p className="text-gray-500 text-sm text-left ml-5">{`${changedNo} from last month`}</p>
+        )}
       </div>
-    )
-  }
-
-
+    </div>
+  );
+}

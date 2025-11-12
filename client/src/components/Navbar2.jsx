@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom';
 import SidebarLink from './SideBarLink';
 import { CalendarDays, LayoutDashboard, Power } from 'lucide-react';
@@ -8,13 +8,15 @@ import { LiaUserPlusSolid } from 'react-icons/lia';
 import { FaUserTie, FaMoneyCheckAlt } from 'react-icons/fa';
 import { CloudUpload } from 'lucide-react';
 import { LuBookPlus,LuBookCopy } from 'react-icons/lu';
+import { AuthContext } from '../context/AuthContext.jsx';
 
 export default function Navbar({ isOpen,setIsopen,admin }) {
   const initial = admin ? admin.charAt(0).toUpperCase() : 'A'
+  const { logout } = useContext(AuthContext);
 
   return (
     <div className={`h-screen bg-[#121c3e] text-white flex flex-col transition-all duration-300 overflow-auto
-  ${isOpen ? "w-72" : "w-0 overflow-hidden"}`}>
+  ${isOpen ? "w-80" : "w-0 overflow-hidden"}`}>
 
       {/* Admin Profile */}
       <Link to="/admin-profile">
@@ -128,12 +130,12 @@ export default function Navbar({ isOpen,setIsopen,admin }) {
 
       {/* Logout Button */}
       <div className="p-4">
-        <Link to="/">
-          <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#ff0000] text-white rounded-lg font-medium hover:bg-red-600 transition-colors">
-            <Power className='text-white'/>
-            <span>Log Out</span>
-          </button>
-        </Link>
+        <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#ff0000] text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
+        onClick={()=> logout()}
+        >
+          <Power className='text-white'/>
+          <span>Log Out</span>
+        </button>
       </div>
     </div>
   )

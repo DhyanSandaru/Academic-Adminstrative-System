@@ -12,7 +12,8 @@ export default function PersonalDetails() {
     gender: '',
     dob: '',
     ethnicity: '',
-    profilePhoto: ''
+    profilePhoto: '',
+    age: 0
   });
 
   const [photoFile, setPhotoFile] = useState(null);
@@ -27,7 +28,8 @@ export default function PersonalDetails() {
         gender: studentData.gender || '',
         dob: studentData.dob || '',
         ethnicity: studentData.ethnicity || '',
-        profilePhoto: studentData.profilePhoto || ''
+        profilePhoto: studentData.profilePhoto || '',
+        age: studentData.age || 0
       };
       setFormData(initialData);
       if (initialData.profilePhoto) {
@@ -121,8 +123,8 @@ export default function PersonalDetails() {
         </div>
 
         {/* Form Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="md:col-span-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
             <input
               type="text"
@@ -133,7 +135,7 @@ export default function PersonalDetails() {
             />
           </div>
 
-          <div>
+          <div className='md:col-span-2'>
             <label className="block text-sm font-semibold text-gray-700 mb-2">NIC Number</label>
             <input
               type="text"
@@ -144,7 +146,7 @@ export default function PersonalDetails() {
             />
           </div>
 
-          <div>
+          <div className='md:col-span-2'>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
             <select
               name="gender"
@@ -159,7 +161,7 @@ export default function PersonalDetails() {
             </select>
           </div>
 
-          <div>
+          <div className='md:col-span-1'>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
             <input
               type="date"
@@ -169,8 +171,19 @@ export default function PersonalDetails() {
               className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
             />
           </div>
+          <div className='md:col-span-1'>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Age</label>
+            <input
+              type="number"
+              name="age"
+              value={formData.age}
+              onChange={handleChange}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+            />
+          </div>
 
-          <div>
+
+          <div className='md:col-span-2'>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Ethnicity</label>
             <input
               type="text"

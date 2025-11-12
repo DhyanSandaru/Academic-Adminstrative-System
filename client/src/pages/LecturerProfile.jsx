@@ -3,6 +3,7 @@ import LecturerPersonalDetails from "../components/LecturerProfiles/PersonalDeta
 import LecturerContactDetails from "../components/LecturerProfiles/ContactDetails.jsx";
 import LecturerEducationDetails from "../components/LecturerProfiles/EducationDetails.jsx";
 import Salary from "../components/LecturerProfiles/Salary.jsx";
+import { Trash } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -12,6 +13,7 @@ export default function LecturerProfile() {
   const [lecturerData, setLecturerData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletePopup, setDeletePopup] = useState(false);
   const { lecturer_id } = useParams();
 
   // Single fetch on mount
@@ -52,6 +54,20 @@ export default function LecturerProfile() {
 
     fetchLecturerById();
   }, [lecturer_id]);
+
+   const handleDelete = async() => {
+
+    try{
+       await axios.delete(`http://localhost:8000/delete-lecturer/${lecturer_id}`);
+       navigate('/view-students')
+
+       alert("Lecturer has been deleted successfully")
+    }
+    catch(err){
+      alert(err.response?.data?.message || "Lecturer deletion failed ")
+    }   
+  }
+
 
   // Single update function used by all components
   const updateLecturer = useCallback(async (updatedFields, photoFile = null) => {
@@ -133,11 +149,43 @@ export default function LecturerProfile() {
   return (
     <LecturerContext.Provider value={{ lecturerData, setLecturerData, updateLecturer, saving }}>
       <LecturerLayout title={lecturerData.name}>
+        <div className="w-full flex justify-center">
+          <button
+            className='bg-red-500 text-white flex flex-row items-center rounded-lg gap-2 h-16 hover:bg-red-600'
+            onClick={()=> setDeletePopup(true)}
+            >
+              <Trash className="text-white" size={20}/>
+              <p className='text-lg'>Delete Lecturer</p>
+          </button>
+        </div>
         <LecturerPersonalDetails />
         <LecturerContactDetails />
         <LecturerEducationDetails />
         <Salary />
       </LecturerLayout>
+      {deletePopup && (
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-300">
+            <p className="text-lg mb-4 text-black">
+              Do you want to delete {lecturerData.name}'s profile?
+            </p>
+            <div className="flex gap-4 justify-end">
+              <button
+                onClick={handleDelete}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setDeletePopup(false)}
+                className="bg-gray-300 text-black px-4 py-2 rounded-lg hover:bg-gray-400"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </LecturerContext.Provider>
   );
 }

@@ -111,3 +111,30 @@ exports.deleteClassById = async (req, res) => {
     res.status(500).json({ error: "Failed to delete class" });
   }
 };
+
+exports.fetchClassesByCourse = async (req, res) => {
+  try {
+    // Extract the course name from URL params
+    const { course } = req.params;
+
+    if (!course || course.trim() === "") {
+      return res.status(400).json({ message: "Course name is required" });
+    }
+
+    // Query all timetable records that match this course name
+    const [rows] = await db.query(
+      "SELECT * FROM timetable WHERE subject = ?",
+      [course]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No classes found for this course" });
+    }
+
+    // Return raw data (no formatting)
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error("Error fetching classes by course:", err);
+    res.status(500).json({ message: "Database error" });
+  }
+};

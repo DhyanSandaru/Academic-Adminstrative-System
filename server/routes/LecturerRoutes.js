@@ -27,6 +27,7 @@ router.get("/view-lecturers", LecturerController.fetchLecturers);
 router.get("/view-lecturers/:course", LecturerController.fetchLecturersByCourse)
 router.get("/view-lecturers/id/:id",LecturerController.fetchLecturerById);
 router.put("/update-lecturers/:id",upload.single("profilePhoto"),LecturerController.updateLecturerById);
+router.delete("/delete-lecturer/:id",LecturerController.deleteLecturerById)
 
 module.exports = router;
 

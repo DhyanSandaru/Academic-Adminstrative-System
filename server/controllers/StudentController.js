@@ -24,6 +24,17 @@ exports.addStudent = async (req, res) => {
     const courseModules = JSON.parse(req.body.courseModules || "[]");
     const profilePhoto = req.file ? `/students/${req.file.filename}` : null;
 
+    //age calcuation
+    const today = new Date();
+
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+
+    // If birthday hasn’t occurred yet this year, subtract one
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+
     // Generate new student ID
     const [rows] = await db.query(
       "SELECT COUNT(*) as count FROM students WHERE exam_year = ?",
@@ -40,8 +51,8 @@ exports.addStudent = async (req, res) => {
         student_id, student_name, profile_photo, gender, dob, ethnicity,
         exam, exam_year, email, nic, mobile, address,
         guardian_name, guardian_mobile, guardian_relation,
-        previous_education, grade, submitted_at, payment_status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        previous_education, grade, submitted_at, payment_status,age
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
       [
         studentId,
         studentName,
@@ -61,7 +72,8 @@ exports.addStudent = async (req, res) => {
         previousEducation,
         grade,
         submittedAt,
-        payment_status
+        payment_status,
+        age
       ]
     );
 
@@ -90,7 +102,10 @@ exports.addStudent = async (req, res) => {
 
 exports.fetchStudents = async (req, res) => {
   try {
-    const [rows] = await db.query(`SELECT * FROM students`);
+    const [rows] = await db.query(
+      `SELECT student_name, student_id, profile_photo, gender, payment_status 
+      FROM students`
+    );
     const formattedData = await Promise.all(
       rows.map(async (student) => {
         const [moduleRows] = await db.query(
@@ -110,20 +125,6 @@ exports.fetchStudents = async (req, res) => {
           studentId: student.student_id,
           profilePhoto: student.profile_photo,
           gender: student.gender,
-          dob: student.dob,
-          ethnicity: student.ethnicity,
-          exam: student.exam,
-          examYear: student.exam_year,
-          email: student.email,
-          nic: student.nic,
-          mobile: student.mobile,
-          address: student.address,
-          guardianName: student.guardian_name,
-          guardianMobile: student.guardian_mobile,
-          guardianRelation: student.guardian_relation,
-          previousEducation: student.previous_education,
-          grade: student.grade,
-          submittedAt: student.submitted_at,
           payment_status: student.payment_status,
           courses
         };
@@ -180,6 +181,7 @@ exports.fetchStudentbyID = async (req, res) => {
       grade: student.grade,
       submitted_at: student.submitted_at,
       payment_status: student.payment_status,
+      age:student.age,
       courses
     };
 
@@ -240,7 +242,8 @@ exports.updateStudentById = async (req, res) => {
         guardianRelation,
         previousEducation,
         grade,
-        payment_status
+        payment_status,
+        age
       } = req.body;
 
       const profilePhoto = req.file
@@ -257,7 +260,7 @@ exports.updateStudentById = async (req, res) => {
         SET student_name = ?, profile_photo = ?, gender = ?, dob = ?, ethnicity = ?, 
             email = ?, nic = ?, mobile = ?, address = ?, 
             guardian_name = ?, guardian_mobile = ?, guardian_relation = ?, 
-            previous_education = ?, grade = ?, payment_status = ?
+            previous_education = ?, grade = ?, payment_status = ?, age = ?
         WHERE student_id = ?`,
         [
           name,
@@ -275,6 +278,7 @@ exports.updateStudentById = async (req, res) => {
           previousEducation,
           grade,
           payment_status,
+          age,
           studentId
         ]
       );

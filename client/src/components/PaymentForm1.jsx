@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PaymentReceipt from "./PaymentReceipt"; // import the modal
 import axios from "axios";
+import { Link } from 'react-router-dom';
 
 export default function PaymentForm1() {
 
@@ -273,6 +274,7 @@ export default function PaymentForm1() {
                           {course}
                         </button>
                       ))}
+                      <p className="text-gray-500 text-sm">Is course not listed? add it from <Link to={`http://localhost:5173/view-students/${formData.studentId}`}>here</Link></p>
                     </>
                   ) : (
                     <>

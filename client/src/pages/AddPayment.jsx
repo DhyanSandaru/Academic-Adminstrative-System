@@ -3,7 +3,7 @@ import Layout from '../components/Layout.jsx'
 
 export default function AddPayment(){
     return(
-        <Layout title="Payment">
+        <Layout title="Add Payment">
             <PaymentForm/>
         </Layout>
     )

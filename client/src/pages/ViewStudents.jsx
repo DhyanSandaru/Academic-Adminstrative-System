@@ -94,7 +94,7 @@ export default function ViewStudents() {
               name={student.name}
               studentId={student.id}
               courses={student.courses}
-              status="Pending"
+              status={student.payment_status}
               profilePhoto={student.profilePhoto}
               gender={student.gender}
             />

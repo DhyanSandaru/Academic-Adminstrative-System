@@ -1,16 +1,16 @@
 // server/routes/BackupRoutes.js
 const express = require('express');
-const backupController = require('../controllers/BackupController');
+const backupController = require('../controllers/BackupController.js');
+const { performCompleteBackup } = require('../utils/scheduledBackups.js');
 
 const router = express.Router();
 
-console.log('📁 Backup routes loaded');
-
 /**
  * POST /api/backup/create
- * Create a new backup
+ * Create a new backup (Firebase + MySQL dump)
  */
 router.post('/create', backupController.backupToFirebase);
+
 
 /**
  * POST /api/backup/restore/:backupId

@@ -1,5 +1,17 @@
+import { useState } from "react";
+import PaymentReceipt from "./PaymentReceipt.jsx";
 
 export default function PaymentTable({payments}){
+    const [paymentData, setPaymentData] = useState({
+        studentName: '',
+        studentId: '',
+        courseModule: '',
+        lecturer: '',
+        amount: '',
+        refNo: '',
+        createdAt: ''
+    });
+    const [popup, setpopup] = useState(false);
     return(
         <>
             <div className="overflow-x-auto shadow-2xl w-full rounded-lg">
@@ -25,7 +37,22 @@ export default function PaymentTable({payments}){
                     payments.map((payment, index) => (
                         <tr
                         key={index}
-                        className={`${index % 2 === 0 ? "bg-white" : "bg-[#f8f9fa]"} border-b hover:bg-gray-100 transition duration-150 ease-in-out`}
+                        onClick={() => {
+                            setPaymentData(
+                                {
+                                    studentName: payment.student_name,
+                                    studentId: payment.student_id,
+                                    courseModule: payment.course_module,
+                                    lecturer: payment.lecturer,
+                                    amount: payment.amount,
+                                    refNo: payment.ref_no,
+                                    createdAt: payment.created_at
+                                }
+                            )
+                            setpopup(true);
+                        }}
+                    
+                        className={`${index % 2 === 0 ? "bg-white" : "bg-[#f8f9fa]"} border-b hover:bg-gray-100 hover:scale-103 transition duration-150 ease-in-out cursor-pointer`}
                         >
                         <td className="py-3 px-4 font-medium text-[#121c3e]">{payment.student_name}</td>
                         <td className="py-3 px-4 text-[#121c3e]">{payment.student_id}</td>
@@ -49,6 +76,9 @@ export default function PaymentTable({payments}){
                     )}
                 </tbody>
                 </table>
+                {popup && (
+                    <PaymentReceipt data={paymentData} onClose={() => setPaymentData(null)}/>
+                )}
             </div>
         </>
     )
