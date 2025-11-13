@@ -14,6 +14,7 @@ export default function PaymentForm1() {
     studentId: "",
     courseModule: "",
     lecturer: "",
+    lecturer_id: "",
     amount: ""
   })
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -90,6 +91,7 @@ export default function PaymentForm1() {
           studentId: "",
           courseModule:"",
           lecturer:"",
+          lecturer_id: "",
           amount:""
         })
       } else {
@@ -291,6 +293,7 @@ export default function PaymentForm1() {
                                 studentId: selectedStudent.studentId,
                                 courseModule: selectedCourse,
                                 lecturer: lecturer.lecturer_name,
+                                lecturer_id: lecturer.lecturer_id,
                                 amount: "",
                               });
                               setShowCoursePopup(false);

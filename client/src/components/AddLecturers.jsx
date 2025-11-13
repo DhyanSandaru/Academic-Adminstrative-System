@@ -42,9 +42,9 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
     
     if (!alreadySelected) {
       const newLecturer = {
-        lecturerName: lecturerName,
-        lecturerId: lecturerId,
-        profilePhoto: profilePhoto,
+        lecturer_name: lecturerName,
+        lecturer_id: lecturerId,
+        profile_photo: profilePhoto,
         email: email,
         mobile: mobile
       };
@@ -55,7 +55,7 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
   // Remove lecturer - Fixed to filter by lecturerId
   const removeLecturer = (lecturerId) => {
     setSelectedLecturers(
-      selectedLecturers.filter((item) => item.lecturerId !== lecturerId)
+      selectedLecturers.filter((item) => item.lecturer_id !== lecturerId)
     );
   };
 
@@ -86,12 +86,12 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
               className="bg-white border-1 border-black hover:bg-gray-200 text-black py-1 px-3 rounded-md flex items-center justify-between gap-2"
             >
               <div className="flex flex-col text-start">
-                <h2 className="text-md">Name :{lecturer.lecturerName}</h2>
-                <p className="text-sm">ID :{lecturer.lecturerId}</p>
+                <h2 className="text-md">Name :{lecturer.lecturer_name}</h2>
+                <p className="text-sm">ID :{lecturer.lecturer_id}</p>
               </div>
               <button
                 type="button"
-                onClick={() => removeLecturer(lecturer.lecturerId)}
+                onClick={() => removeLecturer(lecturer.lecturer_id)}
                 className="hover:bg-gray-300 rounded-full "
               >
                 <X size={18} />

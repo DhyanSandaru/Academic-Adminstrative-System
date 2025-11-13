@@ -1,7 +1,12 @@
 import { Check, Download, Share2 } from "lucide-react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { useRef } from "react";
+import PaymentReceiptPDF from "./PaymentReceiptPDF";
 
 export default function PaymentReceipt({ data, onClose }) {
   if (!data) return null;
+  const receiptRef = useRef(null);
 
   const {
     studentName,
@@ -24,15 +29,21 @@ export default function PaymentReceipt({ data, onClose }) {
     minute: "2-digit",
   });
 
-  const handleDownload = () => {
-    // Placeholder for download functionality
-    console.log("Download receipt");
+ const handleDownload = async () => {
+    if (!receiptRef.current) return;
+
+    // 1️⃣ Capture receipt DOM as canvas
+    const canvas = await html2canvas(receiptRef.current, { scale: 2 });
+    
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: [canvas.width, canvas.height],
+    });
+    pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+    pdf.save(`receipt_${refNo}.pdf`);
   };
 
-  const handleShare = () => {
-    // Placeholder for share functionality
-    console.log("Share receipt");
-  };
 
   return (
     <div
@@ -42,6 +53,7 @@ export default function PaymentReceipt({ data, onClose }) {
       <div
         className="relative max-w-md w-full"
         onClick={(e) => e.stopPropagation()}
+        ref={receiptRef}
       >
         {/* Success Icon */}
         <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 z-10">
@@ -51,7 +63,7 @@ export default function PaymentReceipt({ data, onClose }) {
         </div>
 
         {/* Main Card */}
-        <div className="bg-gradient-to-br from-[#2d4db8] to-[#1e3a8a] rounded-2xl pt-16 pb-0 px-8 text-white relative overflow-hidden shadow-2xl">
+        <div className="bg-gradient-to-br from-[#1e3a8a] to-[#2547b6] rounded-2xl pt-16 pb-0 px-8 text-white relative overflow-hidden shadow-2xl">
           {/* Decorative circles */}
           <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-5 rounded-full -mr-20 -mt-20"></div>
           <div className="absolute bottom-20 left-0 w-32 h-32 bg-white opacity-5 rounded-full -ml-16"></div>
@@ -90,21 +102,9 @@ export default function PaymentReceipt({ data, onClose }) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mb-8 relative z-10">
-            <button
-              onClick={handleDownload}
-              className="flex-1 bg-white bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm border border-white border-opacity-20 rounded-xl py-3 px-4 flex items-center justify-center gap-2 transition-all"
-            >
-              <Download className="text-black w-4 h-4" />
-              <span className="text-md font-medium text-black">Download</span>
-            </button>
-            <button
-              onClick={handleShare}
-              className="flex-1 bg-white bg-opacity-10 hover:bg-opacity-20 backdrop-blur-sm border border-white border-opacity-20 rounded-xl py-3 px-4 flex items-center justify-center gap-2 transition-all"
-            >
-              <Share2 className="text-black w-4 h-4" />
-              <span className="text-md font-medium text-black">Share</span>
-            </button>
+          <div className="flex gap-3 mb-8 relative z-10 justify-center">
+            <PaymentReceiptPDF data={data}/>
+           
           </div>
 
           {/* Scalloped Bottom Edge */}
@@ -112,7 +112,7 @@ export default function PaymentReceipt({ data, onClose }) {
             <svg viewBox="0 0 400 32" className="w-full h-full" preserveAspectRatio="none">
               <path
                 d="M0,32 C13.33,16 26.67,16 40,32 C53.33,16 66.67,16 80,32 C93.33,16 106.67,16 120,32 C133.33,16 146.67,16 160,32 C173.33,16 186.67,16 200,32 C213.33,16 226.67,16 240,32 C253.33,16 266.67,16 280,32 C293.33,16 306.67,16 320,32 C333.33,16 346.67,16 360,32 C373.33,16 386.67,16 400,32 L400,32 L0,32 Z"
-                fill="#f3f4f6"
+                className="fill-white"
               />
             </svg>
           </div>
@@ -126,7 +126,7 @@ function DetailRow({ label, value, highlight }) {
   return (
     <div className="flex justify-between items-start">
       <span className="text-blue-200 text-sm">{label}</span>
-      <span className={`font-semibold text-right max-w-[60%] ${highlight ? 'text-[#41d195]' : 'text-white'}`}>
+      <span className={`font-semibold text-right max-w-[60%] ${highlight ? 'text-green-300' : 'text-white'}`}>
         {value}
       </span>
     </div>

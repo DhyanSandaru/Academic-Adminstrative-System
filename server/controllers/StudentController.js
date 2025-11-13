@@ -26,12 +26,11 @@ exports.addStudent = async (req, res) => {
 
     //age calcuation
     const today = new Date();
+    const dobDate = new Date(dob);
 
-    let age = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-
-    // If birthday hasn’t occurred yet this year, subtract one
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    let age = today.getFullYear() - dobDate.getFullYear();
+    const monthDiff = today.getMonth() - dobDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
       age--;
     }
 
@@ -52,13 +51,13 @@ exports.addStudent = async (req, res) => {
         exam, exam_year, email, nic, mobile, address,
         guardian_name, guardian_mobile, guardian_relation,
         previous_education, grade, submitted_at, payment_status,age
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         studentId,
         studentName,
         profilePhoto,
         gender,
-        dob,
+        dobDate,
         ethnicity,
         exam,
         examYear,
@@ -91,6 +90,12 @@ exports.addStudent = async (req, res) => {
           [studentId, moduleID]
         );
       }
+    }
+    try {
+      await registrationMailer(email, studentName, studentId, grade, examYear);
+      console.log("📧 Registration email sent to:", email);
+    } catch (mailErr) {
+      console.error("⚠️ Failed to send registration email:", mailErr);
     }
 
     res.status(200).json({ message: "Student added successfully!", studentId });

@@ -180,7 +180,7 @@ function HandleBackup() {
           backups.map((backup) => (
             <div
               key={backup.backupId}
-              className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
+              className="border border-gray-200 rounded-lg p-4 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">

@@ -1,12 +1,12 @@
 const db = require('../DBconfig.js'); // make sure the path is correct
-const {mailSender} = require('../NodeMailer.js')
 const {fetchStudentEmailbyId} = require('../models/StudentModel.js');
 const {updatePaymentStatus} = require('../utils/paymentHelper.js')
+const {PaymentMailer, paymentMailer} = require('../Mailer/PaymentMailer.js')
 
 // Add Payment
 exports.addPayment = async (req, res) => {
   try {
-    const { studentName, studentId, courseModule, lecturer, amount } = req.body;
+    const { studentName, studentId, courseModule, lecturer,lecturer_id, amount } = req.body;
 
     const email = await fetchStudentEmailbyId(studentId);
 
@@ -29,13 +29,13 @@ exports.addPayment = async (req, res) => {
     const ref_no = generateRefNo();
 
     const sql = `INSERT INTO payments 
-      (ref_no, student_name, student_id, course_module, lecturer, amount) 
-      VALUES (?, ?, ?, ?, ?, ?)`;
+      (ref_no, student_name, student_id, course_module, lecturer, amount, lecturer_id) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-    await db.execute(sql, [ref_no,studentName, studentId, courseModule, lecturer, amount]);
+    await db.execute(sql, [ref_no,studentName, studentId, courseModule, lecturer, amount, lecturer_id]);
 
     try {
-      await mailSender(courseModule, email, studentName, amount, ref_no);
+      await paymentMailer(courseModule, email, studentName, amount, ref_no);
     } catch (mailErr) {
       console.error("Email sending failed:", mailErr);
     }
@@ -86,3 +86,21 @@ exports.fetchPaymentsByID = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch payments.' });
   }
 };
+
+exports.fetchPaymentsByLecturerID = async (req,res) => {
+  const {id} = req.params;
+  const month = new Date().getMonth;
+
+  try{
+    const [rows] = await db.query(
+      `SELECT * from payments where lecturer_id = ?`,[id]
+    )
+
+    res.json(rows)
+  }
+  catch(err){
+    console.log("Error fetchiing payments");
+    res.status(500).json({error: 'Failed to fetch payments'});
+  }
+} 
+  

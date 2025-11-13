@@ -19,7 +19,7 @@ async function updatePaymentStatus(studentId) {
   const allPaid = [...enrolledSet].every(m => paidSet.has(m));
 
   await db.execute(
-    `UPDATE students SET payment_status = ? WHERE id = ?`,
+    `UPDATE students SET payment_status = ? WHERE student_id = ?`,
     [allPaid ? 'Paid' : 'Pending', studentId]
   );
 

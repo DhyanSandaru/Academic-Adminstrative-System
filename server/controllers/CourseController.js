@@ -167,3 +167,62 @@ exports.getCourseById = async (req, res) => {
   }
 };
 
+
+exports.updateCourse = async (req, res) => {
+  try {
+    const { id } = req.params; // module_id from URL
+    const {
+      name,
+      payment,
+      minAge,
+      maxAge,
+      description,
+      courseBanner,
+      lecturers, // Expected as JSON string from FormData
+    } = req.body;
+
+    // Parse lecturers if it's a JSON string
+    let parsedLecturers = [];
+    if (lecturers) {
+      parsedLecturers = typeof lecturers === 'string' ? JSON.parse(lecturers) : lecturers;
+    }
+
+    // 1️⃣ Update modules table
+    await db.query(
+      `UPDATE modules 
+       SET name = ?, 
+           payment = ?, 
+           minAge = ?, 
+           maxAge = ?, 
+           description = ?, 
+           courseBanner = ?
+       WHERE module_id = ?`,
+      [name, payment, minAge, maxAge, description, courseBanner, id]
+    );
+
+    // 2️⃣ Delete existing lecturer associations
+    await db.query(
+      "DELETE FROM lecturer_modules WHERE module_id = ?",
+      [id]
+    );
+
+    // 3️⃣ Insert new lecturer associations
+    if (Array.isArray(parsedLecturers) && parsedLecturers.length > 0) {
+      const lecturerModuleValues = parsedLecturers.map(l => [l.lecturerId, id]);
+      await db.query(
+        "INSERT INTO lecturer_modules (lecturer_id, module_id) VALUES ?",
+        [lecturerModuleValues]
+      );
+    }
+
+    res.status(200).json({ message: "Course updated successfully" });
+
+  } catch (error) {
+    console.error("Error updating course:", error);
+    res.status(500).json({ 
+      error: "Server error while updating course",
+      message: error.message 
+    });
+  }
+};
+

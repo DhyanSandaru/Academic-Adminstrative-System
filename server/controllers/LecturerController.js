@@ -203,7 +203,7 @@ exports.fetchLecturersByCourse = async (req, res) => {
   try {
     const [rows] = await db.query(
       `
-      SELECT l.lecturer_id, l.lecturer_name, l.email, l.mobile
+      SELECT l.lecturer_id, l.lecturer_name, l.email, l.mobile, l.profile_photo
       FROM lecturers l
       JOIN lecturer_modules lm ON l.lecturer_id = lm.lecturer_id
       JOIN modules m ON lm.module_id = m.module_id

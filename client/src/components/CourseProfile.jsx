@@ -169,7 +169,7 @@ export default function CourseProfile({ courseId }) {
       data.append('lecturers', JSON.stringify(formData.lecturers));
 
       const response = await axios.put(
-        `http://localhost:8000/update-course/${courseId}`,
+        `http://localhost:8000/course/update-course/${courseId}`,
         data,
         {
           headers: {
@@ -432,7 +432,7 @@ export default function CourseProfile({ courseId }) {
                     className="border-2 border-gray-200 rounded-lg p-6 hover:border-blue-400 hover:shadow-md transition-all duration-200 relative"
                   >
                     <button
-                      onClick={() => handleRemoveLecturer(lecturer.lecturerId)}
+                      onClick={() => handleRemoveLecturer(lecturer.lecturer_id)}
                       className="absolute top-3 right-3 bg-red-100 hover:bg-red-200 text-red-600 p-1 rounded-full transition-colors"
                       title="Remove lecturer"
                     >
@@ -440,10 +440,10 @@ export default function CourseProfile({ courseId }) {
                     </button>
                     <div className="flex items-start gap-4">
                       <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-cyan-600 flex items-center justify-center flex-shrink-0">
-                        {lecturer.profilePhoto ? (
+                        {lecturer.profile_photo ? (
                           <img
-                            src={`http://localhost:8000${lecturer.profilePhoto}`}
-                            alt={lecturer.lecturerName}
+                            src={`http://localhost:8000${lecturer.profile_photo}`}
+                            alt={lecturer.lecturer_name}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -452,10 +452,10 @@ export default function CourseProfile({ courseId }) {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-bold text-lg text-gray-800 mb-2">
-                          {lecturer.lecturerName}
+                          {lecturer.lecturer_name}
                         </h3>
                         <div className="space-y-1 text-sm text-gray-600">
-                          <p><span className="font-semibold">ID:</span> {lecturer.lecturerId}</p>
+                          <p><span className="font-semibold">ID:</span> {lecturer.lecturer_id}</p>
                           {lecturer.email && (
                             <p><span className="font-semibold">Email:</span> {lecturer.email}</p>
                           )}

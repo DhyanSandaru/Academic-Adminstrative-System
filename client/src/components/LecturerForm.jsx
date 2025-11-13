@@ -5,8 +5,8 @@ import AddCourses from "./AddCourses";
 export default function LecturerForm() {
   const [courseModules, setCourseModules] = useState([]);
   const [profilePhoto, setProfilePhoto] = useState(null);
-   const [showCoursePopup, setShowCoursePopup] = useState(false);
-
+  const [showCoursePopup, setShowCoursePopup] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const removeCourseModule = (moduleToRemove) => {
     setCourseModules(courseModules.filter((m) => m !== moduleToRemove));
@@ -15,23 +15,76 @@ export default function LecturerForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
+    const newErrors = {};
+
+    // === Required Fields Validation ===
+    const requiredFields = {
+      lecturerName: form["lecturer-name"].value.trim(),
+      gender: form.querySelector('input[name="gender"]:checked')?.value || "",
+      email: form["email"].value.trim(),
+      nic: form["nic"].value.trim(),
+      mobile: form["mobile"].value.trim(),
+      emergencyContact: form["emergency-contact"].value.trim(),
+      address: form["address"].value.trim(),
+    };
+
+    // Empty checks
+    Object.entries(requiredFields).forEach(([key, value]) => {
+      if (!value) newErrors[key] = "This field is required.";
+    });
+
+    // Email pattern
+    if (
+      requiredFields.email &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(requiredFields.email)
+    ) {
+      newErrors.email = "Enter a valid email.";
+    }
+
+    // Mobile number (10 digits)
+    if (
+      requiredFields.mobile &&
+      !/^\d{10}$/.test(requiredFields.mobile)
+    ) {
+      newErrors.mobile = "Enter a valid 10-digit mobile number.";
+    }
+
+    // Emergency contact validation (10 digits)
+    if (
+      requiredFields.emergencyContact &&
+      !/^\d{10}$/.test(requiredFields.emergencyContact)
+    ) {
+      newErrors.emergencyContact = "Enter a valid 10-digit contact number.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    // Profile photo confirmation
+    if (!profilePhoto) {
+      const confirmProceed = window.confirm(
+        "No profile photo selected. Submit without image?"
+      );
+      if (!confirmProceed) return;
+    }
+
+    // === Build FormData ===
+    setErrors({});
     const formData = new FormData();
 
-    // === Profile Section ===
-    formData.append("lecturerName", form["lecturer-name"].value);
+    formData.append("lecturerName", requiredFields.lecturerName);
     formData.append("profilePhoto", profilePhoto);
     formData.append("courseModules", JSON.stringify(courseModules));
+    formData.append("gender", requiredFields.gender);
+    formData.append("email", requiredFields.email);
+    formData.append("nic", requiredFields.nic);
+    formData.append("mobile", requiredFields.mobile);
+    formData.append("address", requiredFields.address);
+    formData.append("emergency-contact", requiredFields.emergencyContact);
 
-    // === Personal Information Section ===
-    const gender = form.querySelector('input[name="gender"]:checked')?.value || "";
-    formData.append("gender", gender);
-    formData.append("email", form["email"].value);
-    formData.append("nic", form["nic"].value);
-    formData.append("mobile", form["mobile"].value);
-    formData.append("address", form["address"].value);
-    formData.append("emergency-contact", form["emergency-contact"].value);
-
-    // === Education Details Section ===
     formData.append("highestQualification", form["highest-qualification"].value);
     formData.append("institute", form["institute"].value);
     formData.append("fieldOfStudy", form["field"].value);
@@ -52,11 +105,18 @@ export default function LecturerForm() {
     }
   };
 
+  const renderError = (field) =>
+    errors[field] && (
+      <p className="text-red-500 text-sm mt-1">{errors[field]}</p>
+    );
 
   return (
     <div className="flex-1 p-8 bg-gray-50 min-h-screen text-gray-900 rounded-2xl shadow-md">
-      <form onSubmit={handleSubmit} className="space-y-12 w-3xl max-w-5xl mx-auto p-5">
-        {/* Profile Section */}
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-12 w-3xl max-w-5xl mx-auto p-5"
+      >
+        {/* ================= PROFILE SECTION ================= */}
         <div className="border-b border-gray-200 pb-12 flex flex-col">
           <h2 className="text-xl font-semibold">Profile</h2>
           <p className="mt-1 text-md text-gray-600">
@@ -69,13 +129,12 @@ export default function LecturerForm() {
               <label htmlFor="lecturer-name" className="block text-md font-medium">
                 Lecturer Name
               </label>
-              <div className="mt-2">
-                <input
-                  id="lecturer-name"
-                  type="text"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+              <input
+                id="lecturer-name"
+                type="text"
+                className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+              />
+              {renderError("lecturerName")}
             </div>
 
             {/* Profile Photo */}
@@ -111,7 +170,7 @@ export default function LecturerForm() {
               </div>
             </div>
 
-            {/* Subjects Taught */}
+            {/* Course Modules */}
             <div className="col-span-full w-full">
               <label className="block text-md font-medium">Course Modules</label>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -142,81 +201,96 @@ export default function LecturerForm() {
           </div>
         </div>
 
-        {/* Personal Information Section */}
+        {/* ================= PERSONAL INFORMATION ================= */}
         <div className="border-b border-gray-200 pb-12 flex flex-col items-center">
           <h2 className="text-lg font-semibold">Personal Information</h2>
           <p className="mt-1 text-md text-gray-600">
             Contact details and identification information.
           </p>
-           {/* Gender */}
-            <div className="mt-5">
-              <label className="block text-md font-medium">Gender</label>
-              <div className="mt-2 flex gap-x-6">
-                {["male", "female", "other"].map((g) => (
-                  <label key={g} className="flex items-center gap-x-2 text-md">
-                    <input type="radio" name="gender" value={g} className="text-indigo-500" />
-                    {g.charAt(0).toUpperCase() + g.slice(1)}
-                  </label>
-                ))}
-              </div>
+
+          {/* Gender */}
+          <div className="mt-5 w-[85%]">
+            <label className="block text-md font-medium">Gender</label>
+            <div className="mt-2 flex justify-center gap-x-10">
+              {["male", "female", "other"].map((g) => (
+                <label key={g} className="flex items-center gap-x-2 text-md">
+                  <input type="radio" name="gender" value={g} className="text-indigo-500" />
+                  {g.charAt(0).toUpperCase() + g.slice(1)}
+                </label>
+              ))}
             </div>
+            {renderError("gender")}
+          </div>
 
           <div className="mt-10 w-[85%] grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-
             {/* Email */}
             <div className="sm:col-span-3">
-              <label htmlFor="email" className="block text-md font-medium">Email</label>
+              <label htmlFor="email" className="block text-md font-medium">
+                Email
+              </label>
               <input
                 id="email"
                 type="email"
                 className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
               />
+              {renderError("email")}
             </div>
 
             {/* NIC */}
             <div className="sm:col-span-3">
-              <label htmlFor="nic" className="block text-md font-medium">NIC</label>
+              <label htmlFor="nic" className="block text-md font-medium">
+                NIC
+              </label>
               <input
                 id="nic"
                 type="text"
                 className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
               />
+              {renderError("nic")}
             </div>
 
             {/* Mobile */}
             <div className="sm:col-span-3">
-              <label htmlFor="mobile" className="block text-md font-medium">Mobile No</label>
+              <label htmlFor="mobile" className="block text-md font-medium">
+                Mobile No
+              </label>
               <input
                 id="mobile"
                 type="text"
                 className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
               />
+              {renderError("mobile")}
             </div>
 
-             {/*Emergency Contact */}
+            {/* Emergency Contact */}
             <div className="sm:col-span-3">
-              <label htmlFor="emergency-contact" className="block text-md font-medium">Emergency Contact</label>
+              <label htmlFor="emergency-contact" className="block text-md font-medium">
+                Emergency Contact
+              </label>
               <input
                 id="emergency-contact"
                 type="text"
                 className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
               />
+              {renderError("emergencyContact")}
             </div>
-
 
             {/* Address */}
             <div className="col-span-full">
-              <label htmlFor="address" className="block text-md font-medium">Address</label>
+              <label htmlFor="address" className="block text-md font-medium">
+                Address
+              </label>
               <input
                 id="address"
                 type="text"
                 className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
               />
+              {renderError("address")}
             </div>
           </div>
         </div>
 
-        {/* Education Details Section */}
+        {/* ================= EDUCATION DETAILS ================= */}
         <div className="border-b border-gray-200 pb-12 flex flex-col items-center">
           <h2 className="text-lg font-semibold">Education Details</h2>
           <p className="mt-1 text-md text-gray-600">
@@ -263,7 +337,7 @@ export default function LecturerForm() {
               />
             </div>
 
-            {/* Years of Experience */}
+            {/* Experience */}
             <div className="sm:col-span-3">
               <label htmlFor="experience" className="block text-md font-medium">
                 Years of Teaching Experience
@@ -277,7 +351,7 @@ export default function LecturerForm() {
               />
             </div>
 
-            {/* Additional Certifications */}
+            {/* Certifications */}
             <div className="col-span-full">
               <label htmlFor="certifications" className="block text-md font-medium">
                 Additional Certifications
@@ -292,7 +366,6 @@ export default function LecturerForm() {
           </div>
         </div>
 
-
         {/* Submit */}
         <div className="flex justify-center">
           <button
@@ -303,6 +376,7 @@ export default function LecturerForm() {
           </button>
         </div>
       </form>
+
       {showCoursePopup && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <AddCourses
