@@ -6,7 +6,7 @@ const db = require('../DBconfig.js');
 exports.addLecturer = async (req, res) => {
   try {
     const {
-      name,
+      lecturerName,
       gender,
       email,
       nic,
@@ -29,16 +29,33 @@ exports.addLecturer = async (req, res) => {
 
     // Generate lecturer_id (e.g., L-2025-001)
     const [rows] = await db.query(
-      `SELECT COUNT(*) AS count 
-       FROM lecturers 
-       WHERE joined_year = ? 
-       AND lecturer_id LIKE ?`,
+      `SELECT lecturer_id
+      FROM lecturers
+      WHERE joined_year = ?
+      AND lecturer_id LIKE ?`,
       [joinedYear, `L-${joinedYear}-%`]
     );
 
-    const count = rows[0].count;
-    const serialStr = (count + 1).toString().padStart(3, "0");
+    // Extract all serial numbers into an array of integers
+    const serials = rows
+      .map(row => parseInt(row.lecturer_id.split("-")[2], 10))
+      .sort((a, b) => a - b);
+
+    // Find the lowest missing serial
+    let missing = 1;
+
+    for (const s of serials) {
+      if (s === missing) {
+        missing++;
+      } else if (s > missing) {
+        break;
+      }
+    }
+
+    // Format the final ID
+    const serialStr = missing.toString().padStart(3, "0");
     const lecturerId = `L-${joinedYear}-${serialStr}`;
+
 
     // Current timestamp
     const createdAt = new Date();
@@ -50,7 +67,7 @@ exports.addLecturer = async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         lecturerId,
-        name,
+        lecturerName,
         profilePhoto,
         gender,
         email,
@@ -239,7 +256,7 @@ exports.updateLecturerById = async (req, res) => {
       certifications
     } = req.body;
 
-    const courseModules = JSON.parse(req.body.courseModules || "[]");
+    const courseModules = JSON.parse(req.body.courses || "[]");
     const profilePhoto = req.file
       ? `/lecturers/${req.file.filename}`
       : req.body.profilePhoto; // keep previous one if no new upload
@@ -287,13 +304,12 @@ exports.updateLecturerById = async (req, res) => {
       ]
     );
 
-    // Update course modules (optional)
-    if (courseModules.length > 0) {
-      await db.query(
+    await db.query(
         `DELETE FROM lecturer_modules WHERE lecturer_id = ?`,
         [lecturerId]
       );
 
+    if (courseModules.length > 0) {
       for (const moduleName of courseModules) {
         const [moduleRows] = await db.execute(
           'SELECT module_id FROM modules WHERE LOWER(name) = LOWER(?)',
@@ -306,6 +322,7 @@ exports.updateLecturerById = async (req, res) => {
             `INSERT INTO lecturer_modules (lecturer_id, module_id) VALUES (?, ?)`,
             [lecturerId, moduleID]
           );
+          console.log(`${moduleName} added to ${name}`)
         }
       }
     }

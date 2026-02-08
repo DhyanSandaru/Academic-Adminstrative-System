@@ -1,5 +1,6 @@
 const db = require('../DBconfig.js');
 const Student = require("../models/StudentModel.js");
+const {registrationMailer} = require('../Mailer/RegistrationMailer.js');
 
 exports.addStudent = async (req, res) => {
   try {
@@ -239,6 +240,8 @@ exports.updateStudentById = async (req, res) => {
         dob,
         ethnicity,
         email,
+        exam,
+        examYear,
         nic,
         mobile,
         address,
@@ -251,6 +254,7 @@ exports.updateStudentById = async (req, res) => {
         age
       } = req.body;
 
+      const courses = JSON.parse(req.body.courses || "[]");
       const profilePhoto = req.file
         ? `/students/${req.file.filename}`
         : req.body.profilePhoto;
@@ -262,7 +266,7 @@ exports.updateStudentById = async (req, res) => {
 
       await db.query(
         `UPDATE students 
-        SET student_name = ?, profile_photo = ?, gender = ?, dob = ?, ethnicity = ?, 
+        SET student_name = ?, profile_photo = ?, gender = ?, dob = ?, ethnicity = ?, exam = ?, exam_year = ?, 
             email = ?, nic = ?, mobile = ?, address = ?, 
             guardian_name = ?, guardian_mobile = ?, guardian_relation = ?, 
             previous_education = ?, grade = ?, payment_status = ?, age = ?
@@ -273,6 +277,8 @@ exports.updateStudentById = async (req, res) => {
           gender,
           dob,
           ethnicity,
+          exam, 
+          examYear,
           email,
           nic,
           mobile,
@@ -287,6 +293,29 @@ exports.updateStudentById = async (req, res) => {
           studentId
         ]
       );
+
+      await db.query(`DELETE FROM student_modules WHERE
+        student_id = ?`,[studentId]
+      );
+
+      if(courses.length > 0) {
+        for(const moduleName of courses) {
+          const [moduleRows] = await db.query(
+            "SELECT module_id FROM modules WHERE TRIM(LOWER(name)) = TRIM(LOWER(?))",
+            [moduleName]
+          );
+
+          
+          if(moduleRows.length >0){
+            const moduleID = moduleRows[0].module_id;
+            await db.query(`INSERT INTO student_modules(student_id, module_id)
+              VALUES (?, ?)`,[studentId, moduleID]
+            )
+            console.log(`${moduleName} inserted into the table.`)
+          }
+        }
+
+      }
 
       res.status(200).json({ message: "Student updated successfully!" });
     } catch (err) {
@@ -314,3 +343,5 @@ exports.deleteStudentById = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+

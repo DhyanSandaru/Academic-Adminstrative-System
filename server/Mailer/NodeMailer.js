@@ -3,34 +3,54 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  host: "smtp.ethereal.email",
+  port: 587,
+  secure: false, // Use true for port 465, false for port 587
   auth: {
-    user: process.env.GMAIL_USER,     // e.g. 'adclicker768@gmail.com'
-    pass: process.env.GMAIL_APP_PW,   // Gmail App Password
+    user: "robert57@ethereal.email",
+    pass: "8reakJpYFWWxr9QfN2",
   },
 });
 
-/**
- * Sends an email using the given parameters.
- * @param {Object} options
- * @param {string} options.to - Recipient email(s)
- * @param {string} options.subject - Subject line
- * @param {string} options.html - Email body (HTML content)
- */
-exports.sendMail = async ({ to, subject, html }) => {
+
+exports.sendTextMail = async ({ to, subject, html }) => {
   try {
     const info = await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to,
-      subject,
-      html,
+      from: `"WiseWay Academy" <robert57@ethereal.email>`,
+      to: to,
+      subject: subject,
+      html: html
     });
     console.log(`✅ Email sent to ${to}: ${info.messageId}`);
+    console.log(`🔗 Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     return info;
   } catch (err) {
     console.error(`❌ Failed to send email to ${to}:`, err);
+    throw err;
+  }
+};
+
+
+exports.sendFileMail = async ({ to, subject, emailContent }) => {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: to,
+      subject: subject,
+      html: emailContent,
+      attachments: [
+        {
+          filename: pdfFilename,
+          content: pdfBuffer,
+          contentType: 'application/pdf'
+        }
+      ]
+    });
+
+    console.log(`✅ Timetable email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (err) {
+    console.error(`❌ Failed to send timetable email to ${to}:`, err);
     throw err;
   }
 };

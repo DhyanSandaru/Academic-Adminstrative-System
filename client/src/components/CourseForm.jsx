@@ -56,11 +56,6 @@ export default function CourseForm() {
       return false;
     }
 
-    if (!courseBanner) {
-      setMessage("⚠️ Please select a banner image.");
-      return false;
-    }
-
     return true;
   };
 
@@ -138,7 +133,7 @@ export default function CourseForm() {
                       key={index}
                       className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm"
                     >
-                      {lecturer.lecturerName} ({lecturer.lecturerId})
+                      {lecturer.lecturer_name} ({lecturer.lecturer_id})
                     </span>
                   ))
                 ) : (

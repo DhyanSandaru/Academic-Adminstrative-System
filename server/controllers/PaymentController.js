@@ -87,20 +87,22 @@ exports.fetchPaymentsByID = async (req, res) => {
   }
 };
 
-exports.fetchPaymentsByLecturerID = async (req,res) => {
-  const {id} = req.params;
-  const month = new Date().getMonth;
-
-  try{
+exports.fetchPaymentsByLecturerID = async (req, res) => {
+  const { id } = req.params;
+  const { month, year } = req.query;
+  
+  try {
     const [rows] = await db.query(
-      `SELECT * from payments where lecturer_id = ?`,[id]
-    )
-
-    res.json(rows)
+      `SELECT * FROM payments 
+       WHERE lecturer_id = ? 
+       AND MONTH(created_at) = ? 
+       AND YEAR(created_at) = ?`,
+      [id, month, year]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.log("Error fetching payments");
+    res.status(500).json({ error: 'Failed to fetch payments' });
   }
-  catch(err){
-    console.log("Error fetchiing payments");
-    res.status(500).json({error: 'Failed to fetch payments'});
-  }
-} 
+};
   

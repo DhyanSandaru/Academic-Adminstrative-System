@@ -11,6 +11,8 @@ export default function StudentForm() {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [courseModules, setCourseModules] = useState([]);
   const [showCoursePopup, setShowCoursePopup] = useState(false);
+  const [errors, setErrors] = useState({});
+
   
   // Form fields state
   const [formData, setFormData] = useState({
@@ -60,46 +62,51 @@ export default function StudentForm() {
   };
 
   const handleFormSubmit = async () => {
-    // Validate required fields
-    if (!formData.studentName || !profilePhoto || courseModules.length === 0 || 
-        !formData.gender || !formData.dob || !formData.ethnicity || 
-        !formData.exam || !formData.examYear || !formData.email || 
-        !formData.nic || !formData.mobile || !formData.address || 
-        !formData.previousEducation || !formData.grade || 
-        !formData.guardianName || !formData.guardianMobile || !formData.guardianRelation) {
-      setFormStatus("Please fill in all required fields.");
-      return;
+    const requiredFields = [
+      { key: 'studentName', label: 'Student Name' },
+      { key: 'dob', label: 'Date of Birth' },
+      { key: 'ethnicity', label: 'Ethnicity' },
+      { key: 'gender', label: 'Gender' },
+      { key: 'email', label: 'Email' },
+      { key: 'mobile', label: 'Mobile Number' },
+      { key: 'address', label: 'Address' },
+      { key: 'grade', label: 'Current Grade' },
+      { key: 'guardianName', label: 'Guardian Name' },
+      { key: 'guardianMobile', label: 'Guardian Mobile' },
+      { key: 'guardianRelation', label: 'Relationship' },
+    ];
+
+    const newErrors = {};
+    requiredFields.forEach(field => {
+      if (!formData[field.key]?.trim()) {
+        newErrors[field.key] = `${field.label} is required`;
+      }
+    });
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) return; // Stop if errors exist
+
+    // Confirm submission without profile photo
+    if (!profilePhoto) {
+      const proceed = window.confirm(
+        "No profile photo uploaded. Do you want to submit without a photo?"
+      );
+      if (!proceed) return;
     }
 
     const formDataToSend = new FormData();
-    
-    formDataToSend.append("studentName", formData.studentName);
-    formDataToSend.append("profilePhoto", profilePhoto);
-    formDataToSend.append("gender", formData.gender);
-    formDataToSend.append("dob", formData.dob);
-    formDataToSend.append("ethnicity", formData.ethnicity);
-    formDataToSend.append("exam", formData.exam);
-    formDataToSend.append("examYear", formData.examYear);
-    formDataToSend.append("email", formData.email);
-    formDataToSend.append("nic", formData.nic);
-    formDataToSend.append("mobile", formData.mobile);
-    formDataToSend.append("address", formData.address);
-    formDataToSend.append("guardianName", formData.guardianName);
-    formDataToSend.append("guardianMobile", formData.guardianMobile);
-    formDataToSend.append("guardianRelation", formData.guardianRelation);
-    formDataToSend.append("previousEducation", formData.previousEducation);
-    formDataToSend.append("grade", formData.grade);
+    Object.entries(formData).forEach(([key, value]) => formDataToSend.append(key, value));
+    formDataToSend.append("profilePhoto", profilePhoto || "");
     formDataToSend.append("courseModules", JSON.stringify(courseModules));
 
     try {
       const res = await axios.post(`${BACKEND_URL}/add-request`, formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
+        headers: { "Content-Type": "multipart/form-data" },
       });
       setFormStatus("Registration submitted for approval successfully!");
-      
-      // Reset after delay
+      setErrors({}); // clear errors on success
+
       setTimeout(() => {
         setFormData({
           studentName: '',
@@ -130,6 +137,9 @@ export default function StudentForm() {
     }
   };
 
+  //used for examYear
+  const currentYear = new Date().getFullYear();
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-2xl mx-auto">
@@ -205,6 +215,9 @@ export default function StudentForm() {
                     placeholder="Enter your full name"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
                   />
+                  {errors.studentName && (
+                    <p className="text-red-500 text-xs mt-1">{errors.studentName}</p>
+                  )}
                 </div>
 
                 {/* Profile Photo */}
@@ -289,7 +302,7 @@ export default function StudentForm() {
                 {/* Gender */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Gender *
+                    Gender 
                   </label>
                   <div className="grid grid-cols-3 gap-3">
                     {["male", "female", "other"].map((g) => (
@@ -306,6 +319,9 @@ export default function StudentForm() {
                       </button>
                     ))}
                   </div>
+                  {errors.gender && (
+                    <p className="text-red-500 text-xs mt-1">{errors.gender}</p>
+                  )}
                 </div>
 
                 {/* DOB & Ethnicity */}
@@ -320,6 +336,9 @@ export default function StudentForm() {
                       onChange={(e) => handleInputChange('dob', e.target.value)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
                     />
+                    {errors.dob && (
+                    <p className="text-red-500 text-xs mt-1">{errors.dob}</p>
+                  )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -331,6 +350,9 @@ export default function StudentForm() {
                       placeholder="e.g., Sri Lankan"
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
                     />
+                    {errors.ethnicity && (
+                    <p className="text-red-500 text-xs mt-1">{errors.ethnicity}</p>
+                  )}
                   </div>
                 </div>
 
@@ -357,7 +379,7 @@ export default function StudentForm() {
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition bg-white"
                     >
                       <option value="">Select Year</option>
-                      {Array.from({ length: 10 }, (_, i) => 2025 - i).map((year) => (
+                      {Array.from({ length: 10 }, (_, i) => currentYear + i).map((year) => (
                         <option key={year} value={year}>
                           {year}
                         </option>

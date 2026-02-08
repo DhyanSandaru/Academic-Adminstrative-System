@@ -327,6 +327,10 @@ function Timetable() {
 
       for (const item of pendingChanges.updated) {
         await axios.put(`http://localhost:8000/timetable/${item.id}`, {
+          module: item.title,
+          oldDate: item.oldDate,
+          oldStartTime: item.oldStartTime,
+          oldEndTime: item.oldEndTime,
           date: item.newDate,
           start_time: item.newStartTime,
           end_time: item.newEndTime
@@ -788,7 +792,7 @@ const renderEventContent = (eventInfo) => {
             eventDrop={handleEventDrop}
             eventResize={handleEventResize}
             eventClick={handleEventClick}
-            height="calc(100vh - 220px)"
+            height="auto"
             expandRows={true}
             dayHeaderFormat={{ weekday: 'long' }}
           />

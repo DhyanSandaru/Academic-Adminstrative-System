@@ -33,7 +33,7 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
     fetchLecturers();
   }, []);
 
-  // Add lecturer - Fixed duplicate check
+  
   const selectLecturer = (lecturerName, lecturerId,profilePhoto,email,mobile) => {
     // Check if lecturer already exists by comparing lecturerId
     const alreadySelected = selectedLecturers.some(
@@ -61,8 +61,9 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
 
   // Filter search results
   const filteredLecturers = lecturerData.filter((item) =>
-    item.lecturerName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  (item.lecturerName || "").toLowerCase().includes(searchTerm.toLowerCase())
+);
+
 
   return (
     <div className="rounded-2xl shadow-md bg-white p-10 text-black z-10 backdrop-blur-lg w-full max-w-3xl mx-auto relative">

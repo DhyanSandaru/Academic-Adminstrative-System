@@ -40,7 +40,6 @@ export default function EducationDetails() {
     setHasChanges(true);
   };
 
-  // FIXED: Now properly saves courseModules array
   const handleSave = async () => {
     const result = await updateStudent({
       exam: formData.exam,

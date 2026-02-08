@@ -26,6 +26,7 @@ export default function AuthProvider({ children }) {
     try {
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
+      console.log(`Admin creds added ${userData.id}`)
     } catch (err) {
       console.error("Login failed:", err);
     }

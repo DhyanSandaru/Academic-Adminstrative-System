@@ -32,7 +32,7 @@ exports.addCourse = async (req, res) => {
       maxAge,
       description,
       courseBanner,
-      lecturers, // array of { lecturerId, lecturerName }
+      lecturers 
     } = req.body;
 
     // Basic validation
@@ -42,7 +42,6 @@ exports.addCourse = async (req, res) => {
       !minAge ||
       !maxAge ||
       !description ||
-      !courseBanner ||
       !Array.isArray(lecturers) ||
       lecturers.length === 0
     ) {
@@ -178,7 +177,7 @@ exports.updateCourse = async (req, res) => {
       maxAge,
       description,
       courseBanner,
-      lecturers, // Expected as JSON string from FormData
+      lecturers // Expected as JSON string from FormData
     } = req.body;
 
     // Parse lecturers if it's a JSON string

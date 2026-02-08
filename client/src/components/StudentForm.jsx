@@ -6,7 +6,6 @@ export default function Form() {
   const [courseModules, setCourseModules] = useState([]);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [showCoursePopup, setShowCoursePopup] = useState(false);
-  const [errors, setErrors] = useState({});
 
   const removeCourseModule = (moduleToRemove) => {
     setCourseModules(courseModules.filter((m) => m !== moduleToRemove));
@@ -15,69 +14,25 @@ export default function Form() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
-    const newErrors = {};
-
-    // Gather required fields
-    const requiredFields = {
-      studentName: form["student-name"].value.trim(),
-      dob: form["dob"].value.trim(),
-      ethnicity: form["ethnicity"].value.trim(),
-      gender: form["gender"].value,
-      email: form["email"].value.trim(),
-      mobile: form["mobile"].value.trim(),
-      address: form["address"].value.trim(),
-      grade: form["grade"].value.trim(),
-      guardianName: form["guardian-name"].value.trim(),
-      guardianMobile: form["guardian-mobile"].value.trim(),
-      guardianRelation: form["guardian-relation"].value.trim(),
-    };
-
-    // Validation checks
-    Object.entries(requiredFields).forEach(([key, value]) => {
-      if (!value) newErrors[key] = "This field is required.";
-    });
-
-    // Simple email & mobile pattern validation
-    if (requiredFields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(requiredFields.email)) {
-      newErrors.email = "Enter a valid email.";
-    }
-
-    if (requiredFields.mobile && !/^\d{10}$/.test(requiredFields.mobile)) {
-      newErrors.mobile = "Enter a valid 10-digit mobile number.";
-    }
-
-    // Stop if any validation errors
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
-    // Ask for confirmation if no photo uploaded
-    if (!profilePhoto) {
-      const proceed = window.confirm("No profile photo selected. Submit without image?");
-      if (!proceed) return;
-    }
-
-    setErrors({});
     const formData = new FormData();
 
-    formData.append("studentName", requiredFields.studentName);
+    // Append form data
+    formData.append("studentName", form["student-name"].value);
     formData.append("profilePhoto", profilePhoto);
-    formData.append("gender", requiredFields.gender);
-    formData.append("dob", requiredFields.dob);
-    formData.append("ethnicity", requiredFields.ethnicity);
+    formData.append("gender", form["gender"].value);
+    formData.append("dob", form["dob"].value);
+    formData.append("ethnicity", form["ethnicity"].value);
     formData.append("exam", form["exam"].value);
     formData.append("examYear", form["exam-year"].value);
-    formData.append("email", requiredFields.email);
+    formData.append("email", form["email"].value);
     formData.append("nic", form["nic"].value);
-    formData.append("mobile", requiredFields.mobile);
-    formData.append("address", requiredFields.address);
-    formData.append("guardianName", requiredFields.guardianName);
-    formData.append("guardianMobile", requiredFields.guardianMobile);
-    formData.append("guardianRelation", requiredFields.guardianRelation);
+    formData.append("mobile", form["mobile"].value);
+    formData.append("address", form["address"].value);
+    formData.append("guardianName", form["guardian-name"].value);
+    formData.append("guardianMobile", form["guardian-mobile"].value);
+    formData.append("guardianRelation", form["guardian-relation"].value);
     formData.append("previousEducation", form["previous-education"].value);
-    formData.append("grade", requiredFields.grade);
+    formData.append("grade", form["grade"].value);
     formData.append("courseModules", JSON.stringify(courseModules));
 
     try {
@@ -91,10 +46,8 @@ export default function Form() {
     }
   };
 
-  const renderError = (field) =>
-    errors[field] && (
-      <p className="text-red-500 text-sm mt-1">{errors[field]}</p>
-    );
+  //used for examYear
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="flex-1 p-8 bg-gray-50 min-h-screen text-gray-900 rounded-2xl shadow-md">
@@ -118,9 +71,9 @@ export default function Form() {
               <input
                 id="student-name"
                 type="text"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
-              {renderError("studentName")}
             </div>
 
             {/* Profile Photo */}
@@ -155,6 +108,35 @@ export default function Form() {
                 </label>
               </div>
             </div>
+
+            {/* Course Modules */}
+            <div className="col-span-full w-full">
+              <label className="block text-md font-medium">Course Modules</label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {courseModules.map((module) => (
+                  <div
+                    key={module}
+                    className="bg-indigo-600 text-white pl-2 py-1 rounded-md flex items-center"
+                  >
+                    {module}
+                    <button
+                      type="button"
+                      onClick={() => removeCourseModule(module)}
+                      className="ml-2 hover:text-gray-300"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setShowCoursePopup(true)}
+                  className="rounded-md bg-indigo-100 text-indigo-700 px-3 py-1 text-sm font-medium hover:bg-indigo-200"
+                >
+                  + Add Module
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -169,14 +151,13 @@ export default function Form() {
           <div className="sm:col-span-3 mt-8 w-full">
             <label className="block text-md font-medium">Gender</label>
             <div className="mt-2 flex justify-center gap-x-10">
-              {["male", "female", "other"].map((g) => (
+              {["Male", "Female", "other"].map((g) => (
                 <label key={g} className="flex items-center gap-x-2 text-md">
                   <input type="radio" name="gender" value={g} className="text-indigo-500" />
                   {g.charAt(0).toUpperCase() + g.slice(1)}
                 </label>
               ))}
             </div>
-            {renderError("gender")}
           </div>
 
           {/* DOB & Nationality */}
@@ -190,23 +171,53 @@ export default function Form() {
                 type="date"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
-              {renderError("dob")}
             </div>
 
             <div className="sm:col-span-3">
               <label htmlFor="ethnicity" className="block text-md font-medium">
                 Ethnicity
               </label>
-              <select name="ethnicity" id="ethnicity"  className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500">
-                <option value="">Select Ethnicity</option>
-                <option value="sinhala">Sinhala</option>
-                <option value="tamil">Tamil</option>
-                <option value="muslim">Muslim</option>
-                <option value="burgher">Burgher</option>
-              </select>
-              {renderError("ethnicity")}
+              <input
+                id="ethnicity"
+                type="text"
+                placeholder="e.g., Sri Lankan"
+                className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
 
+            {/* Exam & Year */}
+            <div className="sm:col-span-3">
+              <label htmlFor="exam" className="block text-md font-medium">
+                Exam & Year
+              </label>
+              <div className="mt-2 flex gap-4">
+                <select
+                  id="exam"
+                  name="exam"
+                  className="block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select Exam</option>
+                  <option value="O/L">O/L</option>
+                  <option value="A/L">A/L</option>
+                  <option value="IELTS">IELTS</option>
+                  <option value="Other">Other</option>
+                </select>
+                <select
+                  id="exam-year"
+                  name="exam-year"
+                  className="block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select Year</option>
+                  {Array.from({ length: 10 }, (_, i) => currentYear + i).map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Email */}
             <div className="sm:col-span-3">
               <label htmlFor="email" className="block text-md font-medium">
                 Email
@@ -216,9 +227,21 @@ export default function Form() {
                 type="email"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
-              {renderError("email")}
             </div>
 
+            {/* NIC */}
+            <div className="sm:col-span-3">
+              <label htmlFor="nic" className="block text-md font-medium">
+                NIC
+              </label>
+              <input
+                id="nic"
+                type="text"
+                className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Mobile */}
             <div className="sm:col-span-3">
               <label htmlFor="mobile" className="block text-md font-medium">
                 Mobile No
@@ -228,9 +251,9 @@ export default function Form() {
                 type="text"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
-              {renderError("mobile")}
             </div>
 
+            {/* Address */}
             <div className="col-span-full">
               <label htmlFor="address" className="block text-md font-medium">
                 Address
@@ -240,7 +263,6 @@ export default function Form() {
                 rows="2"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               ></textarea>
-              {renderError("address")}
             </div>
           </div>
         </div>
@@ -253,17 +275,18 @@ export default function Form() {
           </p>
 
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 w-full">
-            <div className="sm:col-span-3"> 
+            <div className="sm:col-span-3">
               <label htmlFor="previous-education" className="block text-md font-medium">
-                Previous School / Institution 
-              </label> 
-              <input 
-                id="previous-education" 
-                type="text" 
-                placeholder="Enter institution name" 
-                className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500" 
-              /> 
+                Previous School / Institution
+              </label>
+              <input
+                id="previous-education"
+                type="text"
+                placeholder="Enter institution name"
+                className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
+
             <div className="sm:col-span-3">
               <label htmlFor="grade" className="block text-md font-medium">
                 Current Grade
@@ -274,7 +297,6 @@ export default function Form() {
                 placeholder="e.g., Grade 7 / Grade 10"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
-              {renderError("grade")}
             </div>
           </div>
         </div>
@@ -296,7 +318,6 @@ export default function Form() {
                 type="text"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
-              {renderError("guardianName")}
             </div>
 
             <div className="sm:col-span-3">
@@ -308,7 +329,6 @@ export default function Form() {
                 type="text"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
-              {renderError("guardianMobile")}
             </div>
 
             <div className="sm:col-span-3">
@@ -320,11 +340,11 @@ export default function Form() {
                 type="text"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
-              {renderError("guardianRelation")}
             </div>
           </div>
         </div>
 
+        {/* ================= SUBMIT BUTTON ================= */}
         <div className="mt-8 flex justify-center">
           <button
             type="submit"
@@ -335,6 +355,7 @@ export default function Form() {
         </div>
       </form>
 
+      {/* ================= COURSE POPUP ================= */}
       {showCoursePopup && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <AddCourses

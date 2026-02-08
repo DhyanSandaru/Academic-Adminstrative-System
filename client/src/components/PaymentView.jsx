@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from "react";
 import SearchBar from './Searchbar.jsx'
 import { Download, ChevronDown, SlidersHorizontal, Layers } from "lucide-react";
-import autoTable from "jspdf-autotable";
-import jsPDF from "jspdf";
 import TablePayment from "./PaymentTable.jsx";
 
 export default function PaymentTable() {
@@ -13,28 +11,6 @@ export default function PaymentTable() {
   const [groupBy, setGroupBy] = useState("none");
   const [loading, setLoading] = useState(true);
 
-  const exportPDF = (data) => {
-    if (!data || data.length === 0) return; 
-     
-    const doc = new jsPDF(); 
-    const headers = ["Name", "Student ID", "Date", "Time", "Course", "Lecturer", "Payment"];
-    const rows = data.map(p =>
-       [  p.student_name,
-          p.student_id,
-          new Date(p.created_at).toLocaleDateString(),
-          new Date(p.created_at).toLocaleTimeString(), 
-          p.course_module, p.lecturer, p.amount 
-        ]); 
-          
-        autoTable(doc, {
-           head: [headers],
-          body: rows, 
-          startY: 20, 
-          styles: { fontSize: 10 }, 
-          headStyles: { fillColor: [18, 28, 62] }, 
-        }); 
-        doc.save("payments.pdf"); 
-   };
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -165,7 +141,7 @@ export default function PaymentTable() {
 
           {/* Sort By Dropdown - Styled */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity blur"></div>
+            <div className="absolute inset-0  rounded-xl opacity-0 group-hover:opacity-100 transition-opacity blur"></div>
             <div className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all">
               <div className="flex items-center gap-2 px-4 py-2.5 border-2 border-gray-200 rounded-xl group-hover:border-indigo-400 transition-all">
                 <SlidersHorizontal className="w-4 h-4 text-indigo-600" />
@@ -198,7 +174,7 @@ export default function PaymentTable() {
 
           {/* Group By Dropdown - Styled */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity blur"></div>
+            <div className="absolute inset-0  rounded-xl opacity-0 group-hover:opacity-100 transition-opacity blur"></div>
             <div className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all">
               <div className="flex items-center gap-2 px-4 py-2.5 border-2 border-gray-200 rounded-xl group-hover:border-purple-400 transition-all">
                 <Layers className="w-4 h-4 text-purple-600" />
@@ -220,15 +196,7 @@ export default function PaymentTable() {
             </div>
           </div>
 
-          {/* Export Button - Enhanced */}
-          <button 
-            className="relative group bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 font-semibold text-sm shadow-md hover:shadow-xl transition-all hover:scale-105 active:scale-95 overflow-hidden"
-            onClick={() => {exportPDF(sortedData)}} 
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <Download className="w-4 h-4 relative z-10" />
-            <span className="relative z-10">Export PDF</span>
-          </button>
+          
         </div>
 
         {/* Active Filters Display */}

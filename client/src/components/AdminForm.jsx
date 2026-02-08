@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-export default function AddAdminForm() {
+export default function AddAdminForm({ setShowForm }) {
   const [profilePhoto, setProfilePhoto] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -51,7 +51,7 @@ export default function AddAdminForm() {
       formData.append("gender", gender);
       if (profilePhoto) formData.append("profilePhoto", profilePhoto);
 
-      const res = await axios.post("http://localhost:5000/api/admins", formData, {
+      const res = await axios.post("http://localhost:5000/api/admins/add-admin", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -59,6 +59,7 @@ export default function AddAdminForm() {
         alert("Admin added successfully!");
         form.reset();
         setProfilePhoto(null);
+        if (setShowForm) setShowForm(false);
       } else {
         alert(res.data.message || "Failed to add admin");
       }
@@ -127,7 +128,7 @@ export default function AddAdminForm() {
           </div>
         </div>
 
-        {/* Account Information Section */}
+        {/* Personal Information Section */}
         <div className="border-b border-gray-200 pb-12 flex flex-col items-center">
           <h2 className="text-lg font-semibold">Personal Information</h2>
           <p className="mt-1 text-md text-gray-600">
@@ -135,17 +136,17 @@ export default function AddAdminForm() {
           </p>
 
           {/* Gender */}
-            <div className="mt-5">
-              <label className="block text-md font-medium">Gender</label>
-              <div className="mt-2 flex gap-x-6">
-                {["male", "female", "other"].map((g) => (
-                  <label key={g} className="flex items-center gap-x-2 text-md">
-                    <input type="radio" name="gender" value={g} className="text-indigo-500" />
-                    {g.charAt(0).toUpperCase() + g.slice(1)}
-                  </label>
-                ))}
-              </div>
+          <div className="mt-5">
+            <label className="block text-md font-medium">Gender</label>
+            <div className="mt-2 flex gap-x-6">
+              {["male", "female", "other"].map((g) => (
+                <label key={g} className="flex items-center gap-x-2 text-md">
+                  <input type="radio" name="gender" value={g} className="text-indigo-500" />
+                  {g.charAt(0).toUpperCase() + g.slice(1)}
+                </label>
+              ))}
             </div>
+          </div>
 
           <div className="mt-10 w-[85%] grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
             {/* Email */}
@@ -185,6 +186,48 @@ export default function AddAdminForm() {
                 type="text"
                 className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
               />
+            </div>
+
+            {/* Role */}
+            <div className="sm:col-span-3">
+              <label htmlFor="role" className="block text-md font-medium">
+                Role
+              </label>
+              <input
+                id="role"
+                name="role"
+                type="text"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Department */}
+            <div className="sm:col-span-3">
+              <label htmlFor="department" className="block text-md font-medium">
+                Department
+              </label>
+              <input
+                id="department"
+                name="department"
+                type="text"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Status */}
+            <div className="sm:col-span-3">
+              <label htmlFor="status" className="block text-md font-medium">
+                Status
+              </label>
+              <select
+                id="status"
+                name="status"
+                className="mt-2 block w-full rounded-md bg-white border border-gray-300 px-3 py-1.5 focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">Select Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
             </div>
 
             {/* Address */}
@@ -228,8 +271,17 @@ export default function AddAdminForm() {
           </div>
         </div>
 
-        {/* Submit */}
-        <div className="flex justify-center">
+        {/* Submit Buttons */}
+        <div className="flex justify-center gap-4">
+          {setShowForm && (
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="rounded-md bg-gray-500 px-10 py-3 text-white font-medium hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+          )}
           <button
             type="submit"
             className="rounded-md bg-indigo-600 px-10 py-3 text-white font-medium hover:bg-indigo-500"

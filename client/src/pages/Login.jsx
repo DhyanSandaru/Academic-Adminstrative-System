@@ -23,7 +23,7 @@ export default function Login() {
     
     try {
       const response = await axios.post("http://localhost:8000/login", loginData);
-      login(response.data.user)
+      login(response.data.user);
       setLoading(false);
       navigate('/dashboard');
     } 
@@ -114,8 +114,8 @@ export default function Login() {
                 Management System
               </h1>
               <p className="text-lg text-white/90 leading-relaxed">
-                Maybe some text here will help me see it better.<br />
-                Oh God. Oke, let's do it then.
+                Manage All Your Adminstrative Activities<br />
+                Login to Get Started
               </p>
             </div>
 

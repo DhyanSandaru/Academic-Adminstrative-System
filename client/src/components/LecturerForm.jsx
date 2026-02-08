@@ -212,7 +212,7 @@ export default function LecturerForm() {
           <div className="mt-5 w-[85%]">
             <label className="block text-md font-medium">Gender</label>
             <div className="mt-2 flex justify-center gap-x-10">
-              {["male", "female", "other"].map((g) => (
+              {["Male", "Female", "Other"].map((g) => (
                 <label key={g} className="flex items-center gap-x-2 text-md">
                   <input type="radio" name="gender" value={g} className="text-indigo-500" />
                   {g.charAt(0).toUpperCase() + g.slice(1)}

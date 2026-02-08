@@ -14,6 +14,13 @@ exports.generateCode = async (req, res) => {
     let code;
     let isUnique = false;
 
+    const [rows] = await db.query('SELECT COUNT(*) AS total FROM registration_codes');
+    const count = rows[0].total;
+    if (count>= 4){
+      await db.query('DELETE FROM registration_codes ORDER BY created_at ASC LIMIT 1')
+      console.log("1 code erased from the table")
+    }
+
     // Keep generating until unique (avoid duplicates)
     while (!isUnique) {
       code = generateRandomCode(5);

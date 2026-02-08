@@ -1,4 +1,5 @@
 const db = require('../DBconfig.js');
+const {TimetableMailer} = require('../Mailer/TimetableMailer.js');
 
 exports.getAllClasses = async (req, res) => {
   try {
@@ -66,7 +67,15 @@ exports.addClass = async (req, res) => {
 
 exports.updateClass = async (req, res) => {
   const { id } = req.params;
-  const { date, start_time, end_time } = req.body;
+  const {
+    module, 
+    oldDate,
+    oldStartTime,
+    oldEndTime, 
+    date, 
+    start_time, 
+    end_time
+  } = req.body;
   
   try {
     // Build dynamic query based on provided fields
@@ -95,7 +104,41 @@ exports.updateClass = async (req, res) => {
     params.push(id);
 
     await db.execute(query, params);
+
+    const cleaned_module = module?.split('-')[0].trim();
+    const [rows] = await db.query(
+      `SELECT email, student_name
+      FROM students
+      JOIN student_modules
+      ON students.student_id = student_modules.student_id
+      JOIN modules
+      ON student_modules.module_id = modules.module_id
+      WHERE modules.name = ?
+      `,[cleaned_module]
+    )
+
+    console.log(`👉 Found ${rows.length} students for module: ${cleaned_module}`);
+
+    if (rows.length === 0) {
+        console.log("⚠️ WARNING: No students found! Check if module name matches DB exactly.");
+    }
+
+    for(const item of rows){
+      await TimetableMailer({
+        to: item.email,
+        module:module,
+        studentName: item.student_name, 
+        oldDate: oldDate,
+        oldStartTime: oldStartTime,
+        oldEndTime: oldEndTime,
+        newDate: date,
+        newStartTime: start_time,
+        newEndTime: end_time
+      })
+    }
+
     res.status(200).json({ message: "Class updated successfully" });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update class" });

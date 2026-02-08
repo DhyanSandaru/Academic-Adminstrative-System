@@ -22,7 +22,7 @@ export default function AddCourses({selectedCourses, setSelectedCourses, handleC
     useEffect( () => {
         const fetchCourses = async () => {
             try{    
-            const response =  await axios.get(`${BACKEND_URL}/get-courses`);
+            const response =  await axios.get(`${BACKEND_URL}/courses/get-courses`);
             const validatedData = response.data.map((course) => ({
                 courseName: course.name,
                 courseId: course.module_id,

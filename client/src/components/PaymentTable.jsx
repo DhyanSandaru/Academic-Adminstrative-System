@@ -1,7 +1,67 @@
 import { useState } from "react";
 import PaymentReceipt from "./PaymentReceipt.jsx";
+import autoTable from "jspdf-autotable";
+import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { FileDown, FileSpreadsheet } from "lucide-react";
 
 export default function PaymentTable({payments}){
+
+    const exportPDF = () => {
+    if (!payments || payments.length === 0) return alert("No payment records to export.");
+
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text("Payment Report", 14, 15);
+
+    const headers = ["Name", "Student ID", "Date", "Time", "Course", "Lecturer", "Payment"];
+    const rows = payments.map(p => [
+        p.student_name,
+        p.student_id,
+        new Date(p.created_at).toLocaleDateString(),
+        new Date(p.created_at).toLocaleTimeString(),
+        p.course_module,
+        p.lecturer,
+        p.amount,
+    ]);
+
+    autoTable(doc, {
+        head: [headers],
+        body: rows,
+        startY: 25,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [18, 28, 62] },
+    });
+
+    doc.save("payments.pdf");
+    };
+
+    const exportExcel = () => {
+        if (!payments || payments.length === 0) return;
+
+        const worksheetData = payments.map((p) => ({
+        Name: p.student_name,
+        "Student ID": p.student_id,
+        Date: new Date(p.created_at).toLocaleDateString(),
+        Time: new Date(p.created_at).toLocaleTimeString(),
+        Course: p.course_module,
+        Lecturer: p.lecturer,
+        Payment: p.amount,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Payments");
+
+        const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+        });
+        saveAs(new Blob([excelBuffer]), "payments.xlsx");
+    };
+
+
     const [paymentData, setPaymentData] = useState({
         studentName: '',
         studentId: '',
@@ -15,6 +75,24 @@ export default function PaymentTable({payments}){
     return(
         <>
             <div className="overflow-x-auto shadow-2xl w-full rounded-lg">
+                {/* ✅ Export Buttons */}
+                <div className="flex justify-end gap-3 mb-4">
+                    <button
+                    onClick={exportPDF}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700"
+                    >
+                    <FileDown size={16} />
+                    Export PDF
+                    </button>
+                    <button
+                    onClick={exportExcel}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700"
+                    >
+                    <FileSpreadsheet size={16} />
+                    Export Excel
+                    </button>
+                </div>
+
                 <table className="w-full table-fixed">
                 <thead>
                     <tr className="bg-[#253d90]">

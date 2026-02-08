@@ -17,6 +17,7 @@
     "@hello-pangea/dnd": "^18.0.1",
     "@tailwindcss/vite": "^4.1.11",
     "chart.js": "^4.5.0",
+    "file-saver": "^2.0.5",
     "firebase": "^12.4.0",
     "geist": "^1.5.1",
     "html2canvas": "^1.4.1",
@@ -30,7 +31,8 @@
     "react-router-dom": "^7.6.3",
     "react-scroll": "^1.9.3",
     "recharts": "^3.3.0",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

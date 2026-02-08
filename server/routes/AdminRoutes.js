@@ -1,27 +1,49 @@
-// server/routes/AdminRoute.js
+// server/routes/adminRoutes.js
 const express = require('express');
 const router = express.Router();
-const AdminController = require('../controllers/AdminController.js');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+const adminController = require('../controllers/AdminController.js');
 
-// Configure multer storage
+// Ensure admins folder exists
+const adminDir = path.join(__dirname, '../admins');
+if (!fs.existsSync(adminDir)) {
+  fs.mkdirSync(adminDir, { recursive: true });
+}
+
+// Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/admins'); // store uploaded files in server/uploads/admins
-  },
+  destination: (req, file, cb) => cb(null, adminDir),
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    const ext = path.extname(file.originalname);
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, uniqueName);
   }
 });
 
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+  // Accept images only
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
 
-// POST route for adding admin
-router.post('/admins', upload.single('profilePhoto'), AdminController.addAdmin);
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max file size
+  }
+});
 
-// Optional GET route
-// router.get('/admins', AdminController.getAdmins);
+// Routes matching student routes pattern
+router.post('/add-admin', upload.single('profilePhoto'), adminController.addAdmin);
+router.get('/view-admins', adminController.fetchAdmins);
+router.get('/view-admins/id/:id', adminController.getAdminById);
+router.put('/view-admins/:id', upload.single('profilePhoto'), adminController.updateAdminById);
+router.delete('/delete-admin/:id', adminController.deleteAdminById);
 
 module.exports = router;

@@ -2,7 +2,7 @@ import LecturerLayout from "../components/LecturerProfiles/LecturerLayout.jsx";
 import LecturerPersonalDetails from "../components/LecturerProfiles/PersonalDetails.jsx";
 import LecturerContactDetails from "../components/LecturerProfiles/ContactDetails.jsx";
 import LecturerEducationDetails from "../components/LecturerProfiles/EducationDetails.jsx";
-import Salary from "../components/LecturerProfiles/Salary.jsx";
+import Salary from "../components/LecturerProfiles/SalaryCalculation.jsx";
 import { Trash } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";

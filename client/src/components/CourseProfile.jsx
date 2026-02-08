@@ -155,28 +155,23 @@ export default function CourseProfile({ courseId }) {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const data = new FormData();
+      // const data = new FormData();
       
-      // Append all form fields
-      data.append('name', formData.name);
-      data.append('payment', formData.payment);
-      data.append('minAge', formData.minAge);
-      data.append('maxAge', formData.maxAge);
-      data.append('description', formData.description);
-      data.append('courseBanner', formData.courseBanner);
+      // // Append all form fields
+      // data.append('name', formData.name);
+      // data.append('payment', formData.payment);
+      // data.append('minAge', formData.minAge);
+      // data.append('maxAge', formData.maxAge);
+      // data.append('description', formData.description);
+      // data.append('courseBanner', formData.courseBanner);
       
-      // Append lecturers as JSON string
-      data.append('lecturers', JSON.stringify(formData.lecturers));
+      // // Append lecturers as JSON string
+      // data.append('lecturers', JSON.stringify(formData.lecturers));
 
       const response = await axios.put(
-        `http://localhost:8000/course/update-course/${courseId}`,
-        data,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
+        `http://localhost:8000/courses/update-course/${courseId}`,
+        formData
+        );
 
       if (response.status === 200) {
         alert('Course details updated successfully');
