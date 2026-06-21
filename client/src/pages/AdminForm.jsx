@@ -51,7 +51,7 @@ export default function AddAdminForm() {
       formData.append("gender", gender);
       if (profilePhoto) formData.append("profilePhoto", profilePhoto);
 
-      const res = await axios.post("http://localhost:5000/api/admins", formData, {
+      const res = await axios.post("http://localhost:8000/api/admins/add-admin", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

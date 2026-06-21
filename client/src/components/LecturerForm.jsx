@@ -92,7 +92,7 @@ export default function LecturerForm() {
     formData.append("certifications", form["certifications"].value);
 
     try {
-      const res = await axios.post("http://localhost:8000/add-lecturer", formData, {
+      const res = await axios.post("http://localhost:8000/api/lecturers/add-lecturer", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert(res.data.message || "Lecturer added successfully!");

@@ -21,7 +21,7 @@ export default function LecturerProfile() {
     const fetchLecturerById = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8000/view-lecturers/id/${lecturer_id}`);
+        const response = await axios.get(`http://localhost:8000/api/lecturers/view-lecturers/id/${lecturer_id}`);
 
         const validatedData = {
           name: response.data.lecturer_name ?? '',
@@ -58,7 +58,7 @@ export default function LecturerProfile() {
    const handleDelete = async() => {
 
     try{
-       await axios.delete(`http://localhost:8000/delete-lecturer/${lecturer_id}`);
+       await axios.delete(`http://localhost:8000/api/lecturers/delete-lecturer/${lecturer_id}`);
        navigate('/view-students')
 
        alert("Lecturer has been deleted successfully")
@@ -96,7 +96,7 @@ export default function LecturerProfile() {
       }
 
       const response = await axios.put(
-        `http://localhost:8000/update-lecturers/${lecturerData.lecturerId}`,
+        `http://localhost:8000/api/lecturers/update-lecturers/${lecturerData.lecturerId}`,
         formDataToSend,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

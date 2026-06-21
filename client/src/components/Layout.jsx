@@ -14,7 +14,7 @@ export default function Layout({ children,title }) {
 
     return (
         <div className="flex h-screen overflow-hidden bg-[#e3edf9]">
-            <Navbar2 isOpen={sideBarOpen} setIsopen={setSideBarOpen} admin={user.username}/>
+            <Navbar2 isOpen={sideBarOpen} setIsopen={setSideBarOpen} admin={user.name}/>
             <div className="flex-1 flex flex-col overflow-auto">
                 {/* Header */}
                 <header className="bg-white px-6 py-4 flex items-center gap-4 border-b rounded-xl m-3">

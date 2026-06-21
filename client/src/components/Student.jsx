@@ -17,7 +17,7 @@ export default function Student({ name, studentId, courses, status, profilePhoto
           <div className="w-full pl-4 py-4 flex-1/4 backdrop-blur-[0.4px]">
             <div className="w-25 h-25 rounded-full border-3 border-[#ffc20e] overflow-hidden">
               <img
-                src={profilePhoto ? `http://localhost:8000${profilePhoto}` : '/images/default_user.png'}
+                src={profilePhoto ? `http://localhost:8000/public${profilePhoto}` : '/images/default_user.png'}
                 alt={name}
                 className="w-full h-full object-cover"
               />

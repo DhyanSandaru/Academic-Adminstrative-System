@@ -84,7 +84,7 @@ export default function EducationDetails() {
 
       <div className="p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
+          <div className='md:col-span-1'>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Examination</label>
             <input
               type="text"

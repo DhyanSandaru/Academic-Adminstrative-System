@@ -215,7 +215,7 @@ exports.fetchLecturerById = async (req, res) => {
 // FETCH LECTURERS BY COURSE
 // ==============================
 exports.fetchLecturersByCourse = async (req, res) => {
-  const courseName = req.params.course;
+  const courseId = req.params.course;
 
   try {
     const [rows] = await db.query(
@@ -223,10 +223,9 @@ exports.fetchLecturersByCourse = async (req, res) => {
       SELECT l.lecturer_id, l.lecturer_name, l.email, l.mobile, l.profile_photo
       FROM lecturers l
       JOIN lecturer_modules lm ON l.lecturer_id = lm.lecturer_id
-      JOIN modules m ON lm.module_id = m.module_id
-      WHERE TRIM(LOWER(m.name)) = TRIM(LOWER(?))
+      WHERE lm.module_id = ?
       `,
-      [courseName]
+      [courseId]
     );
 
     res.json(rows);

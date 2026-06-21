@@ -3,7 +3,22 @@ const {TimetableMailer} = require('../Mailer/TimetableMailer.js');
 
 exports.getAllClasses = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM timetable");
+    const [rows] = await db.query(`
+      SELECT 
+        t.id,
+        t.date,
+        t.start_time,
+        t.end_time,
+        t.module_id,
+        m.name as module_name,
+        m.grade as grade,
+        GROUP_CONCAT(DISTINCT le.lecturer_name SEPARATOR ', ') as lecturer_name
+      FROM timetable t
+      JOIN modules m ON t.module_id = m.module_id
+      LEFT JOIN lecturer_modules lm ON m.module_id = lm.module_id
+      LEFT JOIN lecturers le ON lm.lecturer_id = le.lecturer_id
+      GROUP BY t.id, t.date, t.start_time, t.end_time, t.module_id, m.name
+    `);
 
     const formatted = rows
       .filter(cls => cls.date && cls.start_time && cls.end_time)
@@ -36,9 +51,13 @@ exports.getAllClasses = async (req, res) => {
 
         return {
           id: cls.id,
-          title: `${cls.subject} - ${cls.professor} (Grade ${cls.grade})`,
+          title: `${cls.module_name} - ${cls.lecturer_name || 'Not Assigned'}`,
           start: start,
           end: end,
+          module_id: cls.module_id,
+          module_name: cls.module_name,
+          grade: cls.grade,
+          lecturer_name: cls.lecturer_name || 'Not Assigned'
         };
       });
 
@@ -51,11 +70,16 @@ exports.getAllClasses = async (req, res) => {
 
 exports.addClass = async (req, res) => {
   try {
-    const { date, day, start_time, end_time, subject, professor, grade } = req.body;
+    const { date, day, start_time, end_time, module_id } = req.body;
+
+    // Validation
+    if (!date || !day || !start_time || !end_time || !module_id) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
 
     await db.query(
-      "INSERT INTO timetable (date, day, start_time, end_time, subject, professor, grade) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [date, day, start_time, end_time, subject, professor, grade]
+      "INSERT INTO timetable (date, day, start_time, end_time, module_id) VALUES (?, ?, ?, ?, ?)",
+      [date, day, start_time, end_time, module_id]
     );
 
     res.status(201).json({ message: "Class added successfully" });
@@ -68,7 +92,7 @@ exports.addClass = async (req, res) => {
 exports.updateClass = async (req, res) => {
   const { id } = req.params;
   const {
-    module, 
+    module_id,
     oldDate,
     oldStartTime,
     oldEndTime, 
@@ -95,6 +119,10 @@ exports.updateClass = async (req, res) => {
       updates.push("end_time = ?");
       params.push(end_time);
     }
+    if (module_id !== undefined) {
+      updates.push("module_id = ?");
+      params.push(module_id);
+    }
 
     if (updates.length === 0) {
       return res.status(400).json({ error: "No fields to update" });
@@ -105,7 +133,14 @@ exports.updateClass = async (req, res) => {
 
     await db.execute(query, params);
 
-    const cleaned_module = module?.split('-')[0].trim();
+    // Get module name for email notification
+    const [moduleRows] = await db.query(
+      `SELECT m.name from modules m WHERE m.module_id = ?`,
+      [module_id]
+    );
+    
+    const moduleName = moduleRows.length > 0 ? moduleRows[0].name : "Unknown Module";
+
     const [rows] = await db.query(
       `SELECT email, student_name
       FROM students
@@ -113,20 +148,20 @@ exports.updateClass = async (req, res) => {
       ON students.student_id = student_modules.student_id
       JOIN modules
       ON student_modules.module_id = modules.module_id
-      WHERE modules.name = ?
-      `,[cleaned_module]
+      WHERE modules.module_id = ?
+      `,[module_id]
     )
 
-    console.log(`👉 Found ${rows.length} students for module: ${cleaned_module}`);
+    console.log(`👉 Found ${rows.length} students for module: ${moduleName}`);
 
     if (rows.length === 0) {
-        console.log("⚠️ WARNING: No students found! Check if module name matches DB exactly.");
+        console.log("⚠️ WARNING: No students found! Check if module ID matches DB exactly.");
     }
 
     for(const item of rows){
       await TimetableMailer({
         to: item.email,
-        module:module,
+        module: moduleName,
         studentName: item.student_name, 
         oldDate: oldDate,
         oldStartTime: oldStartTime,
@@ -166,7 +201,7 @@ exports.fetchClassesByCourse = async (req, res) => {
 
     // Query all timetable records that match this course name
     const [rows] = await db.query(
-      "SELECT * FROM timetable WHERE subject = ?",
+      "SELECT * FROM timetable WHERE module_id = ?",
       [course]
     );
 

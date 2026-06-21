@@ -77,7 +77,7 @@ export default function PaymentReceipt({ data, onClose }) {
           </div>
 
           {/* Amount Section */}
-          <div className="bg-blue-200 bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 mb-6 text-center relative z-10">
+          <div className="bg-blue-100 bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 mb-6 text-center relative z-10">
             <p className="text-gray-700 text-sm mb-2 uppercase tracking-wider">Amount Paid</p>
             <p className="text-4xl font-bold text-gray-800">LKR {parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>

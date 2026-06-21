@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import AddLecturers from "./AddLecturers";
 
@@ -6,8 +6,8 @@ export default function CourseForm() {
   const [formData, setFormData] = useState({
     courseName: "",
     payment: "",
-    minAge: "",
-    maxAge: "",
+    grade: "",
+    curriculum: "",
     description: "",
   });
 
@@ -16,6 +16,21 @@ export default function CourseForm() {
   const [courseBanner, setCourseBanner] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Effect to set curriculum based on grade
+  useEffect(() => {
+    if (formData.grade) {
+      const gradeNum = parseInt(formData.grade);
+      if (gradeNum >= 1 && gradeNum <= 8) {
+        setFormData(prev => ({ ...prev, curriculum: "general" }));
+      } else if (gradeNum >= 9) {
+        // If previously general, set to cambridge
+        if (formData.curriculum === "general" || !formData.curriculum) {
+          setFormData(prev => ({ ...prev, curriculum: "cambridge" }));
+        }
+      }
+    }
+  }, [formData.grade]);
 
   const bannerOptions = [
     "/images/banner1.jpg",
@@ -34,25 +49,15 @@ export default function CourseForm() {
   };
 
   const validateForm = () => {
-    const { courseName, payment, minAge, maxAge, description } = formData;
+    const { courseName, payment, grade, curriculum, description } = formData;
 
-    if (!courseName || !payment || !minAge || !maxAge || !description) {
+    if (!courseName || !payment || !grade || !curriculum || !description) {
       setMessage("⚠️ Please fill all fields before submitting.");
       return false;
     }
 
     if (selectedLecturers.length === 0) {
       setMessage("⚠️ Please select at least one lecturer.");
-      return false;
-    }
-
-    if (Number(minAge) < 0 || Number(maxAge) < 0) {
-      setMessage("⚠️ Age values cannot be negative.");
-      return false;
-    }
-
-    if (Number(minAge) >= Number(maxAge)) {
-      setMessage("⚠️ Minimum age must be less than maximum age.");
       return false;
     }
 
@@ -73,7 +78,7 @@ export default function CourseForm() {
       };
 
       const response = await axios.post(
-        "http://localhost:8000/courses/add-course",
+        "http://localhost:8000/api/courses/add-course",
         payload
       );
 
@@ -82,8 +87,8 @@ export default function CourseForm() {
         setFormData({
           courseName: "",
           payment: "",
-          minAge: "",
-          maxAge: "",
+          grade: "",
+          curriculum: "",
           description: "",
         });
         setSelectedLecturers([]);
@@ -167,31 +172,54 @@ export default function CourseForm() {
               />
             </div>
 
-            {/* Age Requirement */}
+            {/*Grade and Curriculum */}
             <div>
-              <h2 className="block text-md font-medium mb-3">Age Requirement</h2>
+              <h2 className="block text-md font-medium mb-3">Grade</h2>
               <div className="flex flex-col sm:flex-row gap-5 w-full">
                 <div className="w-full sm:w-1/2">
-                  <label htmlFor="minAge">Min</label>
-                  <input
-                    id="minAge"
-                    type="number"
-                    value={formData.minAge}
+                <label htmlFor="grade">Grade</label>
+                  <select
+                    id="grade"
+                    name="grade"
+                    value={formData.grade}
                     onChange={handleInputChange}
-                    placeholder="Minimum age"
                     className="mt-2 w-full rounded-md bg-white px-3 py-2 border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  />
+                  >
+                    <option value="" disabled>--Select Grade--</option>
+                    <option value="1">Grade 1</option>
+                    <option value="2">Grade 2</option>
+                    <option value="3">Grade 3</option>
+                    <option value="4">Grade 4</option>
+                    <option value="5">Grade 5</option>
+                    <option value="6">Grade 6</option>
+                    <option value="7">Grade 7</option>
+                    <option value="8">Grade 8</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="AS">AS Level</option>
+                    <option value="A2">A2 Level</option>
+                  </select>
                 </div>
                 <div className="w-full sm:w-1/2">
-                  <label htmlFor="maxAge">Max</label>
-                  <input
-                    id="maxAge"
-                    type="number"
-                    value={formData.maxAge}
+                <label htmlFor="">Curriculum</label>
+                  <select
+                    id="curriculum"
+                    name="curriculum"
+                    value={formData.curriculum}
                     onChange={handleInputChange}
-                    placeholder="Maximum age"
-                    className="mt-2 w-full rounded-md bg-white px-3 py-2 border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  />
+                    disabled={formData.grade && parseInt(formData.grade) >= 1 && parseInt(formData.grade) <= 8}
+                    className="mt-2 w-full rounded-md bg-white px-3 py-2 border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="" disabled>--Select Curriculum--</option>
+                    {formData.grade && parseInt(formData.grade) >= 1 && parseInt(formData.grade) <= 8 ? (
+                      <option value="general">General</option>
+                    ) : (
+                      <>
+                        <option value="cambridge">Cambridge</option>
+                        <option value="edexcel">Edexcel</option>
+                      </>
+                    )}
+                  </select>
                 </div>
               </div>
             </div>

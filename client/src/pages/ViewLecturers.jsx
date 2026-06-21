@@ -18,7 +18,7 @@ export default function ViewLecturers() {
   useEffect(() => {
     const fetchLecturers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/view-lecturers");
+        const response = await axios.get("http://localhost:8000/api/lecturers/view-lecturers");
 
         const validatedData = response.data.map((lecturer) => ({
           name: lecturer.name ?? '',
@@ -266,7 +266,7 @@ export default function ViewLecturers() {
                   <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 justify-items-center">
                     {currentLecturers.map((lecturer, index) => (
                       <Lecturer
-                        key={groupName-index}
+                        key={`${groupName}-${index}`}
                         name={lecturer.name}
                         lecturerId={lecturer.id}
                         courses={lecturer.courses}

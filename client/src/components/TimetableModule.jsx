@@ -12,6 +12,8 @@ function Timetable() {
   const [originalEvents, setOriginalEvents] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [showEventPopup, setShowEventPopup] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [pendingChanges, setPendingChanges] = useState({
     added: [],
     updated: [],
@@ -19,29 +21,30 @@ function Timetable() {
   });
   const [lecturers,setlecturers] = useState([]);
   const [courses,setCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
   
   const [newClass, setNewClass] = useState({
     date: new Date().toISOString().split("T")[0],
     start_time: "09:00",
     end_time: "10:00",
-    subject: "",
-    professor: "",
-    grade: "",
+    module_id: "",
+    lecturer_filter: "",
+    subject_filter: "",
   });
 
   const defaultNewClass = {
     date: new Date().toISOString().split("T")[0],
     start_time: "09:00",
     end_time: "10:00",
-    subject: "",
-    professor: "",
-    grade: "",
+    module_id: "",
+    lecturer_filter: "",
+    subject_filter: "",
   };
 
   // Fetch classes from backend
   const fetchClasses = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/timetable");
+      const res = await axios.get("http://localhost:8000/api/timetable/timetable");
       const mapped = res.data.map((cls) => ({
         id: cls.id.toString(),
         title: cls.title,
@@ -50,15 +53,27 @@ function Timetable() {
         backgroundColor: getEventColor(cls.title),
         borderColor: getEventColor(cls.title),
         extendedProps: {
-          subject: cls.title.split(' - ')[0],
-          professor: cls.title.split(' - ')[1]?.split(' (')[0],
-          grade: cls.title.match(/\(Grade (.+)\)/)?.[1]
+          module_id: cls.module_id,
+          module_name: cls.module_name,
+          grade:cls.grade,
+          lecturer_name: cls.lecturer_name,
         }
       }));
       setEvents(mapped);
       setOriginalEvents(mapped);
     } catch (err) {
       console.error("Failed to load timetable", err);
+    }
+  };
+
+  // Fetch available courses
+  const fetchCourses = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/courses/get-courses");
+      setCourses(res.data);
+      setFilteredCourses(res.data);
+    } catch (err) {
+      console.error("Failed to load courses", err);
     }
   };
 
@@ -81,12 +96,36 @@ function Timetable() {
 
   useEffect(() => {
     fetchClasses();
+    fetchCourses();
   }, []);
+
+  // Filter courses based on lecturer name and subject
+  const filterCourses = (lecturerFilter, subjectFilter) => {
+    const filtered = courses.filter(course => {
+      const matchesLecturer = course.lecturer?.toLowerCase().includes(lecturerFilter.toLowerCase());
+      const matchesSubject = course.name?.toLowerCase().includes(subjectFilter.toLowerCase());
+      return matchesLecturer && matchesSubject;
+    });
+    setFilteredCourses(filtered);
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (type, value) => {
+    const updatedNewClass = { ...newClass, [type]: value };
+    setNewClass(updatedNewClass);
+    filterCourses(updatedNewClass.lecturer_filter, updatedNewClass.subject_filter);
+  };
 
   // Add new class (temporarily)
   const handleAddClass = () => {
-    if (!newClass.subject || !newClass.professor || !newClass.grade) {
-      alert("Please fill in all fields");
+    if (!newClass.module_id) {
+      alert("Please select a course module");
+      return;
+    }
+
+    const selected = courses.find(c => c.module_id === newClass.module_id);
+    if (!selected) {
+      alert("Invalid course selection");
       return;
     }
 
@@ -96,7 +135,7 @@ function Timetable() {
     const startDateTime = `${newClass.date}T${newClass.start_time}:00`;
     const endDateTime = `${newClass.date}T${newClass.end_time}:00`;
     
-    const title = `${newClass.subject} - ${newClass.professor} (Grade ${newClass.grade})`;
+    const title = `${selected.name} - ${selected.lecturer}`;
     
     const newEvent = {
       id: tempId,
@@ -106,9 +145,10 @@ function Timetable() {
       backgroundColor: getEventColor(title),
       borderColor: getEventColor(title),
       extendedProps: {
-        subject: newClass.subject,
-        professor: newClass.professor,
-        grade: newClass.grade
+        module_id: selected.module_id,
+        module_name: selected.name,
+        lecturer_name: selected.lecturer,
+        grade: selected.grade || "N/A"
       }
     };
 
@@ -117,13 +157,16 @@ function Timetable() {
     setPendingChanges({
       ...pendingChanges,
       added: [...pendingChanges.added, {
-        ...newClass,
+        module_id: newClass.module_id,
+        date: newClass.date,
         day: dayName,
+        start_time: newClass.start_time,
+        end_time: newClass.end_time,
         tempId: tempId,
         displayInfo: {
-          subject: newClass.subject,
-          professor: newClass.professor,
-          grade: newClass.grade,
+          module_name: selected.name,
+          lecturer_name: selected.lecturer,
+          grade: selected.grade || "N/A",
           date: newClass.date,
           start_time: newClass.start_time,
           end_time: newClass.end_time
@@ -132,6 +175,7 @@ function Timetable() {
     });
 
     setNewClass(defaultNewClass);
+    setFilteredCourses(courses);
     setShowForm(false);
   };
 
@@ -253,33 +297,51 @@ function Timetable() {
     }
   };
 
-  // Delete event (temporarily)
-  const handleEventClick = (info) => {
-    if (!window.confirm("Delete this class?")) return;
-    
-    const eventId = info.event.id;
-    
+  // Delete event tracking helper (actual removal from view + pending state)
+  const applyDeleteForSelectedEvent = (eventId) => {
     setEvents((prev) => prev.filter((e) => e.id !== eventId));
 
     if (eventId.startsWith('temp-')) {
-      setPendingChanges({
-        ...pendingChanges,
-        added: pendingChanges.added.filter(item => item.tempId !== eventId)
-      });
+      setPendingChanges((prev) => ({
+        ...prev,
+        added: prev.added.filter(item => item.tempId !== eventId)
+      }));
     } else {
       const eventToDelete = originalEvents.find(e => e.id === eventId);
-      setPendingChanges({
-        ...pendingChanges,
-        deleted: [...pendingChanges.deleted, {
+      if (!eventToDelete) return;
+
+      setPendingChanges((prev) => ({
+        ...prev,
+        deleted: [...prev.deleted, {
           id: eventId,
-          title: info.event.title,
+          title: eventToDelete.title,
           date: eventToDelete.start.split('T')[0],
           start_time: eventToDelete.start.split('T')[1].slice(0, 5),
           end_time: eventToDelete.end.split('T')[1].slice(0, 5)
         }],
-        updated: pendingChanges.updated.filter(u => u.id !== eventId)
-      });
+        updated: prev.updated.filter(u => u.id !== eventId)
+      }));
     }
+  };
+
+  // Show event details popup on click
+  const handleEventClick = (info) => {
+    const event = info.event;
+
+    setSelectedEvent({
+      id: event.id,
+      title: event.title,
+      module_id: event.extendedProps.module_id,
+      module_name: event.extendedProps.module_name,
+      lecturer_name: event.extendedProps.lecturer_name,
+      grade: event.extendedProps.grade || "N/A",
+      date: event.start.toISOString().split('T')[0],
+      start_time: event.start.toTimeString().slice(0, 5),
+      end_time: event.end.toTimeString().slice(0, 5),
+      isTemp: event.id.startsWith('temp-')
+    });
+
+    setShowEventPopup(true);
   };
 
   // Remove specific change from pending
@@ -314,20 +376,18 @@ function Timetable() {
   const confirmChanges = async () => {
     try {
       for (const item of pendingChanges.added) {
-        await axios.post("http://localhost:8000/timetable", {
+        await axios.post("http://localhost:8000/api/timetable/timetable", {
           date: item.date,
           day: item.day,
           start_time: item.start_time,
           end_time: item.end_time,
-          subject: item.subject,
-          professor: item.professor,
-          grade: item.grade
+          module_id: item.module_id
         });
       }
 
       for (const item of pendingChanges.updated) {
-        await axios.put(`http://localhost:8000/timetable/${item.id}`, {
-          module: item.title,
+        await axios.put(`http://localhost:8000/api/timetable/timetable/${item.id}`, {
+          module_id: item.module_id,
           oldDate: item.oldDate,
           oldStartTime: item.oldStartTime,
           oldEndTime: item.oldEndTime,
@@ -338,7 +398,7 @@ function Timetable() {
       }
 
       for (const item of pendingChanges.deleted) {
-        await axios.delete(`http://localhost:8000/timetable/${item.id}`);
+        await axios.delete(`http://localhost:8000/api/timetable/timetable/${item.id}`);
       }
 
       setPendingChanges({ added: [], updated: [], deleted: [] });
@@ -356,29 +416,27 @@ function Timetable() {
            pendingChanges.deleted.length > 0;
   };
 
-  // Custom event rendering for overlapping
   // Custom event rendering with time display
-const renderEventContent = (eventInfo) => {
-  const startTime = eventInfo.event.start.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: false 
-  });
-  const endTime = eventInfo.event.end.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: false 
-  });
+  const renderEventContent = (eventInfo) => {
+    const startTime = eventInfo.event.start.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+    const endTime = eventInfo.event.end.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
 
-  return (
-    <div className="p-1.5 h-full overflow-hidden">
-      <div className="font-bold text-xs truncate mb-0.5">{startTime} - {endTime}</div>
-      <div className="font-semibold text-xs truncate">{eventInfo.event.extendedProps.subject}</div>
-      <div className="text-xs opacity-90 truncate">{eventInfo.event.extendedProps.professor}</div>
-      <div className="text-xs opacity-75">Grade {eventInfo.event.extendedProps.grade}</div>
-    </div>
-  );
-};
+    return (
+      <div className="p-1.5 h-full overflow-hidden">
+        <div className="font-bold text-xs truncate mb-0.5">{startTime} - {endTime}</div>
+        <div className="font-semibold text-xs truncate">{eventInfo.event.extendedProps.module_name}</div>
+        <div className="text-xs opacity-90 truncate">{eventInfo.event.extendedProps.lecturer_name}</div>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -603,47 +661,73 @@ const renderEventContent = (eventInfo) => {
                     ))}
                   </select>
                 </div>
+              </div>
 
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                    <BookOpen className="w-4 h-4 text-indigo-600" />
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
-                    placeholder="e.g., Physics"
-                    value={newClass.subject}
-                    onChange={(e) => setNewClass({ ...newClass, subject: e.target.value })}
-                  />
+              {/* Course Module Selection Section */}
+              <div className="border-t border-gray-200 p-6 space-y-4">
+                <h4 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+                  <BookOpen className="w-5 h-5 text-indigo-600" />
+                  Select Course Module
+                </h4>
+
+                {/* Filters */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 mb-2 block">Filter by Lecturer</label>
+                    <input
+                      type="text"
+                      placeholder="Search lecturer name..."
+                      className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                      value={newClass.lecturer_filter}
+                      onChange={(e) => handleFilterChange("lecturer_filter", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 mb-2 block">Filter by Subject</label>
+                    <input
+                      type="text"
+                      placeholder="Search course name..."
+                      className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                      value={newClass.subject_filter}
+                      onChange={(e) => handleFilterChange("subject_filter", e.target.value)}
+                    />
+                  </div>
                 </div>
 
+                {/* Module List */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                    <User className="w-4 h-4 text-indigo-600" />
-                    Professor
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
-                    placeholder="e.g., John Doe"
-                    value={newClass.professor}
-                    onChange={(e) => setNewClass({ ...newClass, professor: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                    <GraduationCap className="w-4 h-4 text-indigo-600" />
-                    Grade
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
-                    placeholder="e.g., 12"
-                    value={newClass.grade}
-                    onChange={(e) => setNewClass({ ...newClass, grade: e.target.value })}
-                  />
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block">Available Courses</label>
+                  <div className="max-h-72 overflow-y-auto border-2 border-gray-200 rounded-xl p-4 space-y-2 bg-gray-50">
+                    {filteredCourses.length > 0 ? (
+                      filteredCourses.map((course) => (
+                        <label key={course.module_id} className="flex items-center gap-3 p-3 hover:bg-white rounded-lg cursor-pointer transition-colors border border-transparent hover:border-indigo-200">
+                          <input
+                            type="radio"
+                            name="module_id"
+                            value={course.module_id}
+                            checked={newClass.module_id === course.module_id}
+                            onChange={(e) => setNewClass({ ...newClass, module_id: e.target.value })}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-800">{course.name}</p>
+                            <div className="flex flex-row justify-between">
+                              <p className="text-sm text-gray-600 flex items-center gap-1">
+                                <User className="w-3 h-3" />
+                                {course.lecturer || "Not Assigned"}
+                              </p>
+                              <p className="text-sm text-gray-600 flex items-center gap-1">
+                                Grade: {course.grade || "Not Assigned"}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">{course.module_id}</span>
+                        </label>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-center py-8">No courses found matching your filters</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -662,6 +746,43 @@ const renderEventContent = (eventInfo) => {
                   onClick={handleAddClass}
                 >
                   Add Class
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Event Details Popup */}
+        {showEventPopup && selectedEvent && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-indigo-600 p-5 text-white">
+                <h3 className="text-xl font-bold">Class Details</h3>
+                <p className="text-sm">Click delete to remove this event or close to keep it.</p>
+              </div>
+              <div className="p-5 space-y-2 text-sm text-black">
+                <p><strong>Module:</strong> {selectedEvent.module_name}</p>
+                <p><strong>Lecturer:</strong> {selectedEvent.lecturer_name}</p>
+                <p><strong>Grade:</strong> {selectedEvent.grade}</p>
+                <p><strong>Date:</strong> {selectedEvent.date}</p>
+                <p><strong>Time:</strong> {selectedEvent.start_time} - {selectedEvent.end_time}</p>
+              </div>
+              <div className="bg-gray-100 p-4 flex justify-end gap-2">
+                <button
+                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                  onClick={() => { setShowEventPopup(false); setSelectedEvent(null); }}
+                >
+                  Close
+                </button>
+                <button
+                  className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
+                  onClick={() => {
+                    applyDeleteForSelectedEvent(selectedEvent.id);
+                    setShowEventPopup(false);
+                    setSelectedEvent(null);
+                  }}
+                >
+                  Delete
                 </button>
               </div>
             </div>
@@ -688,21 +809,16 @@ const renderEventContent = (eventInfo) => {
                     {pendingChanges.added.map((item, index) => (
                       <div key={index} className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-3 flex justify-between items-start hover:shadow-md transition-all">
                         <div>
-                          <p className="font-bold text-gray-900 text-lg">{item.displayInfo.subject}</p>
+                          <p className="font-bold text-gray-900 text-lg">{item.displayInfo.module_name}</p>
                           <p className="text-gray-700 flex items-center gap-1 mt-1">
                             <User className="w-4 h-4" />
-                            {item.displayInfo.professor}
+                            {item.displayInfo.lecturer_name || "Not Assigned"}
                           </p>
-                          <p className="text-gray-600 flex items-center gap-1">
-                            <GraduationCap className="w-4 h-4" />
-                            Grade {item.displayInfo.grade}
-                          </p>
-                          <p className="text-gray-600 flex items-center gap-1">
+                          <p className="text-gray-600 flex items-center gap-1 mt-1">
                             <Calendar className="w-4 h-4" />
                             {item.displayInfo.date}
                           </p>
-                          <p className="text-gray-600 flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
+                          <p className="text-gray-600">
                             {item.displayInfo.start_time} - {item.displayInfo.end_time}
                           </p>
                         </div>

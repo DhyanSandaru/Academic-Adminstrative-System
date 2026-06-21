@@ -19,7 +19,7 @@ export default function ViewStudents() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/view-students");
+        const response = await axios.get("http://localhost:8000/api/students/view-students");
         const validatedData = response.data.map(student => ({
           name: student.name ?? '',
           id: student.studentId ?? '',
@@ -276,9 +276,9 @@ export default function ViewStudents() {
                 {/* Student Cards Grid */}
                 <div className="p-6">
                   <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 justify-items-center">
-                    {currentStudents.map((student, index) => (
+                    {currentStudents.map((student) => (
                       <Student
-                        key={groupName-index}
+                        key={student.id}
                         name={student.name}
                         studentId={student.id}
                         courses={student.courses}

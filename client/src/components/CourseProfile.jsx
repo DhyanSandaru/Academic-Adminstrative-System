@@ -21,8 +21,8 @@ export default function CourseProfile({ courseId }) {
   const [formData, setFormData] = useState({
     name: '',
     payment: '',
-    minAge: '',
-    maxAge: '',
+    grade: '',
+    curriculum: '',
     description: '',
     courseBanner: '',
     lecturers: []
@@ -47,8 +47,8 @@ export default function CourseProfile({ courseId }) {
       const initial = {
         name: courseData.name || '',
         payment: courseData.payment || '',
-        minAge: courseData.minAge || '',
-        maxAge: courseData.maxAge || '',
+        grade: courseData.grade || '',
+        curriculum: courseData.curriculum || '',
         description: courseData.description || '',
         courseBanner: courseData.courseBanner || '',
         lecturers: lecturers || []
@@ -68,21 +68,36 @@ export default function CourseProfile({ courseId }) {
     }
   }, [classes]);
 
+  // Effect to set curriculum based on grade
+  useEffect(() => {
+    if (formData.grade) {
+      const gradeNum = parseInt(formData.grade);
+      if (gradeNum >= 1 && gradeNum <= 8) {
+        setFormData(prev => ({ ...prev, curriculum: "general" }));
+      } else if (gradeNum >= 9) {
+        // If previously general, set to cambridge
+        if (formData.curriculum === "general" || !formData.curriculum) {
+          setFormData(prev => ({ ...prev, curriculum: "cambridge" }));
+        }
+      }
+    }
+  }, [formData.grade]);
+
   const fetchAllData = async () => {
     try {
       setLoading(true);
       
       // Fetch course details
       const { data: course } = await axios.get(
-        `http://localhost:8000/courses/get-courses/${courseId}`
+        `http://localhost:8000/api/courses/get-courses/${courseId}`
       );
       setCourseData(course || null);
 
       // Fetch classes
       let classesData = [];
-      if (course?.name) {
+      if (course) {
         const { data } = await axios.get(
-          `http://localhost:8000/timetable/${encodeURIComponent(course.name)}`
+          `http://localhost:8000/api/timetable/timetable/${encodeURIComponent(courseId)}`
         );
         classesData = Array.isArray(data) ? data : [];
       }
@@ -90,9 +105,9 @@ export default function CourseProfile({ courseId }) {
 
       // Fetch lecturers
       let lecturersData = [];
-      if (course?.name) {
+      if (course) {
         const { data } = await axios.get(
-          `http://localhost:8000/view-lecturers/${encodeURIComponent(course.name)}`
+          `http://localhost:8000/api/lecturers/view-lecturers/${encodeURIComponent(courseId)}`
         );
         lecturersData = Array.isArray(data) ? data : [];
       }
@@ -160,8 +175,8 @@ export default function CourseProfile({ courseId }) {
       // // Append all form fields
       // data.append('name', formData.name);
       // data.append('payment', formData.payment);
-      // data.append('minAge', formData.minAge);
-      // data.append('maxAge', formData.maxAge);
+      // data.append('grade', formData.grade);
+      // data.append('curriculum', formData.curriculum);
       // data.append('description', formData.description);
       // data.append('courseBanner', formData.courseBanner);
       
@@ -169,7 +184,7 @@ export default function CourseProfile({ courseId }) {
       // data.append('lecturers', JSON.stringify(formData.lecturers));
 
       const response = await axios.put(
-        `http://localhost:8000/courses/update-course/${courseId}`,
+        `http://localhost:8000/api/courses/update-course/${courseId}`,
         formData
         );
 
@@ -301,26 +316,47 @@ export default function CourseProfile({ courseId }) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Min Age</label>
-                  <input
-                    type="number"
-                    name="minAge"
-                    value={formData.minAge}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Grade</label>
+                  <select
+                    name="grade"
+                    value={formData.grade}
                     onChange={handleChange}
                     className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
-                    placeholder="e.g., 16"
-                  />
+                  >
+                    <option value="" disabled>--Select Grade--</option>
+                    <option value="1">Grade 1</option>
+                    <option value="2">Grade 2</option>
+                    <option value="3">Grade 3</option>
+                    <option value="4">Grade 4</option>
+                    <option value="5">Grade 5</option>
+                    <option value="6">Grade 6</option>
+                    <option value="7">Grade 7</option>
+                    <option value="8">Grade 8</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="AS">AS Level</option>
+                    <option value="A2">A2 Level</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Age</label>
-                  <input
-                    type="number"
-                    name="maxAge"
-                    value={formData.maxAge}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Curriculum</label>
+                  <select
+                    name="curriculum"
+                    value={formData.curriculum}
                     onChange={handleChange}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
-                    placeholder="e.g., 25"
-                  />
+                    disabled={formData.grade && parseInt(formData.grade) >= 1 && parseInt(formData.grade) <= 8}
+                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="" disabled>--Select Curriculum--</option>
+                    {formData.grade && parseInt(formData.grade) >= 1 && parseInt(formData.grade) <= 8 ? (
+                      <option value="general">General</option>
+                    ) : (
+                      <>
+                        <option value="cambridge">Cambridge</option>
+                        <option value="edexcel">Edexcel</option>
+                      </>
+                    )}
+                  </select>
                 </div>
               </div>
 
@@ -437,7 +473,7 @@ export default function CourseProfile({ courseId }) {
                       <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-cyan-600 flex items-center justify-center flex-shrink-0">
                         {lecturer.profile_photo ? (
                           <img
-                            src={`http://localhost:8000${lecturer.profile_photo}`}
+                            src={`http://localhost:8000/public${lecturer.profile_photo}`}
                             alt={lecturer.lecturer_name}
                             className="w-full h-full object-cover"
                           />

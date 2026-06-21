@@ -1,6 +1,7 @@
 // server/controllers/LoginController.js
 const Admin = require('../models/LoginModel.js');
 const db = require('../DBconfig.js');
+const bcrypt = require('bcryptjs');
 
 // @desc    Admin login
 // @route   POST /api/auth/login
@@ -20,6 +21,12 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
+    // Compare entered password with hashed password
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
     // Update last login timestamp
     await db.query(
       'UPDATE admin_accounts SET last_login = NOW() WHERE admin_id = ?',
@@ -34,8 +41,6 @@ exports.login = async (req, res) => {
         username: user.username,
         name: user.name,
         email: user.email,
-        role: user.role,
-        department: user.department,
         status: user.status,
         profilePhoto: user.profile_photo
       }

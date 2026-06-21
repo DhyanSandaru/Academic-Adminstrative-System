@@ -13,8 +13,6 @@ exports.addAdmin = async (req, res) => {
     email,
     password,
     phone,
-    role,
-    department,
     status,
     nic,
     address,
@@ -24,7 +22,7 @@ exports.addAdmin = async (req, res) => {
   const profilePhoto = req.file ? req.file.filename : null;
 
   // Validation - match AddAdminForm required fields
-  if (!name || !email || !password || !phone || !role || !department || !status || !nic || !address) {
+  if (!name || !email || !password || !phone || !status || !nic || !address) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
@@ -46,9 +44,9 @@ exports.addAdmin = async (req, res) => {
     // Insert admin - use email as username
     const [result] = await db.query(
       `INSERT INTO admin_accounts 
-      (username, name, email, password, nic, gender, phone, address, profile_photo, role, department, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [email, name, email, hashedPassword, nic, gender || '', phone, address, profilePhoto, role, department, status]
+      (username, name, email, password, nic, gender, phone, address, profile_photo, status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [email, name, email, hashedPassword, nic, gender || '', phone, address, profilePhoto, status]
     );
 
     res.status(200).json({
@@ -57,8 +55,6 @@ exports.addAdmin = async (req, res) => {
         id: result.insertId,
         name,
         email,
-        role,
-        department,
         status
       }
     });
@@ -77,7 +73,7 @@ exports.getAdminById = async (req, res) => {
   try {
     const [rows] = await db.query(
       `SELECT admin_id, username, name, email, nic, gender, phone, address, 
-       profile_photo, role, department, status, last_login, created_at, updated_at 
+       profile_photo, status, last_login, created_at, updated_at 
        FROM admin_accounts WHERE admin_id = ?`,
       [adminId]
     );
@@ -104,8 +100,6 @@ exports.getAdminById = async (req, res) => {
         mobile: admin.phone,
         address: admin.address,
         profilePhoto: admin.profile_photo,
-        role: admin.role,
-        department: admin.department,
         accountStatus: admin.status,
         lastLogin: lastLogin,
         createdAt: admin.created_at,
@@ -125,7 +119,7 @@ exports.fetchAdmins = async (req, res) => {
   try {
     const [rows] = await db.query(
       `SELECT admin_id, username, name, email, nic, gender, phone, address, 
-       profile_photo, role, department, status, last_login, created_at, updated_at 
+       profile_photo, status, last_login, created_at, updated_at 
        FROM admin_accounts ORDER BY created_at DESC`
     );
 
@@ -139,8 +133,6 @@ exports.fetchAdmins = async (req, res) => {
       mobile: admin.phone,
       address: admin.address,
       profilePhoto: admin.profile_photo,
-      role: admin.role,
-      department: admin.department,
       accountStatus: admin.status,
       lastLogin: admin.last_login ? new Date(admin.last_login).toLocaleString() : 'Never',
       createdAt: admin.created_at,
@@ -166,8 +158,6 @@ exports.updateAdminById = async (req, res) => {
     gender,
     mobile,
     address,
-    role,
-    department,
     accountStatus
   } = req.body;
 
@@ -210,14 +200,6 @@ exports.updateAdminById = async (req, res) => {
       updateFields.push('address = ?');
       updateValues.push(address);
     }
-    if (role) {
-      updateFields.push('role = ?');
-      updateValues.push(role);
-    }
-    if (department) {
-      updateFields.push('department = ?');
-      updateValues.push(department);
-    }
     if (accountStatus) {
       updateFields.push('status = ?');
       updateValues.push(accountStatus);
@@ -254,7 +236,7 @@ exports.updateAdminById = async (req, res) => {
     // Fetch updated admin
     const [updatedAdmin] = await db.query(
       `SELECT admin_id, username, name, email, nic, gender, phone, address, 
-       profile_photo, role, department, status, last_login 
+       profile_photo, status, last_login 
        FROM admin_accounts WHERE admin_id = ?`,
       [id]
     );
@@ -273,8 +255,6 @@ exports.updateAdminById = async (req, res) => {
         mobile: admin.phone,
         address: admin.address,
         profilePhoto: admin.profile_photo,
-        role: admin.role,
-        department: admin.department,
         accountStatus: admin.status,
         lastLogin: admin.last_login ? new Date(admin.last_login).toLocaleString() : 'Never'
       }

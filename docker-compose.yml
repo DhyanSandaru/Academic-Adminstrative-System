@@ -1,0 +1,45 @@
+services:
+  # MySQL Database
+  database:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # Express Backend
+  server:
+    build: ./server
+    restart: always
+    env_file:
+      - ./server/.env  # Pointing to your specific .env location
+    environment:
+      - DB_HOST=database  # Overrides localhost to use Docker's internal network
+    depends_on:
+      - database
+    ports:
+      - "5000:5000"
+
+  # React Frontend
+  client:
+    build: ./client
+    restart: always
+    ports:
+      - "3000:80"  
+    depends_on:
+      - server
+
+  public-client:
+    build: ./public-client
+    restart: always
+    ports:
+      - "4000:80"  # Access at localhost:4000 -> routes to its own internal port 80
+    depends_on:
+      - server
+
+volumes:
+  db_data:

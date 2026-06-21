@@ -11,7 +11,7 @@ export default function RemoteReg() {
   // Fetch code
   const fetchNewCode = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/new-code");
+      const response = await axios.get("http://localhost:8000/api/verification/new-code");
       setNewCode(response.data.code);
     } catch (err) {
       console.error("Error fetching code:", err);
@@ -21,7 +21,7 @@ export default function RemoteReg() {
   // Fetch all pending requests
   const fetchRequests = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/view-requests");
+      const response = await axios.get("http://localhost:8000/api/requests/view-requests");
       setRequests(response.data);
     } catch (err) {
       console.error("Error fetching requests:", err);
@@ -35,9 +35,10 @@ export default function RemoteReg() {
     if (!confirmApprove) return;
 
     try {
-      await axios.post(`http://localhost:8000/approve-request/${selectedRequest.id}`);
+      await axios.post(`http://localhost:8000/api/requests/approve-request/${selectedRequest.id}`);
+      await fetchRequests(); // Wait for list to refresh
       setSelectedRequest(null);
-      fetchRequests(); // Refresh list
+      alert("Request approved successfully!");
     } catch (err) {
       alert("Approval failed");
       console.error(err);
@@ -51,9 +52,10 @@ export default function RemoteReg() {
     if (!confirmReject) return;
 
     try {
-      await axios.delete(`http://localhost:8000/reject-request/${selectedRequest.id}`);
+      await axios.delete(`http://localhost:8000/api/requests/reject-request/${selectedRequest.id}`);
+      await fetchRequests(); // Wait for list to refresh
       setSelectedRequest(null);
-      fetchRequests(); // Refresh list
+      alert("Request rejected successfully!");
     } catch (err) {
       alert("Rejection failed");
       console.error(err);

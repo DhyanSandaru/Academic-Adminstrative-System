@@ -74,90 +74,96 @@ export default function PaymentTable({payments}){
     const [popup, setpopup] = useState(false);
     return(
         <>
-            <div className="overflow-x-auto shadow-2xl w-full rounded-lg">
+            <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
                 {/* ✅ Export Buttons */}
-                <div className="flex justify-end gap-3 mb-4">
-                    <button
-                    onClick={exportPDF}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700"
-                    >
-                    <FileDown size={16} />
-                    Export PDF
-                    </button>
-                    <button
-                    onClick={exportExcel}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700"
-                    >
-                    <FileSpreadsheet size={16} />
-                    Export Excel
-                    </button>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200">
+                    <div className="flex justify-end gap-3">
+                        <button
+                        onClick={exportPDF}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                        <FileDown size={16} />
+                        Export PDF
+                        </button>
+                        <button
+                        onClick={exportExcel}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                        <FileSpreadsheet size={16} />
+                        Export Excel
+                        </button>
+                    </div>
                 </div>
 
-                <table className="w-full table-fixed">
-                <thead>
-                    <tr className="bg-[#253d90]">
-                    <th className="py-3 px-4 text-center font-semibold text-white">Name</th>
-                    <th className="py-3 px-4 text-center font-semibold text-white">Student ID</th>
-                    <th className="py-3 px-4 text-center font-semibold text-white">Date</th>
-                    <th className="py-3 px-4 text-center font-semibold text-white">Time</th>
-                    <th className="py-3 px-4 text-center font-semibold text-white">Course</th>
-                    <th className="py-3 px-4 text-center font-semibold text-white">Lecturer</th>
-                    <th className="py-3 px-4 text-center font-semibold text-white">Payment</th>
-                    </tr>
-                </thead>
-                </table>
+                {/* Fixed Header */}
+                <div className="overflow-x-auto">
+                    <table className="w-full table-fixed">
+                        <thead className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
+                            <tr>
+                                <th className="py-4 px-6 text-left font-bold text-sm uppercase tracking-wider">Name</th>
+                                <th className="py-4 px-6 text-left font-bold text-sm uppercase tracking-wider">Student ID</th>
+                                <th className="py-4 px-6 text-left font-bold text-sm uppercase tracking-wider">Date</th>
+                                <th className="py-4 px-6 text-left font-bold text-sm uppercase tracking-wider">Time</th>
+                                <th className="py-4 px-6 text-left font-bold text-sm uppercase tracking-wider">Course</th>
+                                <th className="py-4 px-6 text-left font-bold text-sm uppercase tracking-wider">Lecturer</th>
+                                <th className="py-4 px-6 text-left font-bold text-sm uppercase tracking-wider">Payment</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+
+                {/* Scrollable Body */}
+                <div className="overflow-y-auto max-h-96 overflow-x-auto">
+                    <table className="w-full table-fixed">
+                        <tbody className="divide-y divide-gray-200">
+                            {payments.length > 0 ? (
+                            payments.map((payment, index) => (
+                                <tr
+                                key={index}
+                                onClick={() => {
+                                    setPaymentData(
+                                        {
+                                            studentName: payment.student_name,
+                                            studentId: payment.student_id,
+                                            courseModule: payment.course_module,
+                                            lecturer: payment.lecturer,
+                                            amount: payment.amount,
+                                            refNo: payment.ref_no,
+                                            createdAt: payment.created_at
+                                        }
+                                    )
+                                    setpopup(true);
+                                }}
+                            
+                                className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-blue-50 hover:scale-102 transition-all duration-200 cursor-pointer border-b border-gray-100`}
+                                >
+                                <td className="py-4 px-6 text-gray-900 font-medium">{payment.student_name}</td>
+                                <td className="py-4 px-6 text-gray-700">{payment.student_id}</td>
+                                <td className="py-4 px-6 text-gray-700">
+                                    {new Date(payment.created_at).toLocaleDateString()}
+                                </td>
+                                <td className="py-4 px-6 text-gray-700">
+                                    {new Date(payment.created_at).toLocaleTimeString()}
+                                </td>
+                                <td className="py-4 px-6 text-gray-700">{payment.course_module}</td>
+                                <td className="py-4 px-6 text-gray-700">{payment.lecturer}</td>
+                                <td className="py-4 px-6 text-gray-900 font-semibold">{payment.amount}</td>
+                                </tr>
+                            ))
+                            ) : (
+                            <tr>
+                                <td colSpan="7" className="py-12 text-center text-gray-500 text-lg">
+                                No payment records found.
+                                </td>
+                            </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            {/* Scrollable Table Body */}
-            <div className="overflow-y-auto flex-1 overflow-x-auto w-full rounded-lg">
-                <table className="w-full table-fixed">
-                <tbody>
-                    {payments.length > 0 ? (
-                    payments.map((payment, index) => (
-                        <tr
-                        key={index}
-                        onClick={() => {
-                            setPaymentData(
-                                {
-                                    studentName: payment.student_name,
-                                    studentId: payment.student_id,
-                                    courseModule: payment.course_module,
-                                    lecturer: payment.lecturer,
-                                    amount: payment.amount,
-                                    refNo: payment.ref_no,
-                                    createdAt: payment.created_at
-                                }
-                            )
-                            setpopup(true);
-                        }}
-                    
-                        className={`${index % 2 === 0 ? "bg-white" : "bg-[#f8f9fa]"} border-b hover:bg-gray-100 hover:scale-103 transition duration-150 ease-in-out cursor-pointer`}
-                        >
-                        <td className="py-3 px-4 font-medium text-[#121c3e]">{payment.student_name}</td>
-                        <td className="py-3 px-4 text-[#121c3e]">{payment.student_id}</td>
-                        <td className="py-3 px-4 text-[#121c3e]">
-                            {new Date(payment.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="py-3 px-4 text-[#121c3e]">
-                            {new Date(payment.created_at).toLocaleTimeString()}
-                        </td>
-                        <td className="py-3 px-4 text-[#121c3e]">{payment.course_module}</td>
-                        <td className="py-3 px-4 text-[#121c3e]">{payment.lecturer}</td>
-                        <td className="py-3 px-4 text-[#121c3e] font-medium">{payment.amount}</td>
-                        </tr>
-                    ))
-                    ) : (
-                    <tr>
-                        <td colSpan="7" className="py-6 text-center text-[#121c3e]">
-                        No records found.
-                        </td>
-                    </tr>
-                    )}
-                </tbody>
-                </table>
-                {popup && (
-                    <PaymentReceipt data={paymentData} onClose={() => setPaymentData(null)}/>
-                )}
-            </div>
+            {popup && (
+                <PaymentReceipt data={paymentData} onClose={() => setpopup(false)}/>
+            )}
         </>
     )
 }

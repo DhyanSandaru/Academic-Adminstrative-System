@@ -22,7 +22,7 @@ export default function StudentProfile() {
     const fetchStudentbyID = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:8000/view-students/id/${student_id}`);
+        const response = await axios.get(`http://localhost:8000/api/students/view-students/id/${student_id}`);
 
         const validatedData = {
           name: response.data.student_name ?? '',
@@ -64,7 +64,7 @@ export default function StudentProfile() {
   const handleDelete = async() => {
 
     try{
-       await axios.delete(`http://localhost:8000/delete-student/${student_id}`);
+       await axios.delete(`http://localhost:8000/api/students/delete-student/${student_id}`);
        navigate('/view-students')
 
        alert("Student has been deleted successfully")
@@ -102,7 +102,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.put(
-        `http://localhost:8000/view-students/${studentData.studentId}`,
+        `http://localhost:8000/api/students/view-students/${studentData.studentId}`,
         formDataToSend,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

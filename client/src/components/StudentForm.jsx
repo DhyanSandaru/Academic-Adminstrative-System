@@ -5,8 +5,10 @@ import AddCourses from "./AddCourses";
 export default function Form() {
   const [courseModules, setCourseModules] = useState([]);
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [grade, setGrade] = useState("");
   const [showCoursePopup, setShowCoursePopup] = useState(false);
 
+  //removing a selected module from courses field
   const removeCourseModule = (moduleToRemove) => {
     setCourseModules(courseModules.filter((m) => m !== moduleToRemove));
   };
@@ -21,9 +23,6 @@ export default function Form() {
     formData.append("profilePhoto", profilePhoto);
     formData.append("gender", form["gender"].value);
     formData.append("dob", form["dob"].value);
-    formData.append("ethnicity", form["ethnicity"].value);
-    formData.append("exam", form["exam"].value);
-    formData.append("examYear", form["exam-year"].value);
     formData.append("email", form["email"].value);
     formData.append("nic", form["nic"].value);
     formData.append("mobile", form["mobile"].value);
@@ -32,11 +31,12 @@ export default function Form() {
     formData.append("guardianMobile", form["guardian-mobile"].value);
     formData.append("guardianRelation", form["guardian-relation"].value);
     formData.append("previousEducation", form["previous-education"].value);
-    formData.append("grade", form["grade"].value);
+    formData.append("grade", grade);
+    formData.append("curriculum", form["curriculum"].value);
     formData.append("courseModules", JSON.stringify(courseModules));
 
     try {
-      const res = await axios.post("http://localhost:8000/add-student", formData);
+      const res = await axios.post("http://localhost:8000/api/students/add-student", formData);
       alert(res.data.message || "Student added successfully!");
       form.reset();
       setCourseModules([]);
@@ -185,40 +185,9 @@ export default function Form() {
               />
             </div>
 
-            {/* Exam & Year */}
-            <div className="sm:col-span-3">
-              <label htmlFor="exam" className="block text-md font-medium">
-                Exam & Year
-              </label>
-              <div className="mt-2 flex gap-4">
-                <select
-                  id="exam"
-                  name="exam"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">Select Exam</option>
-                  <option value="O/L">O/L</option>
-                  <option value="A/L">A/L</option>
-                  <option value="IELTS">IELTS</option>
-                  <option value="Other">Other</option>
-                </select>
-                <select
-                  id="exam-year"
-                  name="exam-year"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">Select Year</option>
-                  {Array.from({ length: 10 }, (_, i) => currentYear + i).map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
 
             {/* Email */}
-            <div className="sm:col-span-3">
+            <div className="sm:col-span-full">
               <label htmlFor="email" className="block text-md font-medium">
                 Email
               </label>
@@ -275,7 +244,7 @@ export default function Form() {
           </p>
 
           <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 w-full">
-            <div className="sm:col-span-3">
+            <div className="sm:col-span-full">
               <label htmlFor="previous-education" className="block text-md font-medium">
                 Previous School / Institution
               </label>
@@ -287,17 +256,58 @@ export default function Form() {
               />
             </div>
 
+            {/* Exam & Year */}
+            <div className="sm:col-span-3">
+              <label htmlFor="curriculum" className="block text-md font-medium">
+                Curriculm
+              </label>
+              <select
+                id="curriculum"
+                name="curriculum"
+                className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                disabled={grade && parseInt(grade) >= 1 && parseInt(grade) <= 8}
+                >
+                  {grade && parseInt(grade) >= 1 && parseInt(grade) <= 8?
+                  (
+                    <option value="general">General</option>
+                ): (
+                  <>
+                    <option value="" disabled>--Select Curriculum--</option>
+                    <option value="edexcel">Edexcel</option>
+                    <option value="cambridge">Cambridge</option>
+                  </>
+                )
+                  }
+                </select> 
+            </div>
+            
+            {/*Grade*/}
             <div className="sm:col-span-3">
               <label htmlFor="grade" className="block text-md font-medium">
                 Current Grade
               </label>
-              <input
+              <select
                 id="grade"
-                type="text"
-                placeholder="e.g., Grade 7 / Grade 10"
+                name="grade"
+                onChange={(e) => setGrade(e.target.value)}
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
-              />
+                >
+                  <option value="">Select Grade</option>
+                  <option value="1">Grade 1</option>
+                  <option value="2">Grade 2</option>
+                  <option value="3">Grade 3</option>
+                  <option value="4">Grade 4</option>
+                  <option value="5">Grade 5</option>
+                  <option value="6">Grade 6</option>
+                  <option value="7">Grade 7</option>
+                  <option value="8">Grade 8</option>
+                  <option value="9">Grade 9</option>
+                  <option value="10">Grade 10</option>
+                  <option value="AS">AS level</option>
+                  <option value="A2">A2 level</option>
+                </select>  
             </div>
+
           </div>
         </div>
 

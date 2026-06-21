@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import axios from "axios";
 import AdminLayout from "../components/AdminProfiles/AdminLayout.jsx";
-import AdminForm from "./AdminForm.jsx";
+import AdminForm from "../components/AdminForm.jsx";
 import PersonalDetails from "../components/AdminProfiles/PersonalDetails.jsx";
 import ContactDetails from "../components/AdminProfiles/ContactDetails.jsx";
 import AccountDetails from "../components/AdminProfiles/AccountDetails.jsx";
@@ -52,7 +52,7 @@ export default function AdminProfile() {
           return;
         }
 
-        const response = await axios.get(`http://localhost:8000/api/view-admins/id/${user.id}`);
+        const response = await axios.get(`http://localhost:8000/api/admins/view-admins/id/${user.id}`);
         const admin = response.data.admin;
         
         setAdminData({
@@ -82,7 +82,7 @@ export default function AdminProfile() {
         });
 
         if (admin.profilePhoto) {
-          setPreviewUrl(`http://localhost:5000${admin.profilePhoto}`);
+          setPreviewUrl(`http://localhost:8000/api/admins/${admin.profilePhoto}`);
         }
 
         setLoading(false);
@@ -138,7 +138,7 @@ export default function AdminProfile() {
       });
 
       const response = await axios.put(
-        `http://localhost:5000/api/view-admins/${user.id}`,
+        `http://localhost:8000/api/admins/view-admins/${user.id}`,
         form,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );

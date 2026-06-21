@@ -15,9 +15,19 @@ CREATE TABLE IF NOT EXISTS `admin_accounts` (
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `nic` varchar(20) DEFAULT NULL,
+  `gender` enum('male', 'female', 'other', '') DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `address` text,
+  `profile_photo` varchar(255) DEFAULT NULL,
+  `status` enum('Active', 'Inactive') DEFAULT 'Active',
+  `last_login` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`admin_id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE = InnoDB AUTO_INCREMENT = 2 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: lecturer_modules
@@ -32,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `lecturer_modules` (
   KEY `module_id` (`module_id`),
   CONSTRAINT `lecturer_modules_ibfk_1` FOREIGN KEY (`lecturer_id`) REFERENCES `lecturers` (`lecturer_id`) ON DELETE CASCADE,
   CONSTRAINT `lecturer_modules_ibfk_2` FOREIGN KEY (`module_id`) REFERENCES `modules` (`module_id`) ON DELETE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 16 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: lecturers
@@ -67,10 +77,10 @@ CREATE TABLE IF NOT EXISTS `modules` (
   `module_id` varchar(20) NOT NULL,
   `name` varchar(100) NOT NULL,
   `payment` decimal(10, 2) DEFAULT NULL,
-  `minAge` int DEFAULT NULL,
-  `maxAge` int DEFAULT NULL,
+  `curriculum` varchar(20) DEFAULT NULL,
   `description` text,
   `courseBanner` varchar(255) DEFAULT NULL,
+  `grade` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`module_id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
@@ -87,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `payments` (
   `lecturer` varchar(100) NOT NULL,
   `amount` decimal(10, 2) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `lecturer_id` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`ref_no`),
   UNIQUE KEY `ref_no` (`ref_no`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
@@ -118,7 +129,7 @@ CREATE TABLE IF NOT EXISTS `pending_requests` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `nic` (`nic`)
-) ENGINE = InnoDB AUTO_INCREMENT = 2 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: registration_codes
@@ -143,7 +154,7 @@ CREATE TABLE IF NOT EXISTS `student_modules` (
   PRIMARY KEY (`id`),
   KEY `student_id` (`student_id`),
   CONSTRAINT `student_modules_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 14 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: students
@@ -174,7 +185,7 @@ CREATE TABLE IF NOT EXISTS `students` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `student_id` (`student_id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE = InnoDB AUTO_INCREMENT = 8 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 17 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: timetable
@@ -186,20 +197,82 @@ CREATE TABLE IF NOT EXISTS `timetable` (
   `day` varchar(15) NOT NULL,
   `start_time` time DEFAULT NULL,
   `end_time` time NOT NULL,
-  `subject` varchar(100) NOT NULL,
-  `professor` varchar(100) NOT NULL,
-  `grade` varchar(20) NOT NULL,
+  `module_id` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 9 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 14 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: admin_accounts
 # ------------------------------------------------------------
 
 INSERT INTO
-  `admin_accounts` (`admin_id`, `username`, `password`, `email`)
+  `admin_accounts` (
+    `admin_id`,
+    `username`,
+    `password`,
+    `email`,
+    `name`,
+    `nic`,
+    `gender`,
+    `phone`,
+    `address`,
+    `profile_photo`,
+    `status`,
+    `last_login`,
+    `created_at`,
+    `updated_at`
+  )
 VALUES
-  (1, 'admin123', '1234', 'admin@example.com');
+  (
+    1,
+    'admin123',
+    '$2b$10$8.9TD3/4FycLmjXwBEAuXuR19xN0NMaJgJLaO6RJE2KqYto59s4SK',
+    'admin@example.com',
+    'Admin',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    'Active',
+    '2026-06-15 20:53:53',
+    '2025-11-14 04:50:22',
+    '2026-06-15 20:53:53'
+  );
+INSERT INTO
+  `admin_accounts` (
+    `admin_id`,
+    `username`,
+    `password`,
+    `email`,
+    `name`,
+    `nic`,
+    `gender`,
+    `phone`,
+    `address`,
+    `profile_photo`,
+    `status`,
+    `last_login`,
+    `created_at`,
+    `updated_at`
+  )
+VALUES
+  (
+    3,
+    'blackassasins0@gmail.com',
+    '$2b$10$Vcdf8p/MRf67k/Poud1eF..6DE3b1oZx1mjwO0UzG79mlxvm/T4qu',
+    'blackassasins0@gmail.com',
+    'Dhyan Sandaru',
+    '200329812865',
+    'male',
+    '0769280577',
+    'Thunthota, Dummalasuriya',
+    '1773568679783-614671969.jpeg',
+    'Active',
+    '2026-03-17 22:57:12',
+    '2026-03-15 15:27:59',
+    '2026-03-17 22:57:12'
+  );
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: lecturer_modules
@@ -208,12 +281,132 @@ VALUES
 INSERT INTO
   `lecturer_modules` (`id`, `lecturer_id`, `module_id`)
 VALUES
-  (3, 'L2022O_L001', 'M002');
+  (6, 'L-2025-002', 'M001');
+INSERT INTO
+  `lecturer_modules` (`id`, `lecturer_id`, `module_id`)
+VALUES
+  (7, 'L-2025-001', 'M003');
+INSERT INTO
+  `lecturer_modules` (`id`, `lecturer_id`, `module_id`)
+VALUES
+  (12, NULL, 'M002');
+INSERT INTO
+  `lecturer_modules` (`id`, `lecturer_id`, `module_id`)
+VALUES
+  (15, 'L-2025-001', 'C627');
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: lecturers
 # ------------------------------------------------------------
 
+INSERT INTO
+  `lecturers` (
+    `lecturer_id`,
+    `lecturer_name`,
+    `profile_photo`,
+    `gender`,
+    `email`,
+    `nic`,
+    `mobile`,
+    `address`,
+    `highest_qualification`,
+    `institute`,
+    `field_of_study`,
+    `experience`,
+    `certifications`,
+    `joined_year`,
+    `created_at`
+  )
+VALUES
+  (
+    'L-2025-001',
+    'M.A. Chandrapala Perera',
+    '/lecturers/1766044464378-278781706.png',
+    'Male',
+    'chandrapala@gmail.com',
+    '20015678934',
+    '0768027450',
+    'No:2, Colombo Road, Kurunegala',
+    'Bsc hons. in physical science',
+    'University of Moratuwa',
+    'Physical Science',
+    '2',
+    '',
+    '2025',
+    '2025-12-18 13:24:25'
+  );
+INSERT INTO
+  `lecturers` (
+    `lecturer_id`,
+    `lecturer_name`,
+    `profile_photo`,
+    `gender`,
+    `email`,
+    `nic`,
+    `mobile`,
+    `address`,
+    `highest_qualification`,
+    `institute`,
+    `field_of_study`,
+    `experience`,
+    `certifications`,
+    `joined_year`,
+    `created_at`
+  )
+VALUES
+  (
+    'L-2025-002',
+    'Heshan Premachandra',
+    '',
+    'male',
+    'heshanpremachandra@gmail.com',
+    '198345672840',
+    '0768947561',
+    'No. 12/3, Galle Road, Bambalapitiya, Colombo 04',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '2025',
+    '2025-11-14 06:57:34'
+  );
+INSERT INTO
+  `lecturers` (
+    `lecturer_id`,
+    `lecturer_name`,
+    `profile_photo`,
+    `gender`,
+    `email`,
+    `nic`,
+    `mobile`,
+    `address`,
+    `highest_qualification`,
+    `institute`,
+    `field_of_study`,
+    `experience`,
+    `certifications`,
+    `joined_year`,
+    `created_at`
+  )
+VALUES
+  (
+    'L-2025-003',
+    'Ishan Randika',
+    '/lecturers/1763095644245-541992647.jpg',
+    'male',
+    '41-bcs-0004@kdu.ac.lk',
+    '123456789V',
+    '0769280577',
+    '786/5 , Thelwatta Rd, Negombo',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '2025',
+    '2025-11-14 10:17:24'
+  );
 INSERT INTO
   `lecturers` (
     `lecturer_id`,
@@ -296,37 +489,65 @@ INSERT INTO
     `module_id`,
     `name`,
     `payment`,
-    `minAge`,
-    `maxAge`,
+    `curriculum`,
     `description`,
-    `courseBanner`
+    `courseBanner`,
+    `grade`
   )
 VALUES
-  ('M001', 'Chemistry', NULL, NULL, NULL, NULL, NULL);
+  (
+    'C627',
+    'Computer Science',
+    4000.00,
+    'general',
+    'Computer Science introduces students to the fundamentals of computing, programming, and digital literacy. It focuses on building a strong foundation in how computers work.',
+    '',
+    '4'
+  );
 INSERT INTO
   `modules` (
     `module_id`,
     `name`,
     `payment`,
-    `minAge`,
-    `maxAge`,
+    `curriculum`,
     `description`,
-    `courseBanner`
+    `courseBanner`,
+    `grade`
   )
 VALUES
-  ('M002', 'Physics', NULL, NULL, NULL, NULL, NULL);
+  (
+    'M001',
+    'Chemistry',
+    NULL,
+    'cambridge',
+    NULL,
+    NULL,
+    '9'
+  );
 INSERT INTO
   `modules` (
     `module_id`,
     `name`,
     `payment`,
-    `minAge`,
-    `maxAge`,
+    `curriculum`,
     `description`,
-    `courseBanner`
+    `courseBanner`,
+    `grade`
   )
 VALUES
-  ('M003', 'Maths', NULL, NULL, NULL, NULL, NULL);
+  ('M002', 'Physics', 4000.00, 'cambridge', '', '', '9');
+INSERT INTO
+  `modules` (
+    `module_id`,
+    `name`,
+    `payment`,
+    `curriculum`,
+    `description`,
+    `courseBanner`,
+    `grade`
+  )
+VALUES
+  ('M003', 'Maths', NULL, 'general', NULL, NULL, '8');
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: payments
@@ -340,7 +561,8 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -350,7 +572,8 @@ VALUES
     'Chemistry',
     'Ishara Sanjula',
     4000.00,
-    '2025-09-30 15:55:21'
+    '2025-09-30 15:55:21',
+    NULL
   );
 INSERT INTO
   `payments` (
@@ -360,7 +583,8 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -370,7 +594,8 @@ VALUES
     'Chemistry',
     'Ishara Sanjula',
     1000.00,
-    '2025-09-30 15:47:28'
+    '2025-09-30 15:47:28',
+    NULL
   );
 INSERT INTO
   `payments` (
@@ -380,7 +605,8 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -390,7 +616,8 @@ VALUES
     'Chemistry',
     'Ishara Sanjula',
     400.00,
-    '2025-09-30 15:32:45'
+    '2025-09-30 15:32:45',
+    NULL
   );
 INSERT INTO
   `payments` (
@@ -400,7 +627,8 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -410,7 +638,8 @@ VALUES
     'Chemistry',
     'Ishara Sanjula',
     4000.00,
-    '2025-10-02 08:27:33'
+    '2025-10-02 08:27:33',
+    NULL
   );
 INSERT INTO
   `payments` (
@@ -420,7 +649,8 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -430,7 +660,8 @@ VALUES
     'Chemistry',
     'Ishara Sanjula',
     5000.00,
-    '2025-10-07 09:15:10'
+    '2025-10-07 09:15:10',
+    NULL
   );
 INSERT INTO
   `payments` (
@@ -440,7 +671,8 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -450,7 +682,8 @@ VALUES
     'Chemistry',
     'Ishara Sanjula',
     10000.00,
-    '2025-10-14 16:01:19'
+    '2025-10-14 16:01:19',
+    NULL
   );
 INSERT INTO
   `payments` (
@@ -460,7 +693,8 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -470,7 +704,8 @@ VALUES
     'Physics',
     'Kamal Nuwan',
     5000.00,
-    '2025-10-22 12:27:54'
+    '2025-10-22 12:27:54',
+    'L2022O_L001'
   );
 INSERT INTO
   `payments` (
@@ -480,7 +715,118 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
+  )
+VALUES
+  (
+    '20251113-DSKLJK',
+    'Dhyan Sandaru',
+    'S-2022-001',
+    'Physics',
+    'Kamal Nuwan',
+    10000.00,
+    '2025-11-13 15:57:09',
+    'L2022O_L001'
+  );
+INSERT INTO
+  `payments` (
+    `ref_no`,
+    `student_name`,
+    `student_id`,
+    `course_module`,
+    `lecturer`,
+    `amount`,
+    `created_at`,
+    `lecturer_id`
+  )
+VALUES
+  (
+    '20251113-Z9NAPR',
+    'Dhyan Sandaru',
+    'S-2022-001',
+    'Physics',
+    'Kamal Nuwan',
+    10000.00,
+    '2025-11-13 15:47:24',
+    'L2022O_L001'
+  );
+INSERT INTO
+  `payments` (
+    `ref_no`,
+    `student_name`,
+    `student_id`,
+    `course_module`,
+    `lecturer`,
+    `amount`,
+    `created_at`,
+    `lecturer_id`
+  )
+VALUES
+  (
+    '20251114-QG42AN',
+    'Dhyan Sandaru',
+    'S-2022-001',
+    'Physics',
+    'Kamal Nuwan',
+    3000.00,
+    '2025-11-14 10:18:48',
+    'L2022O_L001'
+  );
+INSERT INTO
+  `payments` (
+    `ref_no`,
+    `student_name`,
+    `student_id`,
+    `course_module`,
+    `lecturer`,
+    `amount`,
+    `created_at`,
+    `lecturer_id`
+  )
+VALUES
+  (
+    '20251114-T3NW49',
+    'Dhyan Sandaru',
+    'S-2022-001',
+    'Physics',
+    'Kamal Nuwan',
+    3000.00,
+    '2025-11-14 10:18:49',
+    'L2022O_L001'
+  );
+INSERT INTO
+  `payments` (
+    `ref_no`,
+    `student_name`,
+    `student_id`,
+    `course_module`,
+    `lecturer`,
+    `amount`,
+    `created_at`,
+    `lecturer_id`
+  )
+VALUES
+  (
+    '20251114-W7C192',
+    'Dhyan Sandaru',
+    'S-2022-001',
+    'Physics',
+    'Kamal Nuwan',
+    3000.00,
+    '2025-11-14 10:18:45',
+    'L2022O_L001'
+  );
+INSERT INTO
+  `payments` (
+    `ref_no`,
+    `student_name`,
+    `student_id`,
+    `course_module`,
+    `lecturer`,
+    `amount`,
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -490,7 +836,8 @@ VALUES
     'Maths',
     'Kamal Nuwan',
     6000.00,
-    '2025-09-22 23:54:24'
+    '2025-09-22 23:54:24',
+    'L2022O_L001'
   );
 INSERT INTO
   `payments` (
@@ -500,7 +847,8 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -510,7 +858,8 @@ VALUES
     'Maths',
     'Ishara Sanjula',
     6000.00,
-    '2025-09-23 11:11:31'
+    '2025-09-23 11:11:31',
+    NULL
   );
 INSERT INTO
   `payments` (
@@ -520,7 +869,8 @@ INSERT INTO
     `course_module`,
     `lecturer`,
     `amount`,
-    `created_at`
+    `created_at`,
+    `lecturer_id`
   )
 VALUES
   (
@@ -530,7 +880,8 @@ VALUES
     'Physics',
     'Ishara Sanjula',
     5000.00,
-    '2025-09-24 09:07:42'
+    '2025-09-24 09:07:42',
+    NULL
   );
 
 # ------------------------------------------------------------
@@ -542,6 +893,15 @@ VALUES
 # DATA DUMP FOR TABLE: registration_codes
 # ------------------------------------------------------------
 
+INSERT INTO
+  `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
+VALUES
+  (
+    '50AAd',
+    1,
+    '2025-11-13 15:36:42',
+    '2025-11-13 15:51:43'
+  );
 INSERT INTO
   `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
 VALUES
@@ -573,6 +933,15 @@ INSERT INTO
   `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
 VALUES
   (
+    'H8x0w',
+    1,
+    '2026-03-15 21:36:28',
+    '2026-03-15 21:51:28'
+  );
+INSERT INTO
+  `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
+VALUES
+  (
     'HJ38B',
     0,
     '2025-10-22 12:20:48',
@@ -591,19 +960,28 @@ INSERT INTO
   `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
 VALUES
   (
-    'K4L9e',
+    'nVcpt',
     1,
-    '2025-10-07 09:14:26',
-    '2025-10-07 09:29:26'
+    '2026-01-11 16:57:03',
+    '2026-01-11 17:12:03'
   );
 INSERT INTO
   `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
 VALUES
   (
-    'KHk09',
+    'P9ntF',
     1,
-    '2025-10-07 05:29:12',
-    '2025-10-07 05:44:13'
+    '2026-01-28 11:41:36',
+    '2026-01-28 11:56:37'
+  );
+INSERT INTO
+  `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
+VALUES
+  (
+    'pcOgJ',
+    1,
+    '2025-11-14 10:07:56',
+    '2025-11-14 10:22:56'
   );
 INSERT INTO
   `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
@@ -618,19 +996,10 @@ INSERT INTO
   `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
 VALUES
   (
-    'zh69Z',
+    'WAWVA',
     1,
-    '2025-10-06 21:31:13',
-    '2025-10-06 21:46:14'
-  );
-INSERT INTO
-  `registration_codes` (`code`, `used`, `created_at`, `expires_at`)
-VALUES
-  (
-    'zMk4q',
-    1,
-    '2025-10-07 09:06:51',
-    '2025-10-07 09:21:51'
+    '2026-01-11 16:42:12',
+    '2026-01-11 16:57:12'
   );
 
 # ------------------------------------------------------------
@@ -645,6 +1014,30 @@ INSERT INTO
   `student_modules` (`id`, `student_id`, `module_id`)
 VALUES
   (2, 'S-2022-001', 'M001');
+INSERT INTO
+  `student_modules` (`id`, `student_id`, `module_id`)
+VALUES
+  (6, 'S-2024-001', 'C627');
+INSERT INTO
+  `student_modules` (`id`, `student_id`, `module_id`)
+VALUES
+  (7, 'S-2025-002', 'M001');
+INSERT INTO
+  `student_modules` (`id`, `student_id`, `module_id`)
+VALUES
+  (9, 'S-2026-001', 'C627');
+INSERT INTO
+  `student_modules` (`id`, `student_id`, `module_id`)
+VALUES
+  (10, 'S-2028-001', 'M003');
+INSERT INTO
+  `student_modules` (`id`, `student_id`, `module_id`)
+VALUES
+  (11, 'S-2028-001', 'M002');
+INSERT INTO
+  `student_modules` (`id`, `student_id`, `module_id`)
+VALUES
+  (13, 'S-2028-002', 'M001');
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: students
@@ -698,6 +1091,246 @@ VALUES
     'Pending',
     22
   );
+INSERT INTO
+  `students` (
+    `id`,
+    `student_id`,
+    `student_name`,
+    `profile_photo`,
+    `gender`,
+    `dob`,
+    `ethnicity`,
+    `exam`,
+    `exam_year`,
+    `email`,
+    `nic`,
+    `mobile`,
+    `address`,
+    `guardian_name`,
+    `guardian_mobile`,
+    `guardian_relation`,
+    `previous_education`,
+    `grade`,
+    `submitted_at`,
+    `payment_status`,
+    `age`
+  )
+VALUES
+  (
+    9,
+    'S-2024-001',
+    'Sample Student',
+    '',
+    'Male',
+    '2004-01-09',
+    'Sinhala',
+    'O/L',
+    '2025',
+    'ishanrandika@gmail.com',
+    '199257985678',
+    '0724567890',
+    '786/5 , Thelwatta Rd, Negombo',
+    'jfsensetu',
+    '0119119110',
+    'Father',
+    'UOM',
+    '11',
+    '2025-11-14',
+    'Pending',
+    22
+  );
+INSERT INTO
+  `students` (
+    `id`,
+    `student_id`,
+    `student_name`,
+    `profile_photo`,
+    `gender`,
+    `dob`,
+    `ethnicity`,
+    `exam`,
+    `exam_year`,
+    `email`,
+    `nic`,
+    `mobile`,
+    `address`,
+    `guardian_name`,
+    `guardian_mobile`,
+    `guardian_relation`,
+    `previous_education`,
+    `grade`,
+    `submitted_at`,
+    `payment_status`,
+    `age`
+  )
+VALUES
+  (
+    11,
+    'S-2025-002',
+    'Maithreepala Sirisena',
+    NULL,
+    'Male',
+    '1990-10-30',
+    'Sinhala',
+    'A/L',
+    '2025',
+    'my3@gmail.com',
+    '19657856490',
+    '0718956983',
+    'Polonnaruwa',
+    'M.A.S.Sirisena',
+    '778951904',
+    'Daughter',
+    '',
+    '',
+    '2025-12-11',
+    'Pending',
+    35
+  );
+INSERT INTO
+  `students` (
+    `id`,
+    `student_id`,
+    `student_name`,
+    `profile_photo`,
+    `gender`,
+    `dob`,
+    `ethnicity`,
+    `exam`,
+    `exam_year`,
+    `email`,
+    `nic`,
+    `mobile`,
+    `address`,
+    `guardian_name`,
+    `guardian_mobile`,
+    `guardian_relation`,
+    `previous_education`,
+    `grade`,
+    `submitted_at`,
+    `payment_status`,
+    `age`
+  )
+VALUES
+  (
+    12,
+    'S-2026-001',
+    'Chamath Randeera',
+    '/students/1768130958733-559801650.jpg',
+    'Male',
+    '2001-10-10',
+    'Sri Lankan',
+    'A/L',
+    '2026',
+    'chamathrandheera@gmail.com',
+    '20017856789',
+    '0763958120',
+    'St. Anne\'s Road, Kattimahana',
+    'S.A.K.Randheera',
+    '0764978190',
+    'Father',
+    'Central College Kattimahana',
+    '11',
+    '2026-01-25',
+    'Pending',
+    24
+  );
+INSERT INTO
+  `students` (
+    `id`,
+    `student_id`,
+    `student_name`,
+    `profile_photo`,
+    `gender`,
+    `dob`,
+    `ethnicity`,
+    `exam`,
+    `exam_year`,
+    `email`,
+    `nic`,
+    `mobile`,
+    `address`,
+    `guardian_name`,
+    `guardian_mobile`,
+    `guardian_relation`,
+    `previous_education`,
+    `grade`,
+    `submitted_at`,
+    `payment_status`,
+    `age`
+  )
+VALUES
+  (
+    13,
+    'S-2028-001',
+    'Siluni',
+    '/students/1773590904486-886098146.png',
+    'Female',
+    '2007-09-19',
+    'Sinhala',
+    'A/L',
+    '2028',
+    'siluni@gmail.com',
+    '20075645679',
+    '0761865294',
+    'Dummalasuriya',
+    'W.A.D.S.Wickrama Arachchi',
+    '0776521856',
+    'Brother',
+    'Cck',
+    '12',
+    '2026-03-15',
+    'Pending',
+    18
+  );
+INSERT INTO
+  `students` (
+    `id`,
+    `student_id`,
+    `student_name`,
+    `profile_photo`,
+    `gender`,
+    `dob`,
+    `ethnicity`,
+    `exam`,
+    `exam_year`,
+    `email`,
+    `nic`,
+    `mobile`,
+    `address`,
+    `guardian_name`,
+    `guardian_mobile`,
+    `guardian_relation`,
+    `previous_education`,
+    `grade`,
+    `submitted_at`,
+    `payment_status`,
+    `age`
+  )
+VALUES
+  (
+    16,
+    'S-2028-002',
+    'Sample Student2',
+    '/students/1773740884513-366672382.jpg',
+    'Male',
+    '2005-03-15',
+    'Muslim',
+    'O/L',
+    '2028',
+    'samplestudent1@gmail.com',
+    '20056809348',
+    '-14567082',
+    '32,Kandy Road,Kurunegala',
+    'R.A.S.D. Suraweera',
+    '0743916345',
+    'Father',
+    'Sample School',
+    'Grade 6',
+    '2026-03-17',
+    'Pending',
+    21
+  );
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: timetable
@@ -710,9 +1343,7 @@ INSERT INTO
     `day`,
     `start_time`,
     `end_time`,
-    `subject`,
-    `professor`,
-    `grade`
+    `module_id`
   )
 VALUES
   (
@@ -721,9 +1352,7 @@ VALUES
     'Sunday',
     '11:00:00',
     '13:00:00',
-    'Maths',
-    'Nuwan Pradeep',
-    '10'
+    'M003'
   );
 INSERT INTO
   `timetable` (
@@ -732,9 +1361,7 @@ INSERT INTO
     `day`,
     `start_time`,
     `end_time`,
-    `subject`,
-    `professor`,
-    `grade`
+    `module_id`
   )
 VALUES
   (
@@ -743,9 +1370,7 @@ VALUES
     'Sunday',
     '09:00:00',
     '11:00:00',
-    'Physics',
-    'Sandeesh Fernando',
-    '11'
+    'M002'
   );
 INSERT INTO
   `timetable` (
@@ -754,9 +1379,7 @@ INSERT INTO
     `day`,
     `start_time`,
     `end_time`,
-    `subject`,
-    `professor`,
-    `grade`
+    `module_id`
   )
 VALUES
   (
@@ -765,9 +1388,61 @@ VALUES
     'Monday',
     '11:00:00',
     '14:00:00',
-    'Computer Science',
-    'J.K.Perera',
-    '10'
+    'C627'
+  );
+INSERT INTO
+  `timetable` (
+    `id`,
+    `date`,
+    `day`,
+    `start_time`,
+    `end_time`,
+    `module_id`
+  )
+VALUES
+  (
+    9,
+    '2025-11-12',
+    'Wednesday',
+    '09:00:00',
+    '10:30:00',
+    'M002'
+  );
+INSERT INTO
+  `timetable` (
+    `id`,
+    `date`,
+    `day`,
+    `start_time`,
+    `end_time`,
+    `module_id`
+  )
+VALUES
+  (
+    12,
+    '2025-11-14',
+    'Friday',
+    '10:00:00',
+    '11:30:00',
+    'M001'
+  );
+INSERT INTO
+  `timetable` (
+    `id`,
+    `date`,
+    `day`,
+    `start_time`,
+    `end_time`,
+    `module_id`
+  )
+VALUES
+  (
+    13,
+    '2026-03-26',
+    'Thursday',
+    '09:00:00',
+    '11:00:00',
+    'C627'
   );
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;

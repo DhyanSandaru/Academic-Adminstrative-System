@@ -20,7 +20,7 @@ export default function ViewCourses() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:8000/courses/get-courses");
+        const response = await axios.get("http://localhost:8000/api/courses/get-courses");
         
         // Validate and map course data
         const validatedData = response.data.map(course => ({
@@ -29,8 +29,8 @@ export default function ViewCourses() {
           lecturer: course.lecturer ?? 'Not Assigned',
           courseBanner: course.courseBanner ?? '',
           payment: course.payment ?? '',
-          minAge: course.minAge ?? '',
-          maxAge: course.maxAge ?? '',
+          grade: course.grade ?? '',
+          curriculum: course.curriculum ?? '',
           description: course.description ?? ''
         }));
 

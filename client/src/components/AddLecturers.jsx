@@ -11,7 +11,7 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
   useEffect(() => {
     const fetchLecturers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/view-lecturers");
+        const response = await axios.get("http://localhost:8000/api/lecturers/view-lecturers");
         const validatedData = response.data.map((lecturer) => ({
           lecturerId: lecturer.lecturerId,
           lecturerName: lecturer.name,
@@ -123,7 +123,7 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
               <img
                 src={
                   lecturer.profilePhoto 
-                    ? `http://localhost:8000${lecturer.profilePhoto}` 
+                    ? `http://localhost:8000/public${lecturer.profilePhoto}` 
                     : '/images/default_user.png'
                 }
                 alt={lecturer.lecturerName}

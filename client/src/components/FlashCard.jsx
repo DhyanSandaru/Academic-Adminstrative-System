@@ -19,15 +19,17 @@ export default function FlashCard({
 }) {
   const colors = themeStyles[theme] || themeStyles.blue;
   return (
-    <div className="rounded-xl bg-white h-auto w-full shadow-sm">
-      <h2 className="text-black text-md bg-gray-100 text-left w-full py-3 pl-2">
+    <div className="rounded-3xl bg-white h-auto w-full shadow-sm">
+      <h2 className="text-black text-md bg-gray-100 text-left w-full py-3 pl-2 rounded-t-3xl">
         {title}
       </h2>
 
-      <div className="flex flex-col bg-white">
-        <div className="flex flex-row items-center my-3 ml-5">
-          <Icon className={`bg-${theme}-100 text-${theme}-700 p-2 rounded-4xl w-12 h-12 my-3`} />
-          <h2 className="text-black text-4xl">{value}</h2>
+      <div className="flex flex-col bg-white rounded-3xl">
+        <div className="flex flex-row items-center justify-around my-3 ml-5">
+          <div className="flex flex-row items-center gap-4">
+            <Icon className={`bg-${theme}-100 text-${theme}-700 p-2 rounded-4xl w-12 h-12 my-3`} />
+            <h2 className="text-black text-4xl">{value}</h2>
+          </div>
           {changedNo && percentage && (
             <p className="text-green-700 ml-auto self-start">{`${percentage}%`}</p>
           )}

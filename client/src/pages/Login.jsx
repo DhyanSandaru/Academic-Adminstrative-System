@@ -22,7 +22,7 @@ export default function Login() {
     })
     
     try {
-      const response = await axios.post("http://localhost:8000/login", loginData);
+      const response = await axios.post("http://localhost:8000/api/login/login", loginData);
       login(response.data.user);
       setLoading(false);
       navigate('/dashboard');

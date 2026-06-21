@@ -1,14 +1,14 @@
 // mailers/registrationMailer.js
 const { sendTextMail } = require('./NodeMailer.js');
 
-exports.registrationMailer = async (email, name, studentId, grade, examYear) => {
+exports.registrationMailer = async (email, name, studentId, grade, curriculum) => {
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
       <h2 style="color: #004aad;">Welcome to Wiseway Academy, ${name}!</h2>
 
       <p>We are excited to have you onboard as a valued student of <strong>Wiseway Academy</strong>.</p>
 
-      <p>Your registration for the academic year <strong>${examYear}</strong> has been successfully completed.</p>
+      <p>Your registration following the <strong>${curriculum}</strong> has been successfully completed.</p>
 
       <div style="margin: 16px 0;">
         <p><strong>Student ID:</strong> ${studentId}</p>

@@ -152,27 +152,87 @@ exports.getPaymentStatus = async (req, res) => {
   }
 };
 
-// ==================== GENDER DISTRIBUTION CHART ====================
-exports.getGenderDistribution = async (req, res) => {
+// ==================== PAYMENT COLLECTION RATE ====================
+// ==================== PAYMENT COLLECTION RATE ====================
+exports.getPaymentCollectionRate = async (req, res) => {
   try {
-    const [distribution] = await db.query(
+    const [rate] = await db.query(
       `SELECT 
-        CASE 
-          WHEN LOWER(gender) = 'male' THEN 'Male'
-          WHEN LOWER(gender) = 'female' THEN 'Female'
-          ELSE 'Other'
-        END as name,
-        COUNT(*) as value
-       FROM students
-       GROUP BY CASE 
-          WHEN LOWER(gender) = 'male' THEN 'Male'
-          WHEN LOWER(gender) = 'female' THEN 'Female'
-          ELSE 'Other'
-        END`
+        DATE_FORMAT(p.created_at, '%b') as month,
+        DATE_FORMAT(p.created_at, '%Y-%m') as month_sort,
+        COUNT(DISTINCT sm.student_id) as total_enrolled,
+        COUNT(DISTINCT CASE 
+          WHEN (
+            SELECT COUNT(*) FROM student_modules sm2 
+            WHERE sm2.student_id = sm.student_id
+          ) = (
+            SELECT COUNT(DISTINCT course_module) FROM payments p2 
+            WHERE p2.student_id = sm.student_id 
+            AND DATE_FORMAT(p2.created_at, '%Y-%m') = DATE_FORMAT(p.created_at, '%Y-%m')
+          )
+          THEN sm.student_id 
+        END) as fully_paid_students,
+        ROUND((COUNT(DISTINCT CASE 
+          WHEN (
+            SELECT COUNT(*) FROM student_modules sm2 
+            WHERE sm2.student_id = sm.student_id
+          ) = (
+            SELECT COUNT(DISTINCT course_module) FROM payments p2 
+            WHERE p2.student_id = sm.student_id 
+            AND DATE_FORMAT(p2.created_at, '%Y-%m') = DATE_FORMAT(p.created_at, '%Y-%m')
+          )
+          THEN sm.student_id 
+        END) / COUNT(DISTINCT sm.student_id)) * 100, 1) as collection_rate
+       FROM payments p
+       INNER JOIN student_modules sm ON p.student_id = sm.student_id
+       WHERE p.created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
+       GROUP BY DATE_FORMAT(p.created_at, '%Y-%m'), DATE_FORMAT(p.created_at, '%b')
+       ORDER BY month_sort`
     );
-    res.json(distribution);
+    res.json(rate);
   } catch (err) {
-    console.error('Error fetching gender distribution:', err);
-    res.status(500).json({ error: 'Failed to fetch gender distribution.' });
+    console.error('Error fetching payment collection rate:', err);
+    res.status(500).json({ error: 'Failed to fetch payment collection rate.' });
+  }
+};
+
+// ==================== LECTURER WORKLOAD DISTRIBUTION ====================
+exports.getLecturerWorkload = async (req, res) => {
+  try {
+    const [workload] = await db.query(
+      `SELECT 
+        l.lecturer_name as lecturer,
+        COUNT(DISTINCT lm.module_id) as courses,
+        COUNT(DISTINCT sm.student_id) as students
+       FROM lecturers l
+       INNER JOIN lecturer_modules lm ON l.lecturer_id = lm.lecturer_id
+       LEFT JOIN student_modules sm ON lm.module_id = sm.module_id
+       GROUP BY l.lecturer_id, l.lecturer_name
+       ORDER BY courses DESC
+       LIMIT 8`
+    );
+    res.json(workload);
+  } catch (err) {
+    console.error('Error fetching lecturer workload:', err);
+    res.status(500).json({ error: 'Failed to fetch lecturer workload.' });
+  }
+};
+
+// ==================== PENDING APPLICATIONS ====================
+exports.getPendingApplications = async (req, res) => {
+  try {
+    const [pending] = await db.query(
+      `SELECT 
+        COUNT(*) as total_pending,
+        DATE_FORMAT(submitted_at, '%b') as month
+       FROM students
+       WHERE payment_status = 'Pending' AND submitted_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
+       GROUP BY DATE_FORMAT(submitted_at, '%Y-%m'), DATE_FORMAT(submitted_at, '%b')
+       ORDER BY DATE_FORMAT(submitted_at, '%Y-%m')`
+    );
+    res.json(pending);
+  } catch (err) {
+    console.error('Error fetching pending applications:', err);
+    res.status(500).json({ error: 'Failed to fetch pending applications.' });
   }
 };

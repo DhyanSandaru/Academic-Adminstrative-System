@@ -28,8 +28,8 @@ exports.addCourse = async (req, res) => {
     const {
       courseName,
       payment,
-      minAge,
-      maxAge,
+      grade,
+      curriculum,
       description,
       courseBanner,
       lecturers 
@@ -39,8 +39,8 @@ exports.addCourse = async (req, res) => {
     if (
       !courseName ||
       !payment ||
-      !minAge ||
-      !maxAge ||
+      !grade ||
+      !curriculum ||
       !description ||
       !Array.isArray(lecturers) ||
       lecturers.length === 0
@@ -53,13 +53,19 @@ exports.addCourse = async (req, res) => {
 
     // 2️⃣ Insert into modules table
     await db.query(
-      `INSERT INTO modules (module_id, name, payment, minAge, maxAge, description, courseBanner)
+      `INSERT INTO modules (module_id, name, payment, grade, curriculum, description, courseBanner)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [moduleId, courseName, payment, minAge, maxAge, description, courseBanner]
+      [moduleId, courseName, payment, grade, curriculum, description, courseBanner]
     );
 
     // 3️⃣ Insert into lecturer_modules table
-    const lecturerModuleValues = lecturers.map(l => [l.lecturerId, moduleId]);
+    const lecturerModuleValues = lecturers
+      .map(l => {
+        const id = l.lecturerId || l.lecturer_id || null;
+        return id ? [id, moduleId] : null;
+      })
+      .filter(Boolean);
+
     if (lecturerModuleValues.length > 0) {
       await db.query(
         `INSERT INTO lecturer_modules (lecturer_id, module_id) VALUES ?`,
@@ -83,8 +89,8 @@ exports.fetchCourses = async (req, res) => {
           m.module_id,
           m.name AS course_name,
           m.payment,
-          m.minAge,
-          m.maxAge,
+          m.grade,
+          m.curriculum,
           m.description,
           m.courseBanner,
           GROUP_CONCAT(lm.lecturer_id SEPARATOR ',') AS lecturer_ids,
@@ -92,7 +98,7 @@ exports.fetchCourses = async (req, res) => {
        FROM modules m
        LEFT JOIN lecturer_modules lm ON m.module_id = lm.module_id
        LEFT JOIN lecturers le ON lm.lecturer_id = le.lecturer_id
-       GROUP BY m.module_id, m.name, m.payment, m.minAge, m.maxAge, m.description, m.courseBanner
+       GROUP BY m.module_id, m.name, m.payment, m.grade, m.curriculum, m.description, m.courseBanner
        ORDER BY m.name ASC`
     );
 
@@ -103,8 +109,8 @@ exports.fetchCourses = async (req, res) => {
       lecturer: course.lecturer_names || "Not Assigned",
       courseBanner: course.courseBanner,
       payment: course.payment,
-      minAge: course.minAge,
-      maxAge: course.maxAge,
+      grade: course.grade,
+      curriculum: course.curriculum,
       description: course.description
     }));
 
@@ -126,8 +132,8 @@ exports.getCourseById = async (req, res) => {
           m.module_id,
           m.name AS course_name,
           m.payment,
-          m.minAge,
-          m.maxAge,
+          m.grade,
+          m.curriculum,
           m.description,
           m.courseBanner,
           GROUP_CONCAT(lm.lecturer_id SEPARATOR ',') AS lecturer_ids,
@@ -136,7 +142,7 @@ exports.getCourseById = async (req, res) => {
        LEFT JOIN lecturer_modules lm ON m.module_id = lm.module_id
        LEFT JOIN lecturers le ON lm.lecturer_id = le.lecturer_id
        WHERE m.module_id = ?
-       GROUP BY m.module_id, m.name, m.payment, m.minAge, m.maxAge, m.description, m.courseBanner`,
+       GROUP BY m.module_id, m.name, m.payment, m.grade, m.curriculum, m.description, m.courseBanner`,
       [id]
     );
 
@@ -153,8 +159,8 @@ exports.getCourseById = async (req, res) => {
       lecturer_ids: course.lecturer_ids ? course.lecturer_ids.split(",") : [],
       courseBanner: course.courseBanner,
       payment: course.payment,
-      minAge: course.minAge,
-      maxAge: course.maxAge,
+      grade: course.grade,
+      curriculum: course.curriculum,
       description: course.description
     };
 
@@ -173,8 +179,8 @@ exports.updateCourse = async (req, res) => {
     const {
       name,
       payment,
-      minAge,
-      maxAge,
+      grade,
+      curriculum,
       description,
       courseBanner,
       lecturers // Expected as JSON string from FormData
@@ -191,12 +197,12 @@ exports.updateCourse = async (req, res) => {
       `UPDATE modules 
        SET name = ?, 
            payment = ?, 
-           minAge = ?, 
-           maxAge = ?, 
+           grade = ?, 
+           curriculum = ?, 
            description = ?, 
            courseBanner = ?
        WHERE module_id = ?`,
-      [name, payment, minAge, maxAge, description, courseBanner, id]
+      [name, payment, grade, curriculum, description, courseBanner, id]
     );
 
     // 2️⃣ Delete existing lecturer associations
@@ -207,11 +213,19 @@ exports.updateCourse = async (req, res) => {
 
     // 3️⃣ Insert new lecturer associations
     if (Array.isArray(parsedLecturers) && parsedLecturers.length > 0) {
-      const lecturerModuleValues = parsedLecturers.map(l => [l.lecturerId, id]);
-      await db.query(
-        "INSERT INTO lecturer_modules (lecturer_id, module_id) VALUES ?",
-        [lecturerModuleValues]
-      );
+      const lecturerModuleValues = parsedLecturers
+        .map(l => {
+          const lecturerId = l.lecturerId || l.lecturer_id || null;
+          return lecturerId ? [lecturerId, id] : null;
+        })
+        .filter(Boolean);
+
+      if (lecturerModuleValues.length > 0) {
+        await db.query(
+          "INSERT INTO lecturer_modules (lecturer_id, module_id) VALUES ?",
+          [lecturerModuleValues]
+        );
+      }
     }
 
     res.status(200).json({ message: "Course updated successfully" });

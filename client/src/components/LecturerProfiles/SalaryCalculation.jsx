@@ -32,7 +32,7 @@ export default function SalaryCalculation() {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/lecturer-payments/${lecturerData.lecturerId}?month=${selectedMonth}&year=${selectedYear}`
+        `http://localhost:8000/api/payments/lecturer-payments/${lecturerData.lecturerId}?month=${selectedMonth}&year=${selectedYear}`
       );
       const data = await response.json();
       setPayments(data);

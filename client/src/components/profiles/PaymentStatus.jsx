@@ -21,7 +21,7 @@ export default function PaymentStatus() {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:8000/payments/${studentData.studentId}`
+          `http://localhost:8000/api/payments/payments/${studentData.studentId}`
         );
         setMonthlyPayments(response.data || []);
       } catch (err) {

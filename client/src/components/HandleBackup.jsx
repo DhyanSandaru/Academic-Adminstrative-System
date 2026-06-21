@@ -36,7 +36,7 @@ function HandleBackup() {
   useEffect(() => {
     console.log('📦 HandleBackup component mounted');
     fetchBackups();
-  }, []); // Empty dependency array - only run once on mount
+  }, []); 
 
   // Create new backup
   const handleCreateBackup = async () => {

@@ -11,9 +11,8 @@ const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
-app.use('/students', express.static(path.join(__dirname, 'routes/students')));
-app.use('/lecturers', express.static(path.join(__dirname, 'routes/lecturers')));
-app.use('/temp-students', express.static(path.join(__dirname, 'routes/temp-students')));
+app.use('/public',express.static(path.join(__dirname, 'public')));
+
 
 const loginRoute = require('./routes/LoginRoute.js');
 const studentsRoute = require('./routes/StudentsRoutes.js');
@@ -31,16 +30,16 @@ const {
   initializeCleanupSchedule 
 } = require('./utils/scheduledBackups.js');
 
-app.use('/', loginRoute);
-app.use('/', studentsRoute);
-app.use('/',lecturerRoute);
-app.use('/',paymentRoute);
-app.use('/',timetableRoutes);
-app.use('/courses',courseRoutes);
-app.use('/api', verificationRoutes);
-app.use('/',requestRoutes);
+app.use('/api/login', loginRoute);
+app.use('/api/students', studentsRoute);
+app.use('/api/lecturers',lecturerRoute);
+app.use('/api/payments',paymentRoute);
+app.use('/api/timetable',timetableRoutes);
+app.use('/api/courses',courseRoutes);
+app.use('/api/verification', verificationRoutes);
+app.use('/api/requests',requestRoutes);
 app.use('/api/backup',backupRoutes);
-app.use('/api', adminRoutes);
+app.use('/api/admins', adminRoutes);
 app.use('/api/dashboard',dashboardRoutes);
 
 initializeScheduledBackups();

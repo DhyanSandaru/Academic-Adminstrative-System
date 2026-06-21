@@ -3,7 +3,7 @@ const { paymentData } = require("../pages/studentData");
 
 const studentData = async () => {
     try{
-        const response = await axios.get("http://localhost:8000/view-students");
+        const response = await axios.get("http://localhost:8000/api/students/view-students");
         const validatedData = response.data.map((student,index) => ({
             courses: student.courses || [],
             payment_status: student.payment_status || ''

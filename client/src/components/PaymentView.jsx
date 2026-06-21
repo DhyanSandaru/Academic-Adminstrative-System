@@ -16,7 +16,7 @@ export default function PaymentTable() {
     const fetchPayments = async () => {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:8000/payments");
+        const res = await fetch("http://localhost:8000/api/payments/payments");
         const data = await res.json();
         setPaymentData(data);
       } catch (err) {

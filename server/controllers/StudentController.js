@@ -8,9 +8,6 @@ exports.addStudent = async (req, res) => {
       studentName,
       gender,
       dob,
-      ethnicity,
-      exam,
-      examYear,
       email,
       nic,
       mobile,
@@ -20,6 +17,7 @@ exports.addStudent = async (req, res) => {
       guardianRelation,
       previousEducation,
       grade,
+      curriculum
     } = req.body;
 
     const courseModules = JSON.parse(req.body.courseModules || "[]");
@@ -36,32 +34,39 @@ exports.addStudent = async (req, res) => {
     }
 
     // Generate new student ID
+    const year = today.getFullYear().toString().slice(-2);
+    const month = (today.getMonth()+ 1).toString().padStart(2,"0");
+    const curr = curriculum.slice(0,1);
+    const searchFormat = `S-${year}${curr}${month}-%`
     const [rows] = await db.query(
-      "SELECT COUNT(*) as count FROM students WHERE exam_year = ?",
-      [examYear]
+      `
+      SELECT student_id 
+      FROM students
+      WHERE student_id LIKE ?
+      ORDER BY student_id DESC
+      LIMIT 1
+      `,
+      [searchFormat]
     );
-    const count = rows[0].count;
-    const studentId = `S-${examYear}-${(count + 1).toString().padStart(3, "0")}`;
+    const newid = rows.length > 0 ? parseInt(rows[0].student_id.slice(-3), 10) + 1 : 1;
+    const studentId = `S-${year}${curr}${month}-${newid.toString().padStart(3, "0")}`;
 
     const submittedAt = new Date().toISOString().split("T")[0];
     const payment_status = "Pending";
 
     await db.execute(
       `INSERT INTO students (
-        student_id, student_name, profile_photo, gender, dob, ethnicity,
-        exam, exam_year, email, nic, mobile, address,
+        student_id, student_name, profile_photo, gender, dob,
+        email, nic, mobile, address,
         guardian_name, guardian_mobile, guardian_relation,
-        previous_education, grade, submitted_at, payment_status,age
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        previous_education, grade, submitted_at, payment_status,age,curriculum
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         studentId,
         studentName,
         profilePhoto,
         gender,
         dobDate,
-        ethnicity,
-        exam,
-        examYear,
         email,
         nic,
         mobile,
@@ -73,7 +78,8 @@ exports.addStudent = async (req, res) => {
         grade,
         submittedAt,
         payment_status,
-        age
+        age,
+        curriculum
       ]
     );
 
@@ -93,7 +99,7 @@ exports.addStudent = async (req, res) => {
       }
     }
     try {
-      await registrationMailer(email, studentName, studentId, grade, examYear);
+      await registrationMailer(email, studentName, studentId, grade, curriculum);
       console.log("📧 Registration email sent to:", email);
     } catch (mailErr) {
       console.error("⚠️ Failed to send registration email:", mailErr);
