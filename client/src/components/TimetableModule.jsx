@@ -5,7 +5,7 @@ import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import axios from "axios";
-import { Calendar, Plus, Save, X, Clock, User, BookOpen, GraduationCap } from "lucide-react";
+import { Calendar, Plus, Save, X, Clock, User, BookOpen, GraduationCap,CopyPlus } from "lucide-react";
 
 function Timetable() {
   const [events, setEvents] = useState([]);
@@ -22,6 +22,7 @@ function Timetable() {
   const [lecturers,setlecturers] = useState([]);
   const [courses,setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
+  const [isDuplicatingWeek, setIsDuplicatingWeek] = useState(false);
   
   const [newClass, setNewClass] = useState({
     date: new Date().toISOString().split("T")[0],
@@ -438,6 +439,25 @@ function Timetable() {
     );
   };
 
+  const handleDuplicateNextWeek = async () => {
+    const confirmed = window.confirm("Copy this week's timetable to next week?");
+    if (!confirmed) return;
+
+    try {
+      setIsDuplicatingWeek(true);
+      const res = await axios.post(
+        "http://localhost:8000/api/timetable/timetable/duplicate-next-week"
+      );
+      alert(res.data.message || "Timetable copied to next week");
+      await fetchClasses();
+    } catch (err) {
+      console.error("Failed to duplicate timetable", err);
+      alert("Failed to duplicate timetable");
+    } finally {
+      setIsDuplicatingWeek(false);
+    }
+};
+
   return (
     <>
       <style>{`
@@ -567,6 +587,14 @@ function Timetable() {
               >
                 <Plus className="w-5 h-5" />
                 Add Class
+              </button>
+              <button
+                className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105 shadow-lg disabled:opacity-70"
+                onClick={handleDuplicateNextWeek}
+                disabled={isDuplicatingWeek}
+              >
+                <CopyPlus className="w-5 h-5" />
+                {isDuplicatingWeek ? "Copying..." : "Copy to Next Week"}
               </button>
             </div>
           </div>

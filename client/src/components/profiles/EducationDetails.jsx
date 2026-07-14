@@ -7,8 +7,7 @@ export default function EducationDetails() {
   const { studentData, updateStudent, saving } = useContext(studentContext);
 
   const [formData, setFormData] = useState({
-    exam: '',
-    examYear: '',
+    curriculum: '',
     previousEducation: '',
     grade: ''
   });
@@ -20,8 +19,7 @@ export default function EducationDetails() {
   useEffect(() => {
     if (studentData) {
       setFormData({
-        exam: studentData.exam || '',
-        examYear: studentData.examYear || '',
+        curriculum: studentData.curriculum || '',
         previousEducation: studentData.previousEducation || '',
         grade: studentData.grade || ''
       });
@@ -36,7 +34,15 @@ export default function EducationDetails() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData( prev => {
+      const next = { ...prev, [name]: value };
+
+      if(name === 'grade'){
+        next.curriculum = parseInt(value, 10) >= 1 && parseInt(value, 10) <= 8 ? 'general': '';
+      }
+
+      return next;
+    });
     setHasChanges(true);
   };
 
@@ -85,42 +91,54 @@ export default function EducationDetails() {
       <div className="p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className='md:col-span-1'>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Examination</label>
-            <input
-              type="text"
-              name="exam"
-              value={formData.exam}
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Curriculum</label>
+            <select
+              name="curriculum"
+              value={formData.curriculum}
               onChange={handleChange}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
-              placeholder="e.g., A/L, O/L"
-            />
+              disabled={parseInt(formData.grade)>=1 && parseInt(formData.grade) <= 9}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors disabled:cursor-not-allowed"
+            >
+              <option value="" disabled>--Select Curriculum--</option>
+              {parseInt(formData.grade)>=1 && parseInt(formData.grade) <= 8?
+              (
+              <option value="general">General</option>
+            )
+              :
+              (
+              <>
+                <option value="cambridge">Cambridge</option>
+                <option value="edexcel">Edexcel</option>
+              </>
+              )
+              }
+            </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Exam Year</label>
-            <input
-              type="text"
-              name="examYear"
-              value={formData.examYear}
-              onChange={handleChange}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
-              placeholder="e.g., 2024"
-            />
-          </div>
-
-          <div>
+          <div className='md:col-span-1'>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Grade/Results</label>
-            <input
-              type="text"
+            <select
               name="grade"
               value={formData.grade}
               onChange={handleChange}
               className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
-              placeholder="e.g., 3A"
-            />
+            >
+              <option value="1">Grade 1</option>
+              <option value="2">Grade 2</option>
+              <option value="3">Grade 3</option>
+              <option value="4">Grade 4</option>
+              <option value="5">Grade 5</option>
+              <option value="6">Grade 6</option>
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
+              <option value="9">Grade 9</option>
+              <option value="10">Grade 10</option>
+              <option value="AS">AS level</option>
+              <option value="A2">A2 level</option>
+            </select>
           </div>
 
-          <div>
+          <div className='md:col-span-2'>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Previous School/Institution</label>
             <input
               type="text"

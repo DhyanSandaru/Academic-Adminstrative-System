@@ -6,7 +6,7 @@ const fs = require('fs');
 const LecturerController = require('../controllers/LecturerController.js');
 
 // Ensure target folder exists
-const lecturerDir = path.join(__dirname, '/lecturers');
+const lecturerDir = path.join(__dirname, '../public/lecturers');
 if (!fs.existsSync(lecturerDir)) {
   fs.mkdirSync(lecturerDir, { recursive: true });
 }
@@ -24,7 +24,7 @@ const upload = multer({ storage });
 
 router.post("/add-lecturer", upload.single("profilePhoto"), LecturerController.addLecturer);
 router.get("/view-lecturers", LecturerController.fetchLecturers);
-router.get("/view-lecturers/:course", LecturerController.fetchLecturersByCourse)
+router.get("/view-lecturers/:course", LecturerController.fetchLecturersByCourse);
 router.get("/view-lecturers/id/:id",LecturerController.fetchLecturerById);
 router.put("/update-lecturers/:id",upload.single("profilePhoto"),LecturerController.updateLecturerById);
 router.delete("/delete-lecturer/:id",LecturerController.deleteLecturerById)

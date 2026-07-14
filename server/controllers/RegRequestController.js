@@ -10,8 +10,6 @@ exports.AddRequest = async (req, res) => {
       gender,
       dob,
       ethnicity,
-      exam,
-      examYear,
       email,
       nic,
       mobile,
@@ -20,24 +18,23 @@ exports.AddRequest = async (req, res) => {
       guardianMobile,
       guardianRelation,
       previousEducation,
-      grade
+      grade,
+      curriculum
     } = req.body;
 
     const courseModules = JSON.parse(req.body.courseModules || "[]");
-    const profilePhoto = req.file ? `/temp-students/${req.file.filename}` : null;
+    const profilePhoto = req.file ? `/public/temp-students/${req.file.filename}` : null;
 
     await db.query(
       `INSERT INTO pending_requests 
-        (studentName, profile_photo, gender, dob, ethnicity, exam, examYear, email, nic, mobile, address, guardianName, guardianMobile, guardianRelation, previousEducation, grade, courseModules)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        (studentName, profile_photo, gender, dob, ethnicity, email, nic, mobile, address, guardianName, guardianMobile, guardianRelation, previousEducation, grade, courseModules, curriculum)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         studentName,
         profilePhoto,
         gender,
         dob,
         ethnicity,
-        exam,
-        examYear,
         email,
         nic,
         mobile,
@@ -47,7 +44,8 @@ exports.AddRequest = async (req, res) => {
         guardianRelation,
         previousEducation,
         grade,
-        JSON.stringify(courseModules)
+        JSON.stringify(courseModules),
+        curriculum
       ]
     );
 
@@ -80,8 +78,8 @@ exports.approveRequest = async (req, res) => {
     const filename = path.basename(data.profile_photo); // just the image name
 
     // Move photo from temp → public/students
-    const oldPath = path.join(__dirname, '../routes/temp-students', filename);
-    const newPath = path.join(__dirname, '../routes/students', filename);
+    const oldPath = path.join(__dirname, '../public/temp-students', filename);
+    const newPath = path.join(__dirname, '../public/students', filename);
     try {
       fs.renameSync(oldPath, newPath); // move image file
     } catch (err) {
@@ -94,8 +92,6 @@ exports.approveRequest = async (req, res) => {
       gender: data.gender,
       dob: data.dob,
       ethnicity: data.ethnicity,
-      exam: data.exam,
-      examYear: data.examYear,
       email: data.email,
       nic: data.nic,
       mobile: data.mobile,
@@ -105,7 +101,8 @@ exports.approveRequest = async (req, res) => {
       guardianRelation: data.guardianRelation,
       previousEducation: data.previousEducation,
       grade: data.grade,
-      courseModules: data.courseModules
+      courseModules: data.courseModules,
+      curriculum: data.curriculum
     };
     req.file = { filename }; 
 

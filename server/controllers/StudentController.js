@@ -8,6 +8,7 @@ exports.addStudent = async (req, res) => {
       studentName,
       gender,
       dob,
+      ethnicity,
       email,
       nic,
       mobile,
@@ -21,7 +22,7 @@ exports.addStudent = async (req, res) => {
     } = req.body;
 
     const courseModules = JSON.parse(req.body.courseModules || "[]");
-    const profilePhoto = req.file ? `/students/${req.file.filename}` : null;
+    const profilePhoto = req.file ? `/public/students/${req.file.filename}` : null;
 
     //age calcuation
     const today = new Date();
@@ -36,7 +37,7 @@ exports.addStudent = async (req, res) => {
     // Generate new student ID
     const year = today.getFullYear().toString().slice(-2);
     const month = (today.getMonth()+ 1).toString().padStart(2,"0");
-    const curr = curriculum.slice(0,1);
+    const curr = curriculum.slice(0,1).toUpperCase();
     const searchFormat = `S-${year}${curr}${month}-%`
     const [rows] = await db.query(
       `
@@ -56,17 +57,18 @@ exports.addStudent = async (req, res) => {
 
     await db.execute(
       `INSERT INTO students (
-        student_id, student_name, profile_photo, gender, dob,
+        student_id, student_name, profile_photo, gender, dob, ethnicity
         email, nic, mobile, address,
         guardian_name, guardian_mobile, guardian_relation,
         previous_education, grade, submitted_at, payment_status,age,curriculum
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         studentId,
         studentName,
         profilePhoto,
         gender,
         dobDate,
+        ethnicity,
         email,
         nic,
         mobile,
@@ -115,14 +117,14 @@ exports.addStudent = async (req, res) => {
 exports.fetchStudents = async (req, res) => {
   try {
     const [rows] = await db.query(
-      `SELECT student_name, student_id, profile_photo, gender, payment_status 
+      `SELECT student_name, student_id, profile_photo, gender, payment_status, grade 
       FROM students`
     );
     const formattedData = await Promise.all(
       rows.map(async (student) => {
         const [moduleRows] = await db.query(
           `
-          SELECT m.name 
+          SELECT m.name, m.module_id 
           FROM student_modules sm
           JOIN modules m ON sm.module_id = m.module_id
           WHERE sm.student_id = ?
@@ -130,7 +132,12 @@ exports.fetchStudents = async (req, res) => {
           [student.student_id]
         );
 
-        const courses = moduleRows.map(row => row.name);
+        const courses = moduleRows.map(row => (
+          {
+            course: row.name,
+            course_id: row.module_id
+          }
+        ));
 
         return {
           name: student.student_name,
@@ -138,6 +145,7 @@ exports.fetchStudents = async (req, res) => {
           profilePhoto: student.profile_photo,
           gender: student.gender,
           payment_status: student.payment_status,
+          grade: student.grade,
           courses
         };
       })
@@ -180,8 +188,6 @@ exports.fetchStudentbyID = async (req, res) => {
       gender: student.gender,
       dob: formattedDOB,
       ethnicity: student.ethnicity,
-      exam: student.exam,
-      exam_year: student.exam_year,
       email: student.email,
       nic: student.nic,
       mobile: student.mobile,
@@ -194,6 +200,7 @@ exports.fetchStudentbyID = async (req, res) => {
       submitted_at: student.submitted_at,
       payment_status: student.payment_status,
       age:student.age,
+      curriculum:student.curriculum,
       courses
     };
 
@@ -246,8 +253,6 @@ exports.updateStudentById = async (req, res) => {
         dob,
         ethnicity,
         email,
-        exam,
-        examYear,
         nic,
         mobile,
         address,
@@ -257,12 +262,13 @@ exports.updateStudentById = async (req, res) => {
         previousEducation,
         grade,
         payment_status,
-        age
+        age,
+        curriculum
       } = req.body;
 
       const courses = JSON.parse(req.body.courses || "[]");
       const profilePhoto = req.file
-        ? `/students/${req.file.filename}`
+        ? `/public/students/${req.file.filename}`
         : req.body.profilePhoto;
 
       const [rows] = await db.query(`SELECT * FROM students WHERE student_id = ?`, [studentId]);
@@ -272,10 +278,10 @@ exports.updateStudentById = async (req, res) => {
 
       await db.query(
         `UPDATE students 
-        SET student_name = ?, profile_photo = ?, gender = ?, dob = ?, ethnicity = ?, exam = ?, exam_year = ?, 
+        SET student_name = ?, profile_photo = ?, gender = ?, dob = ?, ethnicity = ?, 
             email = ?, nic = ?, mobile = ?, address = ?, 
             guardian_name = ?, guardian_mobile = ?, guardian_relation = ?, 
-            previous_education = ?, grade = ?, payment_status = ?, age = ?
+            previous_education = ?, grade = ?, payment_status = ?, age = ?, curriculum = ?
         WHERE student_id = ?`,
         [
           name,
@@ -283,8 +289,6 @@ exports.updateStudentById = async (req, res) => {
           gender,
           dob,
           ethnicity,
-          exam, 
-          examYear,
           email,
           nic,
           mobile,
@@ -296,6 +300,7 @@ exports.updateStudentById = async (req, res) => {
           grade,
           payment_status,
           age,
+          curriculum,
           studentId
         ]
       );

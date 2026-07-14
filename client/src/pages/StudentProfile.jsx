@@ -31,8 +31,6 @@ export default function StudentProfile() {
           gender: response.data.gender ?? '',
           dob: response.data.dob ?? '',
           ethnicity: response.data.ethnicity ?? '',
-          exam: response.data.exam ?? '',
-          examYear: response.data.exam_year ?? '',
           email: response.data.email ?? '',
           nic: response.data.nic ?? '',
           mobile: response.data.mobile ?? '',
@@ -44,6 +42,7 @@ export default function StudentProfile() {
           grade: response.data.grade ?? '',
           payment_status: response.data.payment_status ?? '',
           age: response.data.age ?? 0,
+          curriculum: response.data.curriculum ?? '',
           courses: response.data.courses ?? [],
           submittedAt: response.data.submitted_at ?? ''
         };

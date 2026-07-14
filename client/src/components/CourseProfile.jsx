@@ -84,42 +84,52 @@ export default function CourseProfile({ courseId }) {
   }, [formData.grade]);
 
   const fetchAllData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch course details
-      const { data: course } = await axios.get(
-        `http://localhost:8000/api/courses/get-courses/${courseId}`
-      );
-      setCourseData(course || null);
+  try {
+    setLoading(true);
 
-      // Fetch classes
-      let classesData = [];
-      if (course) {
-        const { data } = await axios.get(
-          `http://localhost:8000/api/timetable/timetable/${encodeURIComponent(courseId)}`
-        );
-        classesData = Array.isArray(data) ? data : [];
-      }
-      setClasses(classesData);
+    const { data: course } = await axios.get(
+      `http://localhost:8000/api/courses/get-courses/${courseId}`
+    );
 
-      // Fetch lecturers
-      let lecturersData = [];
-      if (course) {
-        const { data } = await axios.get(
-          `http://localhost:8000/api/lecturers/view-lecturers/${encodeURIComponent(courseId)}`
-        );
-        lecturersData = Array.isArray(data) ? data : [];
-      }
-      setLecturers(lecturersData);
-
+    if (!course) {
+      setCourseData(null);
       setLoading(false);
-    } catch (error) {
-      console.error('Error fetching course data:', error);
-      alert('Failed to load course data');
-      setLoading(false);
+      return;
     }
-  };
+
+    setCourseData(course);
+
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8000/api/timetable/timetable/${encodeURIComponent(courseId)}`
+      );
+      setClasses(Array.isArray(data) ? data : []);
+    } catch (error) {
+      if (error.response?.status !== 404) {
+        console.error("Timetable fetch failed:", error);
+      }
+      setClasses([]);
+    }
+
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8000/api/lecturers/view-lecturers/${encodeURIComponent(courseId)}`
+      );
+      setLecturers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      if (error.response?.status !== 404) {
+        console.error("Lecturers fetch failed:", error);
+      }
+      setLecturers([]);
+    }
+
+    setLoading(false);
+  } catch (error) {
+    console.error("Course fetch failed:", error);
+    alert("Failed to load course data");
+    setLoading(false);
+  }
+};
 
   const filterCurrentWeekClasses = () => {
     const today = new Date();

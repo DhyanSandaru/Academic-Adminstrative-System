@@ -1,5 +1,11 @@
 const db = require('../DBconfig.js');
-const {TimetableMailer} = require('../Mailer/TimetableMailer.js');
+const { TimetableMailer } = require("../Mailer/TimetableMailer.js");
+const {
+  formatDateValue,
+  getWeekDateRange,
+  parseDateValue,
+  shiftDateByDays,
+} = require("../utils/timetableWeekUtils.js");
 
 exports.getAllClasses = async (req, res) => {
   try {
@@ -214,5 +220,55 @@ exports.fetchClassesByCourse = async (req, res) => {
   } catch (err) {
     console.error("Error fetching classes by course:", err);
     res.status(500).json({ message: "Database error" });
+  }
+};
+
+
+exports.duplicateCurrentWeekToNextWeek = async (req, res) => {
+  try {
+    const referenceDate = req.body?.referenceDate
+      ? new Date(req.body.referenceDate)
+      : new Date();
+
+    const { start: currentWeekStart, end: currentWeekEnd } =
+      getWeekDateRange(referenceDate);
+
+    const [rows] = await db.query(`
+      SELECT date, day, start_time, end_time, module_id
+      FROM timetable
+      WHERE date IS NOT NULL
+    `);
+
+    const currentWeekEntries = rows.filter((row) => {
+      const rowDate = parseDateValue(row.date);
+      return rowDate && rowDate >= currentWeekStart && rowDate <= currentWeekEnd;
+    });
+
+    if (currentWeekEntries.length === 0) {
+      return res.status(404).json({ message: "No classes found for this week" });
+    }
+
+    const insertValues = currentWeekEntries.map((row) => {
+      const shiftedDate = shiftDateByDays(row.date, 7);
+      const newDate = formatDateValue(shiftedDate);
+      const dayName = shiftedDate.toLocaleDateString("en-US", {
+        weekday: "long",
+      });
+
+      return [newDate, dayName, row.start_time, row.end_time, row.module_id];
+    });
+
+    await db.query(
+      "INSERT INTO timetable (date, day, start_time, end_time, module_id) VALUES ?",
+      [insertValues]
+    );
+
+    res.status(200).json({
+      message: `Duplicated ${insertValues.length} classes to next week`,
+      count: insertValues.length,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to duplicate timetable" });
   }
 };

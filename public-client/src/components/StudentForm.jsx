@@ -5,7 +5,7 @@ import AddCourses from "./AddCourses.jsx";
 import { BACKEND_URL } from "./config.js";
 
 export default function StudentForm() {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(2);
   const [code, setCode] = useState("");
   const [formStatus, setFormStatus] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState(null);
@@ -20,21 +20,27 @@ export default function StudentForm() {
     gender: '',
     dob: '',
     ethnicity: '',
-    exam: '',
-    examYear: '',
     email: '',
     nic: '',
     mobile: '',
     address: '',
     previousEducation: '',
     grade: '',
+    curriculum: '',
     guardianName: '',
     guardianMobile: '',
     guardianRelation: ''
   });
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const next = { ...prev, [field]: value };
+      if (field === 'grade'){
+        next.curriculum = (parseInt(value,10) >= 1 && parseInt(value, 10) <= 8)?'general':'';
+      }
+
+      return next;
+    });
   };
 
   const removeCourseModule = (moduleToRemove) => {
@@ -71,6 +77,7 @@ export default function StudentForm() {
       { key: 'mobile', label: 'Mobile Number' },
       { key: 'address', label: 'Address' },
       { key: 'grade', label: 'Current Grade' },
+      { key: 'curriculum', label:'Curriculum'},
       { key: 'guardianName', label: 'Guardian Name' },
       { key: 'guardianMobile', label: 'Guardian Mobile' },
       { key: 'guardianRelation', label: 'Relationship' },
@@ -113,14 +120,13 @@ export default function StudentForm() {
           gender: '',
           dob: '',
           ethnicity: '',
-          exam: '',
-          examYear: '',
           email: '',
           nic: '',
           mobile: '',
           address: '',
           previousEducation: '',
           grade: '',
+          curriculum:'',
           guardianName: '',
           guardianMobile: '',
           guardianRelation: ''
@@ -137,8 +143,6 @@ export default function StudentForm() {
     }
   };
 
-  //used for examYear
-  const currentYear = new Date().getFullYear();
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
@@ -344,49 +348,23 @@ export default function StudentForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Ethnicity *
                     </label>
-                    <input
+                    <select
                       value={formData.ethnicity}
                       onChange={(e) => handleInputChange('ethnicity', e.target.value)}
-                      placeholder="e.g., Sri Lankan"
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
-                    />
+                    >
+                      <option value="" disabled>--Select Ethnicity--</option>
+                      <option value="sinhala">Sinhala</option>
+                      <option value="tamil">Tamil</option>
+                      <option value="muslim">Musilm</option>
+                      <option value="other">Other</option>
+                    </select>
                     {errors.ethnicity && (
                     <p className="text-red-500 text-xs mt-1">{errors.ethnicity}</p>
                   )}
                   </div>
                 </div>
-
-                {/* Exam & Year */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Exam & Year *
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <select
-                      value={formData.exam}
-                      onChange={(e) => handleInputChange('exam', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition bg-white"
-                    >
-                      <option value="">Select Exam</option>
-                      <option value="O/L">O/L</option>
-                      <option value="A/L">A/L</option>
-                      <option value="IELTS">IELTS</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <select
-                      value={formData.examYear}
-                      onChange={(e) => handleInputChange('examYear', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition bg-white"
-                    >
-                      <option value="">Select Year</option>
-                      {Array.from({ length: 10 }, (_, i) => currentYear + i).map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                
 
                 {/* Email */}
                 <div>
@@ -452,7 +430,7 @@ export default function StudentForm() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
+                  <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Previous School/Institution *
                     </label>
@@ -463,16 +441,52 @@ export default function StudentForm() {
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
                     />
                   </div>
-                  <div>
+                  <div className="col-span-1">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Current Grade *
                     </label>
-                    <input
+                    <select
                       value={formData.grade}
                       onChange={(e) => handleInputChange('grade', e.target.value)}
-                      placeholder="e.g., Grade 10"
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
-                    />
+                    >
+                      <option value="" disabled>--Select Grade--</option>
+                      <option value="1">Grade 1</option>
+                      <option value="2">Grade 2</option>
+                      <option value="3">Grade 3</option>
+                      <option value="4">Grade 4</option>
+                      <option value="5">Grade 5</option>
+                      <option value="6">Grade 6</option>
+                      <option value="7">Grade 7</option>
+                      <option value="9">Grade 9</option>
+                      <option value="10">Grade 10</option>
+                      <option value="AS">AS level</option>
+                      <option value="A2">A2 level</option>
+                    </select>
+                  </div>
+                  <div className="col-span-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Curriculum *
+                    </label>
+                    <select
+                      value={formData.curriculum}
+                      onChange={(e) => handleInputChange('curriculum', e.target.value)}
+                      disabled={parseInt(formData.grade, 10) >= 1 && parseInt(formData.grade, 10) <= 8}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition bg-white disabled:cursor-not-allowed"
+                    >
+                      <option value="" disabled>--Select Curriculum--</option>
+                      {parseInt(formData.grade, 10) >= 1 && parseInt(formData.grade, 10) <= 8?
+                      (
+                        <option value="general">General</option>
+                      ):
+                      (
+                        <>
+                          <option value="cambridge">Cambridge</option>
+                          <option value="edexcel">Edexcel</option>
+                        </>
+                      )
+                      }
+                    </select>
                   </div>
                 </div>
               </div>

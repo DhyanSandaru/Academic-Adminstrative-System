@@ -22,7 +22,7 @@ exports.addLecturer = async (req, res) => {
     const courseModules = JSON.parse(req.body.courseModules || "[]");
 
     // If file uploaded, save the relative path
-    const profilePhoto = req.file ? `/lecturers/${req.file.filename}` : null;
+    const profilePhoto = req.file ? `/public/lecturers/${req.file.filename}` : null;
 
     // Generate joined year automatically
     const joinedYear = new Date().getFullYear();
@@ -218,6 +218,7 @@ exports.fetchLecturersByCourse = async (req, res) => {
   const courseId = req.params.course;
 
   try {
+    
     const [rows] = await db.query(
       `
       SELECT l.lecturer_id, l.lecturer_name, l.email, l.mobile, l.profile_photo
@@ -257,7 +258,7 @@ exports.updateLecturerById = async (req, res) => {
 
     const courseModules = JSON.parse(req.body.courses || "[]");
     const profilePhoto = req.file
-      ? `/lecturers/${req.file.filename}`
+      ? `/public/lecturers/${req.file.filename}`
       : req.body.profilePhoto; // keep previous one if no new upload
 
     // Check lecturer existence

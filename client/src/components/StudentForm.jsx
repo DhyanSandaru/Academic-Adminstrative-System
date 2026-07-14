@@ -1,17 +1,25 @@
 import { useState } from "react";
 import axios from "axios";
 import AddCourses from "./AddCourses";
+import { useEffect } from "react";
 
 export default function Form() {
   const [courseModules, setCourseModules] = useState([]);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [grade, setGrade] = useState("");
+  const [curriculum, setCurriculum] = useState("");
   const [showCoursePopup, setShowCoursePopup] = useState(false);
 
   //removing a selected module from courses field
   const removeCourseModule = (moduleToRemove) => {
     setCourseModules(courseModules.filter((m) => m !== moduleToRemove));
   };
+
+  useEffect(()=>{
+    if(parseInt(grade, 10) >= 1 && parseInt(grade, 10) <= 8)
+      setCurriculum("general")
+  }, 
+  [grade])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,6 +31,7 @@ export default function Form() {
     formData.append("profilePhoto", profilePhoto);
     formData.append("gender", form["gender"].value);
     formData.append("dob", form["dob"].value);
+    formData.append("ethnicity", form["ethnicity"].value)
     formData.append("email", form["email"].value);
     formData.append("nic", form["nic"].value);
     formData.append("mobile", form["mobile"].value);
@@ -32,7 +41,7 @@ export default function Form() {
     formData.append("guardianRelation", form["guardian-relation"].value);
     formData.append("previousEducation", form["previous-education"].value);
     formData.append("grade", grade);
-    formData.append("curriculum", form["curriculum"].value);
+    formData.append("curriculum", curriculum);
     formData.append("courseModules", JSON.stringify(courseModules));
 
     try {
@@ -177,12 +186,17 @@ export default function Form() {
               <label htmlFor="ethnicity" className="block text-md font-medium">
                 Ethnicity
               </label>
-              <input
+              <select
                 id="ethnicity"
-                type="text"
-                placeholder="e.g., Sri Lankan"
+                name="ethnicity"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
-              />
+              >
+                <option value="sinhala">Sinhala</option>
+                <option value="muslim">Muslim</option>
+                <option value="tamik">Tamil</option>
+                <option value="other">Other</option>
+              </select>
+
             </div>
 
 
@@ -264,15 +278,17 @@ export default function Form() {
               <select
                 id="curriculum"
                 name="curriculum"
-                className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
-                disabled={grade && parseInt(grade) >= 1 && parseInt(grade) <= 8}
+                value={curriculum}
+                onChange={(e)=> setCurriculum(e.target.value)}
+                disabled={parseInt(grade) >= 1 && parseInt(grade) <= 8}
+                className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed"
                 >
+                  <option value="" disabled>--Select Curriculum--</option>
                   {grade && parseInt(grade) >= 1 && parseInt(grade) <= 8?
                   (
                     <option value="general">General</option>
                 ): (
                   <>
-                    <option value="" disabled>--Select Curriculum--</option>
                     <option value="edexcel">Edexcel</option>
                     <option value="cambridge">Cambridge</option>
                   </>
@@ -289,10 +305,11 @@ export default function Form() {
               <select
                 id="grade"
                 name="grade"
+                value={grade}
                 onChange={(e) => setGrade(e.target.value)}
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">Select Grade</option>
+                  <option value="">--Select Grade--</option>
                   <option value="1">Grade 1</option>
                   <option value="2">Grade 2</option>
                   <option value="3">Grade 3</option>

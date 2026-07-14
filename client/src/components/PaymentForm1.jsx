@@ -202,7 +202,7 @@ export default function PaymentForm1() {
                             setFormData({
                               ...formData,
                               studentName: item.studentName,
-                              studentId: item.studentId,
+                              studentId: item.studentId
                             });
                             setShowCoursePopup(true);
                           }}
@@ -292,12 +292,12 @@ export default function PaymentForm1() {
                   <div className="space-y-2 mb-6">
                     {selectedStudent.courses.map((course, index) => (
                       <button
-                        key={index}
+                        key={course.course_id}
                         onClick={async () => {
-                          setSelectedCourse(course);
+                          setSelectedCourse(course.course_id);
                           try {
                             const res = await axios.get(
-                              `http://localhost:8000/api/lecturers/view-lecturers/${course}`
+                              `http://localhost:8000/api/lecturers/view-lecturers/${course.course_id}`
                             );
                             setAvailableLecturers(res.data);
                           } catch (err) {
@@ -306,7 +306,7 @@ export default function PaymentForm1() {
                         }}
                         className="w-full text-left px-4 py-3 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 text-gray-900 font-medium transition-all duration-200"
                       >
-                        📚 {course}
+                        📚 {course.course}
                       </button>
                     ))}
                   </div>

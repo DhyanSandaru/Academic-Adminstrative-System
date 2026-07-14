@@ -20,7 +20,7 @@ export default function FlashCard({
   const colors = themeStyles[theme] || themeStyles.blue;
   return (
     <div className="rounded-3xl bg-white h-auto w-full shadow-sm">
-      <h2 className="text-black text-md bg-gray-100 text-left w-full py-3 pl-2 rounded-t-3xl">
+      <h2 className="text-black  text-md font-semibold bg-gray-100 text-left w-full py-3 pl-2 rounded-t-3xl">
         {title}
       </h2>
 

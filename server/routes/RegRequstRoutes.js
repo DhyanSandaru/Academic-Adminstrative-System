@@ -6,7 +6,7 @@ const fs = require('fs');
 const RegRequestController = require('../controllers/RegRequestController.js');
 
 // Ensure target folder exists
-const studentDir = path.join(__dirname, '/temp-students');
+const studentDir = path.join(__dirname, '../public/temp-students');
 if (!fs.existsSync(studentDir)) {
   fs.mkdirSync(studentDir, { recursive: true });
 }

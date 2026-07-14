@@ -22,7 +22,7 @@ export default function AddCourses({selectedCourses, setSelectedCourses, handleC
     useEffect( () => {
         const fetchCourses = async () => {
             try{    
-            const response =  await axios.get(`${BACKEND_URL}/courses/get-courses`);
+            const response =  await axios.get(`${BACKEND_URL}/api/courses/get-courses`);
             const validatedData = response.data.map((course) => ({
                 courseName: course.name,
                 courseId: course.module_id,
@@ -73,7 +73,7 @@ export default function AddCourses({selectedCourses, setSelectedCourses, handleC
                       onClick={() => removeCourse(module)}
                       className="hover:bg-white/20 rounded-full"
                     >
-                      <img src="\images\x.png" alt="close" className="w-3"/>
+                      <img src="/images/x.png" alt="close" className="w-3"/>
                     </button>
                   </div>
                 ))}

@@ -185,13 +185,17 @@ export default function PersonalDetails() {
 
           <div className='md:col-span-2'>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Ethnicity</label>
-            <input
-              type="text"
+            <select
               name="ethnicity"
               value={formData.ethnicity}
               onChange={handleChange}
               className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-            />
+            >
+              <option value="sinhala">Sinhala</option>
+              <option value="muslim">Muslim</option>
+              <option value="tamil">Tamil</option>
+              <option value="other">Other</option>
+            </select>
           </div>
         </div>
       </div>

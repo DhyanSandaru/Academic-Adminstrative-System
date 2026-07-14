@@ -48,6 +48,23 @@ exports.addCourse = async (req, res) => {
       return res.status(400).json({ error: "All fields are required, including at least one lecturer." });
     }
 
+    // Check for duplicate course
+    const [existingCourse] = await db.query(
+      `SELECT module_id
+      FROM modules
+      WHERE LOWER(name) = LOWER(?)
+        AND grade = ?
+        AND curriculum = ?
+      LIMIT 1`,
+      [courseName.trim(), grade, curriculum]
+    );
+
+    if (existingCourse.length > 0) {
+      return res.status(409).json({
+        error: "A course with the same name already exists for this grade and curriculum."
+      });
+    }
+
     // 1️⃣ Generate unique module_id
     const moduleId = await generateUniqueModuleId(courseName);
 

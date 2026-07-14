@@ -17,7 +17,7 @@ export default function Lecturer({ name, lecturerId, courses, profilePhoto }) {
           <div className="w-full pl-4 py-4 flex-1/4">
             <div className="w-25 h-25 rounded-full border-4 border-[#ffc20e] overflow-hidden">
               <img
-                src={`http://localhost:8000/public${profilePhoto}`}
+                src={`http://localhost:8000${profilePhoto}`}
                 alt={name}
                 className="w-full h-full object-cover"
               />

@@ -50,7 +50,7 @@ export default function LecturerLayout({ children, title }) {
               <div className="flex-1 min-w-[200px]">
                 <button 
                   className="w-full flex items-center justify-center gap-2 font-semibold py-3 px-4 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
-                  onClick={() => smoothScroll("salary-calculator")}
+                  onClick={() => smoothScroll("salary-calculation")}
                 >
                   <DollarSign size={20} />
                   Salary Calculator

@@ -7,7 +7,7 @@ const fs = require('fs');
 const adminController = require('../controllers/AdminController.js');
 
 // Ensure admins folder exists
-const adminDir = path.join(__dirname, '../admins');
+const adminDir = path.join(__dirname, '../public/admins');
 if (!fs.existsSync(adminDir)) {
   fs.mkdirSync(adminDir, { recursive: true });
 }

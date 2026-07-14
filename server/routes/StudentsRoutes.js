@@ -6,7 +6,7 @@ const fs = require('fs');
 const studentController = require('../controllers/StudentController.js');
 
 // Ensure target folder exists
-const studentDir = path.join(__dirname, '/students');
+const studentDir = path.join(__dirname, '../public/students');
 if (!fs.existsSync(studentDir)) {
   fs.mkdirSync(studentDir, { recursive: true });
 }
