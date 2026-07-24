@@ -14,15 +14,43 @@ function HandleBackup() {
   // Change this to match your backend URL
   const API_URL = 'http://localhost:8000/api/backup';
 
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => {
+      setIsOnline(false);
+      setError('No network connection. Backup actions are unavailable offline.');
+      setBackups([]);
+      setInitialLoading(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   // Fetch all backups
   const fetchBackups = async () => {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      setError('No network connection. Backup features are unavailable offline.');
+      setBackups([]);
+      setInitialLoading(false);
+      return;
+    }
+
     console.log('🔍 Fetching backups...');
     try {
       setError(null);
       const res = await axios.get(`${API_URL}/list`, {
-        timeout: 5000 // 5 second timeout
+        timeout: 5000,
       });
-      console.log('✅ Backups fetched:', res.data);
       setBackups(res.data.backups || []);
     } catch (err) {
       console.error('❌ Failed to fetch backups:', err);

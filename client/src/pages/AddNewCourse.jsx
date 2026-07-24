@@ -3,7 +3,7 @@ import Layout from '../components/Layout.jsx';
 
 export default function AddNewCourse(){
     return(
-        <Layout>
+        <Layout title="Add Course">
             <CourseForm/>
         </Layout>
     )

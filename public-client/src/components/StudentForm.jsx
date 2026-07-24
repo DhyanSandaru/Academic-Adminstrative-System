@@ -5,7 +5,7 @@ import AddCourses from "./AddCourses.jsx";
 import { BACKEND_URL } from "./config.js";
 
 export default function StudentForm() {
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(1);
   const [code, setCode] = useState("");
   const [formStatus, setFormStatus] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState(null);

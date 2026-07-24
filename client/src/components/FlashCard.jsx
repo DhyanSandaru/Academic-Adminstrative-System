@@ -25,14 +25,14 @@ export default function FlashCard({
       </h2>
 
       <div className="flex flex-col bg-white rounded-3xl">
-        <div className="flex flex-row items-center justify-around my-3 ml-5">
-          <div className="flex flex-row items-center gap-4">
+        <div className="flex flex-row items-center justify-between my-3 ml-5 w-full">
+          <div className="flex flex-row items-center justify-between gap-4">
             <Icon className={`bg-${theme}-100 text-${theme}-700 p-2 rounded-4xl w-12 h-12 my-3`} />
             <h2 className="text-black text-4xl">{value}</h2>
           </div>
-          {changedNo && percentage && (
+          {/* {changedNo && percentage && (
             <p className="text-green-700 ml-auto self-start">{`${percentage}%`}</p>
-          )}
+          )} */}
         </div>
 
         {changedNo && percentage && (
