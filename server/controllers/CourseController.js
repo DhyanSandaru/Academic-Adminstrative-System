@@ -25,7 +25,7 @@ async function generateUniqueModuleId(courseName) {
 
 exports.addCourse = async (req, res) => {
   try {
-    const {
+    let {
       courseName,
       payment,
       grade,
@@ -35,6 +35,17 @@ exports.addCourse = async (req, res) => {
       lecturers 
     } = req.body;
 
+    // If lecturers were sent as a JSON string (FormData), parse it
+    let parsedLecturers = [];
+    if (lecturers) {
+      parsedLecturers = typeof lecturers === 'string' ? JSON.parse(lecturers) : lecturers;
+    }
+
+    // If multer saved a file, use its public path
+    if (req.file) {
+      courseBanner = `/public/course_banners/${req.file.filename}`;
+    }
+
     // Basic validation
     if (
       !courseName ||
@@ -42,8 +53,8 @@ exports.addCourse = async (req, res) => {
       !grade ||
       !curriculum ||
       !description ||
-      !Array.isArray(lecturers) ||
-      lecturers.length === 0
+      !Array.isArray(parsedLecturers) ||
+      parsedLecturers.length === 0
     ) {
       return res.status(400).json({ error: "All fields are required, including at least one lecturer." });
     }
@@ -76,7 +87,7 @@ exports.addCourse = async (req, res) => {
     );
 
     // 3️⃣ Insert into lecturer_modules table
-    const lecturerModuleValues = lecturers
+    const lecturerModuleValues = parsedLecturers
       .map(l => {
         const id = l.lecturerId || l.lecturer_id || null;
         return id ? [id, moduleId] : null;
@@ -252,6 +263,45 @@ exports.updateCourse = async (req, res) => {
     res.status(500).json({ 
       error: "Server error while updating course",
       message: error.message 
+    });
+  }
+};
+
+exports.deleteCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Course ID is required" });
+    }
+
+    const connection = await db.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      await connection.query("DELETE FROM timetable WHERE module_id = ?", [id]);
+      await connection.query("DELETE FROM student_modules WHERE module_id = ?", [id]);
+      await connection.query("DELETE FROM lecturer_modules WHERE module_id = ?", [id]);
+
+      const [result] = await connection.query("DELETE FROM modules WHERE module_id = ?", [id]);
+
+      if (result.affectedRows === 0) {
+        throw new Error("Course not found");
+      }
+
+      await connection.commit();
+      res.status(200).json({ message: "Course deleted successfully" });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error("Error deleting course:", error);
+    res.status(500).json({
+      message: error.message || "Server error while deleting course"
     });
   }
 };

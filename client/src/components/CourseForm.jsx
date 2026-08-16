@@ -14,6 +14,7 @@ export default function CourseForm() {
   const [selectedLecturers, setSelectedLecturers] = useState([]);
   const [isLecturerModalOpen, setIsLecturerModalOpen] = useState(false);
   const [courseBanner, setCourseBanner] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -48,6 +49,15 @@ export default function CourseForm() {
     setIsModalOpen(false);
   };
 
+  // Revoke object URL when selected file changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (selectedFile && courseBanner) {
+        try { URL.revokeObjectURL(courseBanner); } catch (e) {}
+      }
+    };
+  }, [selectedFile, courseBanner]);
+
   const validateForm = () => {
     const { courseName, payment, grade, curriculum, description } = formData;
 
@@ -67,20 +77,28 @@ export default function CourseForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
-
     if (!validateForm()) return;
 
     try {
-      const payload = {
-        ...formData,
-        courseBanner,
-        lecturers: selectedLecturers, // Array of {lecturerId, lecturerName}
-      };
+      const url = "http://localhost:8000/api/courses/add-course";
+      const payload = new FormData();
+      payload.append('courseName', formData.courseName);
+      payload.append('payment', formData.payment);
+      payload.append('grade', formData.grade);
+      payload.append('curriculum', formData.curriculum);
+      payload.append('description', formData.description);
+      payload.append('lecturers', JSON.stringify(selectedLecturers));
 
-      const response = await axios.post(
-        "http://localhost:8000/api/courses/add-course",
-        payload
-      );
+      if (selectedFile) {
+        payload.append('courseBanner', selectedFile);
+      } else if (courseBanner) {
+        // send existing selected banner path (string)
+        payload.append('courseBanner', courseBanner);
+      }
+
+      const response = await axios.post(url, payload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
       if (response.status === 200) {
         setMessage("✅ Course added successfully!");
@@ -92,6 +110,11 @@ export default function CourseForm() {
           description: "",
         });
         setSelectedLecturers([]);
+        // revoke object URL if used
+        if (selectedFile && courseBanner) {
+          URL.revokeObjectURL(courseBanner);
+        }
+        setSelectedFile(null);
         setCourseBanner(null);
       }
     } catch (error) {
@@ -247,6 +270,37 @@ export default function CourseForm() {
                 >
                   Choose Banner
                 </button>
+                <div className="mt-3 flex items-center gap-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (file) {
+                        const url = URL.createObjectURL(file);
+                        setSelectedFile(file);
+                        setCourseBanner(url);
+                      } else {
+                        setSelectedFile(null);
+                        setCourseBanner(null);
+                      }
+                    }}
+                    className="text-sm"
+                  />
+                  {selectedFile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try { URL.revokeObjectURL(courseBanner); } catch (e) {}
+                        setSelectedFile(null);
+                        setCourseBanner(null);
+                      }}
+                      className="text-sm text-red-600"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

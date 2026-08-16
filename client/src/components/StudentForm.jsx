@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import AddCourses from "./AddCourses";
-import { useEffect } from "react";
 
 export default function Form() {
   const [courseModules, setCourseModules] = useState([]);
@@ -9,21 +8,37 @@ export default function Form() {
   const [grade, setGrade] = useState("");
   const [curriculum, setCurriculum] = useState("");
   const [showCoursePopup, setShowCoursePopup] = useState(false);
+  const moduleValidationRef = useRef(null);
 
   //removing a selected module from courses field
   const removeCourseModule = (moduleToRemove) => {
     setCourseModules(courseModules.filter((m) => m !== moduleToRemove));
   };
 
-  useEffect(()=>{
-    if(parseInt(grade, 10) >= 1 && parseInt(grade, 10) <= 8)
-      setCurriculum("general")
-  }, 
-  [grade])
+  useEffect(() => {
+    if (parseInt(grade, 10) >= 1 && parseInt(grade, 10) <= 8) {
+      setCurriculum("general");
+    }
+  }, [grade]);
+
+  useEffect(() => {
+    if (moduleValidationRef.current) {
+      moduleValidationRef.current.setCustomValidity(
+        courseModules.length === 0
+          ? "Please add at least one course module."
+          : ""
+      );
+    }
+  }, [courseModules]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
+
+    if (!form.reportValidity()) {
+      return;
+    }
+
     const formData = new FormData();
 
     // Append form data
@@ -48,6 +63,8 @@ export default function Form() {
       const res = await axios.post("http://localhost:8000/api/students/add-student", formData);
       alert(res.data.message || "Student added successfully!");
       form.reset();
+      setGrade("");
+      setCurriculum("");
       setCourseModules([]);
       setProfilePhoto(null);
     } catch (err) {
@@ -121,6 +138,22 @@ export default function Form() {
             {/* Course Modules */}
             <div className="col-span-full w-full">
               <label className="block text-md font-medium">Course Modules</label>
+              <input
+                ref={moduleValidationRef}
+                type="text"
+                value={courseModules.join(",")}
+                readOnly
+                required
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  opacity: 0,
+                  height: "1px",
+                  width: "1px",
+                  overflow: "hidden",
+                  pointerEvents: "none",
+                }}
+              />
               <div className="mt-2 flex flex-wrap gap-2">
                 {courseModules.map((module) => (
                   <div
@@ -160,9 +193,15 @@ export default function Form() {
           <div className="sm:col-span-3 mt-8 w-full">
             <label className="block text-md font-medium">Gender</label>
             <div className="mt-2 flex justify-center gap-x-10">
-              {["Male", "Female", "other"].map((g) => (
+              {['Male', 'Female', 'other'].map((g, index) => (
                 <label key={g} className="flex items-center gap-x-2 text-md">
-                  <input type="radio" name="gender" value={g} className="text-indigo-500" />
+                  <input
+                    type="radio"
+                    name="gender"
+                    value={g}
+                    required={index === 0}
+                    className="text-indigo-500"
+                  />
                   {g.charAt(0).toUpperCase() + g.slice(1)}
                 </label>
               ))}
@@ -178,6 +217,7 @@ export default function Form() {
               <input
                 id="dob"
                 type="date"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -189,6 +229,7 @@ export default function Form() {
               <select
                 id="ethnicity"
                 name="ethnicity"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="sinhala">Sinhala</option>
@@ -208,6 +249,7 @@ export default function Form() {
               <input
                 id="email"
                 type="email"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -220,6 +262,7 @@ export default function Form() {
               <input
                 id="nic"
                 type="text"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -232,6 +275,7 @@ export default function Form() {
               <input
                 id="mobile"
                 type="text"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -244,6 +288,7 @@ export default function Form() {
               <textarea
                 id="address"
                 rows="2"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               ></textarea>
             </div>
@@ -265,6 +310,7 @@ export default function Form() {
               <input
                 id="previous-education"
                 type="text"
+                required
                 placeholder="Enter institution name"
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
@@ -278,6 +324,7 @@ export default function Form() {
               <select
                 id="curriculum"
                 name="curriculum"
+                required
                 value={curriculum}
                 onChange={(e)=> setCurriculum(e.target.value)}
                 disabled={parseInt(grade) >= 1 && parseInt(grade) <= 8}
@@ -305,6 +352,7 @@ export default function Form() {
               <select
                 id="grade"
                 name="grade"
+                required
                 value={grade}
                 onChange={(e) => setGrade(e.target.value)}
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
@@ -343,6 +391,7 @@ export default function Form() {
               <input
                 id="guardian-name"
                 type="text"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -354,6 +403,7 @@ export default function Form() {
               <input
                 id="guardian-mobile"
                 type="text"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -365,6 +415,7 @@ export default function Form() {
               <input
                 id="guardian-relation"
                 type="text"
+                required
                 className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 border border-gray-300 focus:ring-2 focus:ring-indigo-500"
               />
             </div>

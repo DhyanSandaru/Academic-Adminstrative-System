@@ -257,9 +257,6 @@ exports.updateLecturerById = async (req, res) => {
     } = req.body;
 
     const courseModules = JSON.parse(req.body.courses || "[]");
-    const profilePhoto = req.file
-      ? `/public/lecturers/${req.file.filename}`
-      : req.body.profilePhoto; // keep previous one if no new upload
 
     // Check lecturer existence
     const [rows] = await db.query(
@@ -269,6 +266,19 @@ exports.updateLecturerById = async (req, res) => {
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "Lecturer not found" });
+    }
+
+    const oldPhoto = rows[0].profile_photo;
+      const profilePhoto = req.file
+        ? `/public/lecturers/${req.file.filename}`
+        : req.body.profilePhoto; //keep previous if no upload
+    
+    // Delete old photo only when a new file is uploaded
+    if (req.file && oldPhoto) {
+      const oldPhotoPath = path.join(__dirname, '../public/lecturers', path.basename(oldPhoto));
+      if (fs.existsSync(oldPhotoPath)) {
+        fs.unlinkSync(oldPhotoPath);
+      }
     }
 
     // Update lecturer data

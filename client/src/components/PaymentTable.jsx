@@ -162,7 +162,7 @@ export default function PaymentTable({payments}){
                 </div>
             </div>
             {popup && (
-                <PaymentReceipt data={paymentData} onClose={() => setpopup(false)}/>
+                <PaymentReceipt data={paymentData} onClose={() => setpopup(false)} del={true}/>
             )}
         </>
     )

@@ -1,6 +1,8 @@
 const db = require('../DBconfig.js');
 const Student = require("../models/StudentModel.js");
 const {registrationMailer} = require('../Mailer/RegistrationMailer.js');
+const fs = require('fs');
+const path = require('path');
 
 exports.addStudent = async (req, res) => {
   try {
@@ -20,7 +22,7 @@ exports.addStudent = async (req, res) => {
       grade,
       curriculum
     } = req.body;
-
+    
     const courseModules = JSON.parse(req.body.courseModules || "[]");
     const profilePhoto = req.file ? `/public/students/${req.file.filename}` : null;
 
@@ -49,6 +51,7 @@ exports.addStudent = async (req, res) => {
       `,
       [searchFormat]
     );
+
     const newid = rows.length > 0 ? parseInt(rows[0].student_id.slice(-3), 10) + 1 : 1;
     const studentId = `S-${year}${curr}${month}-${newid.toString().padStart(3, "0")}`;
 
@@ -57,9 +60,8 @@ exports.addStudent = async (req, res) => {
 
     await db.execute(
       `INSERT INTO students (
-        student_id, student_name, profile_photo, gender, dob, ethnicity
-        email, nic, mobile, address,
-        guardian_name, guardian_mobile, guardian_relation,
+        student_id, student_name, profile_photo, gender, dob, ethnicity,
+        email, nic, mobile, address, guardian_name, guardian_mobile, guardian_relation,
         previous_education, grade, submitted_at, payment_status,age,curriculum
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -86,7 +88,8 @@ exports.addStudent = async (req, res) => {
     );
 
     // Insert related course modules
-    for (const moduleName of courseModules) {
+    if(courseModules.length > 0){
+      for (const moduleName of courseModules) {
       const [moduleRows] = await db.execute(
         "SELECT module_id FROM modules WHERE LOWER(name) = LOWER(?)",
         [moduleName]
@@ -100,6 +103,8 @@ exports.addStudent = async (req, res) => {
         );
       }
     }
+    }
+
     try {
       await registrationMailer(email, studentName, studentId, grade, curriculum);
       console.log("📧 Registration email sent to:", email);
@@ -267,13 +272,22 @@ exports.updateStudentById = async (req, res) => {
       } = req.body;
 
       const courses = JSON.parse(req.body.courses || "[]");
-      const profilePhoto = req.file
-        ? `/public/students/${req.file.filename}`
-        : req.body.profilePhoto;
 
       const [rows] = await db.query(`SELECT * FROM students WHERE student_id = ?`, [studentId]);
       if (rows.length === 0) {
         return res.status(404).json({ message: "Student not found" });
+      }
+      const oldPhoto = rows[0].profile_photo;
+      const profilePhoto = req.file
+        ? `/public/students/${req.file.filename}`
+        : req.body.profilePhoto;
+
+      // Delete old photo only when a new file is uploaded
+      if (req.file && oldPhoto) {
+        const oldPhotoPath = path.join(__dirname, '../public/students', path.basename(oldPhoto));
+        if (fs.existsSync(oldPhotoPath)) {
+          fs.unlinkSync(oldPhotoPath);
+        }
       }
 
       await db.query(
@@ -340,9 +354,37 @@ exports.deleteStudentById = async (req, res) => {
   const id = req.params.id;
 
   try {
-    // Delete from student_modules first to maintain FK integrity
+    // Get profile photo path from DB first
+    const [rows] = await db.query(
+      "SELECT profile_photo FROM students WHERE student_id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const profilePhoto = rows[0].profile_photo;
+
+    if (profilePhoto) {
+      const photoPath = path.join(
+        __dirname,
+        "./public/students",
+        path.basename(profilePhoto)
+      );
+
+      if (fs.existsSync(photoPath)) {
+        fs.unlinkSync(photoPath);
+      }
+    }
+
+    // Delete related module links first
     await db.query("DELETE FROM student_modules WHERE student_id = ?", [id]);
-    const [result] = await db.query("DELETE FROM students WHERE student_id = ?", [id]);
+
+    const [result] = await db.query(
+      "DELETE FROM students WHERE student_id = ?",
+      [id]
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Student not found" });

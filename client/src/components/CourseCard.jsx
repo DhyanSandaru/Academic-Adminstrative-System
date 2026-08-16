@@ -7,6 +7,9 @@ export default function CourseCard({
   courseBanner,
   onClick
 }) {
+  const bannerSrc = courseBanner
+    ? (courseBanner.startsWith('http') ? courseBanner : `http://localhost:8000${courseBanner}`)
+    : null;
   return (
     <div 
       className="group bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
@@ -14,9 +17,9 @@ export default function CourseCard({
     >
       {/* Course Banner */}
       <div className="relative h-40 overflow-hidden bg-gradient-to-br from-purple-400 to-indigo-600">
-        {courseBanner ? (
+        {bannerSrc ? (
           <img 
-            src={`http://localhost:8000${courseBanner}`}
+            src={bannerSrc}
             alt={name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />

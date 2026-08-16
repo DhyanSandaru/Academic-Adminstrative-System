@@ -1,7 +1,8 @@
 const db = require('../DBconfig.js'); // make sure the path is correct
 const {fetchStudentEmailbyId} = require('../models/StudentModel.js');
 const {updatePaymentStatus} = require('../utils/paymentHelper.js')
-const {PaymentMailer, paymentMailer} = require('../Mailer/PaymentMailer.js')
+const {PaymentMailer, paymentMailer} = require('../Mailer/PaymentMailer.js');
+const { messaging } = require('firebase-admin');
 
 // Add Payment
 exports.addPayment = async (req, res) => {
@@ -106,3 +107,23 @@ exports.fetchPaymentsByLecturerID = async (req, res) => {
   }
 };
   
+
+exports.deletePaymentbyID = async(req, res) => {
+  const ref = req.params.ref;
+  console.log(`Deleting payment: ${ref}`)
+  try{
+    const [result] = await db.query(
+      'DELETE from payments WHERE ref_no = ?'
+      ,[ref]
+    )
+
+    if(result.affectedRows === 0){
+      return res.status(404).json({message: "Payment not found"})
+    }
+    res.status(200).json({message: "Payment Deleted Successfully"})
+  }
+  catch(err){
+    console.error("Error in deleting payment", err)
+    res.status(500).json({message : 'Internal Server error'})
+  }
+}

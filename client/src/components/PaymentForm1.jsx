@@ -107,7 +107,7 @@ export default function PaymentForm1() {
   return (
     <>
       {receiptData && (
-        <PaymentReceipt data={receiptData} onClose={() => setReceiptData(null)} />
+        <PaymentReceipt data={receiptData} onClose={() => setReceiptData(null)} del={false}/>
       )}
 
       <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-12 px-4">
