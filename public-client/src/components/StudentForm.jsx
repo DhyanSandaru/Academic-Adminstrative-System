@@ -54,7 +54,7 @@ export default function StudentForm() {
     }
     
     try {
-      const res = await axios.post(`${BACKEND_URL}/api/validate-code`, { code });
+      const res = await axios.post(`${BACKEND_URL}/api/verification/validate-code`, { code });
       if (res.data.valid) {
         setStep(2);
         setFormStatus(null);
@@ -108,7 +108,7 @@ export default function StudentForm() {
     formDataToSend.append("courseModules", JSON.stringify(courseModules));
 
     try {
-      const res = await axios.post(`${BACKEND_URL}/add-request`, formDataToSend, {
+      const res = await axios.post(`${BACKEND_URL}/api/requests/add-request`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setFormStatus("Registration submitted for approval successfully!");
