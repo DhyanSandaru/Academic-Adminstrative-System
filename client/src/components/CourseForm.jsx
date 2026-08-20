@@ -34,9 +34,16 @@ export default function CourseForm() {
   }, [formData.grade]);
 
   const bannerOptions = [
-    "/images/banner1.jpg",
-    "/images/banner2.jpg",
-    "/images/banner3.jpg",
+    "/images/course_backgrounds/green_tiles.jpg",
+    "/images/course_backgrounds/color_tiles.png",
+    "/images/course_backgrounds/gold-brown tiles.jpg",
+    "/images/course_backgrounds/abstract_art.jpg",
+    "/images/course_backgrounds/abstract_art2.png",
+    "/images/course_backgrounds/floral.jpg",
+    "/images/course_backgrounds/pattern_tile.jpeg",
+    "/images/course_backgrounds/wall_art.jpg",
+    "/images/course_backgrounds/space-art.jpg",
+    "/images/course_backgrounds/tides.jpg"
   ];
 
   const handleInputChange = (e) => {
@@ -53,7 +60,7 @@ export default function CourseForm() {
   useEffect(() => {
     return () => {
       if (selectedFile && courseBanner) {
-        try { URL.revokeObjectURL(courseBanner); } catch (e) {}
+        try { URL.revokeObjectURL(courseBanner); } catch (e) { }
       }
     };
   }, [selectedFile, courseBanner]);
@@ -200,7 +207,7 @@ export default function CourseForm() {
               <h2 className="block text-md font-medium mb-3">Grade</h2>
               <div className="flex flex-col sm:flex-row gap-5 w-full">
                 <div className="w-full sm:w-1/2">
-                <label htmlFor="grade">Grade</label>
+                  <label htmlFor="grade">Grade</label>
                   <select
                     id="grade"
                     name="grade"
@@ -224,7 +231,7 @@ export default function CourseForm() {
                   </select>
                 </div>
                 <div className="w-full sm:w-1/2">
-                <label htmlFor="">Curriculum</label>
+                  <label htmlFor="">Curriculum</label>
                   <select
                     id="curriculum"
                     name="curriculum"
@@ -291,7 +298,7 @@ export default function CourseForm() {
                     <button
                       type="button"
                       onClick={() => {
-                        try { URL.revokeObjectURL(courseBanner); } catch (e) {}
+                        try { URL.revokeObjectURL(courseBanner); } catch (e) { }
                         setSelectedFile(null);
                         setCourseBanner(null);
                       }}
@@ -331,11 +338,10 @@ export default function CourseForm() {
           </button>
           {message && (
             <p
-              className={`text-sm ${
-                message.startsWith("✅")
-                  ? "text-green-600"
-                  : "text-red-600 font-medium"
-              }`}
+              className={`text-sm ${message.startsWith("✅")
+                ? "text-green-600"
+                : "text-red-600 font-medium"
+                }`}
             >
               {message}
             </p>
@@ -366,11 +372,10 @@ export default function CourseForm() {
               {bannerOptions.map((banner, index) => (
                 <div
                   key={index}
-                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition ${
-                    courseBanner === banner
-                      ? "border-indigo-600 scale-[1.02]"
-                      : "border-transparent hover:scale-[1.02]"
-                  }`}
+                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition ${courseBanner === banner
+                    ? "border-indigo-600 scale-[1.02]"
+                    : "border-transparent hover:scale-[1.02]"
+                    }`}
                   onClick={() => handleSelectBanner(banner)}
                 >
                   <img

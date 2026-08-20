@@ -33,13 +33,13 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
     fetchLecturers();
   }, []);
 
-  
-  const selectLecturer = (lecturerName, lecturerId,profilePhoto,email,mobile) => {
+
+  const selectLecturer = (lecturerName, lecturerId, profilePhoto, email, mobile) => {
     // Check if lecturer already exists by comparing lecturerId
     const alreadySelected = selectedLecturers.some(
       (lecturer) => lecturer.lecturerId === lecturerId
     );
-    
+
     if (!alreadySelected) {
       const newLecturer = {
         lecturer_name: lecturerName,
@@ -61,8 +61,8 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
 
   // Filter search results
   const filteredLecturers = lecturerData.filter((item) =>
-  (item.lecturerName || "").toLowerCase().includes(searchTerm.toLowerCase())
-);
+    (item.lecturerName || "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
 
   return (
@@ -122,8 +122,8 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
             >
               <img
                 src={
-                  lecturer.profilePhoto 
-                    ? `http://localhost:8000/public${lecturer.profilePhoto}` 
+                  lecturer.profilePhoto
+                    ? `http://localhost:8000${lecturer.profilePhoto}`
                     : '/images/default_user.png'
                 }
                 alt={lecturer.lecturerName}

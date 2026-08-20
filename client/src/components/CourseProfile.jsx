@@ -6,8 +6,15 @@ import AddLecturers from '../components/AddLecturers';
 
 const bannerOptions = [
   '/images/course_backgrounds/green_tiles.jpg',
-  '/images/banner2.jpg',
-  '/images/banner3.jpg'
+  '/images/course_backgrounds/color_tiles.png',
+  '/images/course_backgrounds/gold-brown tiles.jpg',
+  "/images/course_backgrounds/abstract_art.jpg",
+  "/images/course_backgrounds/abstract_art2.png",
+  "/images/course_backgrounds/floral.jpg",
+  "/images/course_backgrounds/pattern_tile.jpeg",
+  "/images/course_backgrounds/wall_art.jpg",
+  "/images/course_backgrounds/space-art.jpg",
+  "/images/course_backgrounds/tides.jpg"
 ];
 
 export default function CourseProfile({ courseId }) {
@@ -50,7 +57,7 @@ export default function CourseProfile({ courseId }) {
     if (courseData) {
       const initial = {
         name: courseData.name || '',
-        payment: courseData.payment || '',
+        payment: courseData.payment || 0,
         grade: courseData.grade || '',
         curriculum: courseData.curriculum || '',
         description: courseData.description || '',
@@ -59,7 +66,7 @@ export default function CourseProfile({ courseId }) {
       };
       setFormData(initial);
       setInitialData(initial);
-      
+
       if (initial.courseBanner) {
         setPreviewUrl(initial.courseBanner);
       }
@@ -88,52 +95,52 @@ export default function CourseProfile({ courseId }) {
   }, [formData.grade]);
 
   const fetchAllData = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const { data: course } = await axios.get(
-      `http://localhost:8000/api/courses/get-courses/${courseId}`
-    );
+      const { data: course } = await axios.get(
+        `http://localhost:8000/api/courses/get-courses/${courseId}`
+      );
 
-    if (!course) {
-      setCourseData(null);
+      if (!course) {
+        setCourseData(null);
+        setLoading(false);
+        return;
+      }
+
+      setCourseData(course);
+
+      try {
+        const { data } = await axios.get(
+          `http://localhost:8000/api/timetable/timetable/${encodeURIComponent(courseId)}`
+        );
+        setClasses(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (error.response?.status !== 404) {
+          console.error("Timetable fetch failed:", error);
+        }
+        setClasses([]);
+      }
+
+      try {
+        const { data } = await axios.get(
+          `http://localhost:8000/api/lecturers/view-lecturers/${encodeURIComponent(courseId)}`
+        );
+        setLecturers(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (error.response?.status !== 404) {
+          console.error("Lecturers fetch failed:", error);
+        }
+        setLecturers([]);
+      }
+
       setLoading(false);
-      return;
-    }
-
-    setCourseData(course);
-
-    try {
-      const { data } = await axios.get(
-        `http://localhost:8000/api/timetable/timetable/${encodeURIComponent(courseId)}`
-      );
-      setClasses(Array.isArray(data) ? data : []);
     } catch (error) {
-      if (error.response?.status !== 404) {
-        console.error("Timetable fetch failed:", error);
-      }
-      setClasses([]);
+      console.error("Course fetch failed:", error);
+      alert("Failed to load course data");
+      setLoading(false);
     }
-
-    try {
-      const { data } = await axios.get(
-        `http://localhost:8000/api/lecturers/view-lecturers/${encodeURIComponent(courseId)}`
-      );
-      setLecturers(Array.isArray(data) ? data : []);
-    } catch (error) {
-      if (error.response?.status !== 404) {
-        console.error("Lecturers fetch failed:", error);
-      }
-      setLecturers([]);
-    }
-
-    setLoading(false);
-  } catch (error) {
-    console.error("Course fetch failed:", error);
-    alert("Failed to load course data");
-    setLoading(false);
-  }
-};
+  };
 
   const filterCurrentWeekClasses = () => {
     const today = new Date();
@@ -185,7 +192,7 @@ export default function CourseProfile({ courseId }) {
     try {
       setSaving(true);
       // const data = new FormData();
-      
+
       // // Append all form fields
       // data.append('name', formData.name);
       // data.append('payment', formData.payment);
@@ -193,14 +200,14 @@ export default function CourseProfile({ courseId }) {
       // data.append('curriculum', formData.curriculum);
       // data.append('description', formData.description);
       // data.append('courseBanner', formData.courseBanner);
-      
+
       // // Append lecturers as JSON string
       // data.append('lecturers', JSON.stringify(formData.lecturers));
 
       const response = await axios.put(
         `http://localhost:8000/api/courses/update-course/${courseId}`,
         formData
-        );
+      );
 
       if (response.status === 200) {
         alert('Course details updated successfully');
@@ -210,7 +217,7 @@ export default function CourseProfile({ courseId }) {
     } catch (error) {
       console.error('Error updating course:', error);
       alert('Failed to update course: ' + (error.response?.data?.message || error.message));
-      
+
       // Reset to initial data on failure
       if (initialData) {
         setFormData(initialData);
@@ -260,15 +267,15 @@ export default function CourseProfile({ courseId }) {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
       <div className="max-w-5xl mx-auto space-y-8">
-        
+
         <div className="flex justify-center">
-                <button
-                  onClick={() => setDeletePopup(true)}
-                  className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all duration-200 shadow-md flex items-center gap-2"
-                >
-                  <Trash size={18} />
-                  Delete Course
-                </button>
+          <button
+            onClick={() => setDeletePopup(true)}
+            className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all duration-200 shadow-md flex items-center gap-2"
+          >
+            <Trash size={18} />
+            Delete Course
+          </button>
         </div>
 
         {/* Course Details Section */}
@@ -584,11 +591,10 @@ export default function CourseProfile({ courseId }) {
               {bannerOptions.map((banner, index) => (
                 <div
                   key={index}
-                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition ${
-                    formData.courseBanner === banner
-                      ? "border-indigo-600 scale-[1.02]"
-                      : "border-transparent hover:scale-[1.02]"
-                  }`}
+                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition ${formData.courseBanner === banner
+                    ? "border-indigo-600 scale-[1.02]"
+                    : "border-transparent hover:scale-[1.02]"
+                    }`}
                   onClick={() => handleSelectBanner(banner)}
                 >
                   <img

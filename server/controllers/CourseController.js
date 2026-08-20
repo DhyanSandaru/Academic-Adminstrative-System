@@ -32,7 +32,7 @@ exports.addCourse = async (req, res) => {
       curriculum,
       description,
       courseBanner,
-      lecturers 
+      lecturers
     } = req.body;
 
     // If lecturers were sent as a JSON string (FormData), parse it
@@ -260,9 +260,9 @@ exports.updateCourse = async (req, res) => {
 
   } catch (error) {
     console.error("Error updating course:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Server error while updating course",
-      message: error.message 
+      message: error.message
     });
   }
 };
