@@ -96,7 +96,9 @@ export function useDashboardData() {
   // ── last added student + stats (derived from student list) ───────────────
   useEffect(() => {
     safeFetch(STUDENTS_API)
-      .then((students) => {
+      .then((resp) => {
+        // API now returns paginated shape: { data, total, totalPages }
+        const students = Array.isArray(resp) ? resp : (resp?.data ?? []);
         if (!Array.isArray(students) || students.length === 0) return;
 
         // Most recently added student (assumes descending order or we sort)

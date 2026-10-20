@@ -64,15 +64,15 @@ function HandleBackup() {
   useEffect(() => {
     console.log('📦 HandleBackup component mounted');
     fetchBackups();
-  }, []); 
+  }, []);
 
   // Create new backup
   const handleCreateBackup = async () => {
     if (!window.confirm('Create a new backup? This may take a few moments.')) return;
-    
+
     setLoading(true);
     try {
-      const res = await axios.post(`${API_URL}/create`,{excludeTable: ""});
+      const res = await axios.post(`${API_URL}/create`, { excludeTable: "" });
       alert(`Backup created successfully!\nBackup ID: ${res.data.backupId}`);
       await fetchBackups();
     } catch (err) {
@@ -86,7 +86,7 @@ function HandleBackup() {
   // Restore from backup
   const handleRestore = async (backupId) => {
     if (!window.confirm(`⚠️ WARNING: This will overwrite all current data!\n\nRestore from backup: ${backupId}?`)) return;
-    
+
     setLoading(true);
     try {
       await axios.post(`${API_URL}/restore/${backupId}`);
@@ -103,7 +103,7 @@ function HandleBackup() {
   // Delete backup
   const handleDelete = async (backupId) => {
     if (!window.confirm(`Delete backup: ${backupId}?`)) return;
-    
+
     setLoading(true);
     try {
       await axios.delete(`${API_URL}/${backupId}`);
@@ -187,13 +187,13 @@ function HandleBackup() {
               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto"></div>
               <p className="mt-4 text-gray-600 text-lg">Processing...</p>
             </div>
-        ) 
-          : (
-            <div className='flex flex-row gap-2'>
-              <ArchiveRestore/>
-              <span>Create Backup</span>
-            </div>
-        )}
+          )
+            : (
+              <div className='flex flex-row gap-2'>
+                <ArchiveRestore />
+                <span>Create Backup</span>
+              </div>
+            )}
         </button>
       </div>
 
@@ -220,7 +220,7 @@ function HandleBackup() {
                       {backup.status}
                     </span>
                   </div>
-                  
+
                   <div className="text-sm text-gray-600 space-y-1">
                     <p>📅 Created: {formatDate(backup.timestamp)}</p>
                     <p>📊 Tables: {Object.keys(backup.tables || {}).length}</p>
@@ -235,7 +235,7 @@ function HandleBackup() {
                     onClick={() => handleViewDetails(backup.backupId)}
                     className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded transition flex flex-row gap-2"
                   >
-                    <SearchCode/>
+                    <SearchCode />
                     Details
                   </button>
                   <button
@@ -243,7 +243,7 @@ function HandleBackup() {
                     disabled={loading}
                     className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded transition flex flex-row gap-2"
                   >
-                    <RotateCcw/>
+                    <RotateCcw />
                     Restore
                   </button>
                   <button
@@ -263,7 +263,7 @@ function HandleBackup() {
 
       {/* Details Modal */}
       {showDetails && selectedBackup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-bold text-gray-800">Backup Details</h3>
@@ -300,9 +300,8 @@ function HandleBackup() {
                     <div key={tableName} className="bg-gray-50 p-3 rounded border border-gray-200">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-gray-700">{tableName}</span>
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          info.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}>
+                        <span className={`text-xs px-2 py-1 rounded ${info.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
                           {info.status}
                         </span>
                       </div>

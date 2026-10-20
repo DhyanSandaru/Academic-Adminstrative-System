@@ -121,47 +121,74 @@ exports.addStudent = async (req, res) => {
 
 exports.fetchStudents = async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 12));
+    const offset = (page - 1) * limit;
+    const search = req.query.search?.trim() || '';
+    const searchBy = req.query.searchBy || 'name';
+
+    // Build WHERE clause for optional search
+    let whereClause = '';
+    let queryParams = [];
+    if (search) {
+      if (searchBy === 'id') {
+        whereClause = 'WHERE s.student_id LIKE ?';
+        queryParams.push(`%${search}%`);
+      } else {
+        whereClause = 'WHERE s.student_name LIKE ?';
+        queryParams.push(`%${search}%`);
+      }
+    }
+
+    // Get total count for pagination metadata
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) as total FROM students s ${whereClause}`,
+      queryParams
+    );
+
+    // Single query with LEFT JOIN to get modules — eliminates N+1
     const [rows] = await db.query(
-      `SELECT student_name, student_id, profile_photo, gender, payment_status, grade 
-      FROM students`
-    );
-    const formattedData = await Promise.all(
-      rows.map(async (student) => {
-        const [moduleRows] = await db.query(
-          `
-          SELECT m.name, m.module_id 
-          FROM student_modules sm
-          JOIN modules m ON sm.module_id = m.module_id
-          WHERE sm.student_id = ?
-          `,
-          [student.student_id]
-        );
-
-        const courses = moduleRows.map(row => (
-          {
-            course: row.name,
-            course_id: row.module_id
-          }
-        ));
-
-        return {
-          name: student.student_name,
-          studentId: student.student_id,
-          profilePhoto: student.profile_photo,
-          gender: student.gender,
-          payment_status: student.payment_status,
-          grade: student.grade,
-          courses
-        };
-      })
+      `SELECT s.student_name, s.student_id, s.profile_photo, s.gender, s.payment_status, s.grade,
+              GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR '||') as module_names,
+              GROUP_CONCAT(m.module_id ORDER BY m.name SEPARATOR '||') as module_ids
+       FROM students s
+       LEFT JOIN student_modules sm ON s.student_id = sm.student_id
+       LEFT JOIN modules m ON sm.module_id = m.module_id
+       ${whereClause}
+       GROUP BY s.student_id
+       ORDER BY s.student_name ASC
+       LIMIT ? OFFSET ?`,
+      [...queryParams, limit, offset]
     );
 
-    res.json(formattedData);
+    const formattedData = rows.map((student) => {
+      const names = student.module_names ? student.module_names.split('||') : [];
+      const ids = student.module_ids ? student.module_ids.split('||') : [];
+      const courses = names.map((name, i) => ({ course: name, course_id: ids[i] }));
+      return {
+        name: student.student_name,
+        studentId: student.student_id,
+        profilePhoto: student.profile_photo,
+        gender: student.gender,
+        payment_status: student.payment_status,
+        grade: student.grade,
+        courses
+      };
+    });
+
+    res.json({
+      data: formattedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (err) {
     console.error("Error fetching students ", err);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 exports.fetchStudentbyID = async (req, res) => {
   const id = req.params.id;

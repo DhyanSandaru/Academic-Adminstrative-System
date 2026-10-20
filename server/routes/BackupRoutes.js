@@ -13,16 +13,17 @@ router.post('/create', backupController.backupToFirebase);
 
 
 /**
+ * POST /api/backup/restore/latest
+ * Restore from latest incremental backup data
+ */
+router.post('/restore/latest', backupController.restoreFromLatest);
+
+/**
  * POST /api/backup/restore/:backupId
  * Restore from a specific backup
  */
 router.post('/restore/:backupId', backupController.restoreFromFirebase);
 
-/**
- * POST /api/backup/restore/latest
- * Restore from latest incremental backup data
- */
-router.post('/restore/latest', backupController.restoreFromLatest);
 
 /**
  * POST /api/backup/sync-row

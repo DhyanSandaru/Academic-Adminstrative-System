@@ -9,6 +9,17 @@ const {
 
 exports.getAllClasses = async (req, res) => {
   try {
+    // Accept optional date range query params from the frontend (e.g. ?startDate=2026-08-01&endDate=2026-08-31)
+    // Defaults to a ±3 month window around today so old historical data is never fetched unnecessarily
+    const today = new Date();
+    const defaultStart = new Date(today);
+    defaultStart.setMonth(defaultStart.getMonth() - 1);
+    const defaultEnd = new Date(today);
+    defaultEnd.setMonth(defaultEnd.getMonth() + 2);
+
+    const startDate = req.query.startDate || defaultStart.toISOString().split('T')[0];
+    const endDate = req.query.endDate || defaultEnd.toISOString().split('T')[0];
+
     const [rows] = await db.query(`
       SELECT 
         t.id,
@@ -23,8 +34,9 @@ exports.getAllClasses = async (req, res) => {
       JOIN modules m ON t.module_id = m.module_id
       LEFT JOIN lecturer_modules lm ON m.module_id = lm.module_id
       LEFT JOIN lecturers le ON lm.lecturer_id = le.lecturer_id
+      WHERE t.date BETWEEN ? AND ?
       GROUP BY t.id, t.date, t.start_time, t.end_time, t.module_id, m.name
-    `);
+    `, [startDate, endDate]);
 
     const formatted = rows
       .filter(cls => cls.date && cls.start_time && cls.end_time)

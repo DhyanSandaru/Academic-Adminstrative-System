@@ -4,9 +4,8 @@ import axios from "axios";
 import AddCourses from "./AddCourses.jsx";
 import { BACKEND_URL } from "./config.js";
 
-export default function StudentForm() {
-  const [step, setStep] = useState(1);
-  const [code, setCode] = useState("");
+// token prop: passed from App.jsx after Socket.IO authorization
+export default function StudentForm({ token }) {
   const [formStatus, setFormStatus] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [courseModules, setCourseModules] = useState([]);
@@ -45,26 +44,6 @@ export default function StudentForm() {
 
   const removeCourseModule = (moduleToRemove) => {
     setCourseModules(courseModules.filter((module) => module !== moduleToRemove));
-  };
-
-  const handleCodeSubmit = async () => {
-    if (!code) {
-      setFormStatus("Please enter a valid code.");
-      return;
-    }
-    
-    try {
-      const res = await axios.post(`${BACKEND_URL}/api/verification/validate-code`, { code });
-      if (res.data.valid) {
-        setStep(2);
-        setFormStatus(null);
-      } else {
-        setFormStatus("Invalid or expired code.");
-      }
-    } catch (err) {
-      console.error(err);
-      setFormStatus("Server error while validating code.");
-    }
   };
 
   const handleFormSubmit = async () => {
@@ -133,9 +112,7 @@ export default function StudentForm() {
         });
         setProfilePhoto(null);
         setCourseModules([]);
-        setStep(1);
         setFormStatus(null);
-        setCode('');
       }, 3000);
     } catch (err) {
       console.error(err);
@@ -157,47 +134,7 @@ export default function StudentForm() {
           </p>
         </div>
 
-        {step === 1 && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
-                Enter Access Code
-              </h2>
-              <p className="text-sm text-gray-600">
-                Please enter the code provided by your institution
-              </p>
-            </div>
 
-            <div className="space-y-4">
-              <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter your access code"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition text-center text-lg tracking-wider font-semibold"
-              />
-              <button 
-                onClick={handleCodeSubmit}
-                className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-md hover:shadow-lg"
-              >
-                Validate Code
-              </button>
-            </div>
-            
-            {formStatus && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm text-center">
-                {formStatus}
-              </div>
-            )}
-          </div>
-        )}
-
-        {step === 2 && (
           <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
             <div className="space-y-8">
               
@@ -554,7 +491,7 @@ export default function StudentForm() {
               </div>
             )}
           </div>
-        )}
+
 
         {/* Course Selection Popup */}
         {showCoursePopup && (

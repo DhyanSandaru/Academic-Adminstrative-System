@@ -42,10 +42,17 @@ function Timetable() {
     subject_filter: "",
   };
 
-  // Fetch classes from backend
-  const fetchClasses = async () => {
+  // Fetch classes from backend — passes a date window so we don't load all historical data
+  const fetchClasses = async (referenceDate = new Date()) => {
     try {
-      const res = await axios.get("http://localhost:8000/api/timetable/timetable");
+      const start = new Date(referenceDate);
+      start.setMonth(start.getMonth() - 1);
+      const end = new Date(referenceDate);
+      end.setMonth(end.getMonth() + 2);
+      const startDate = start.toISOString().split('T')[0];
+      const endDate = end.toISOString().split('T')[0];
+
+      const res = await axios.get(`http://localhost:8000/api/timetable/timetable?startDate=${startDate}&endDate=${endDate}`);
       const mapped = res.data.map((cls) => ({
         id: cls.id.toString(),
         title: cls.title,
@@ -121,6 +128,10 @@ function Timetable() {
   const handleAddClass = () => {
     if (!newClass.module_id) {
       alert("Please select a course module");
+      return;
+    }
+    if (!newClass.date || !newClass.start_time || !newClass.end_time) {
+      alert("Please ensure the Date, Start Time, and Duration are filled out correctly.");
       return;
     }
 
@@ -419,16 +430,16 @@ function Timetable() {
 
   // Custom event rendering with time display
   const renderEventContent = (eventInfo) => {
-    const startTime = eventInfo.event.start.toLocaleTimeString('en-US', {
+    const startTime = eventInfo.event.start ? eventInfo.event.start.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
-    });
-    const endTime = eventInfo.event.end.toLocaleTimeString('en-US', {
+    }) : '?';
+    const endTime = eventInfo.event.end ? eventInfo.event.end.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
-    });
+    }) : '?';
 
     return (
       <div className="p-1.5 h-full overflow-hidden">
@@ -676,8 +687,13 @@ function Timetable() {
                     onChange={(e) => {
                       const duration = parseInt(e.target.value);
                       const [hour, minute] = newClass.start_time.split(':');
-                      const endHour = parseInt(hour) + duration;
-                      const endTime = `${String(endHour).padStart(2, '0')}:${minute}`;
+                      let endHour = parseInt(hour) + duration;
+                      let endTime;
+                      if (endHour >= 24) {
+                        endTime = "23:59";
+                      } else {
+                        endTime = `${String(endHour).padStart(2, '0')}:${minute}`;
+                      }
                       setNewClass({ ...newClass, end_time: endTime });
                     }}
                   >

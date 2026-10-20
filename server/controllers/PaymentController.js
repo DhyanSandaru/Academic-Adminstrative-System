@@ -1,13 +1,13 @@
 const db = require('../DBconfig.js'); // make sure the path is correct
-const {fetchStudentEmailbyId} = require('../models/StudentModel.js');
-const {updatePaymentStatus} = require('../utils/paymentHelper.js')
-const {PaymentMailer, paymentMailer} = require('../Mailer/PaymentMailer.js');
+const { fetchStudentEmailbyId } = require('../models/StudentModel.js');
+const { updatePaymentStatus } = require('../utils/paymentHelper.js')
+const { paymentMailer } = require('../Mailer/PaymentMailer.js');
 const { messaging } = require('firebase-admin');
 
 // Add Payment
 exports.addPayment = async (req, res) => {
   try {
-    const { studentName, studentId, courseModule, lecturer,lecturer_id, amount } = req.body;
+    const { studentName, studentId, courseModule, lecturer, lecturer_id, amount } = req.body;
 
     const email = await fetchStudentEmailbyId(studentId);
 
@@ -33,7 +33,7 @@ exports.addPayment = async (req, res) => {
       (ref_no, student_name, student_id, course_module, lecturer, amount, lecturer_id) 
       VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-    await db.execute(sql, [ref_no,studentName, studentId, courseModule, lecturer, amount, lecturer_id]);
+    await db.execute(sql, [ref_no, studentName, studentId, courseModule, lecturer, amount, lecturer_id]);
 
     try {
       await paymentMailer(courseModule, email, studentName, amount, ref_no);
@@ -43,7 +43,7 @@ exports.addPayment = async (req, res) => {
 
     const status = await updatePaymentStatus(studentId);
 
-     res.status(200).json({
+    res.status(200).json({
       message: 'Payment added successfully!',
       ref_no,
       payment_status: status
@@ -91,7 +91,7 @@ exports.fetchPaymentsByID = async (req, res) => {
 exports.fetchPaymentsByLecturerID = async (req, res) => {
   const { id } = req.params;
   const { month, year } = req.query;
-  
+
   try {
     const [rows] = await db.query(
       `SELECT * FROM payments 
@@ -106,24 +106,24 @@ exports.fetchPaymentsByLecturerID = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch payments' });
   }
 };
-  
 
-exports.deletePaymentbyID = async(req, res) => {
+
+exports.deletePaymentbyID = async (req, res) => {
   const ref = req.params.ref;
   console.log(`Deleting payment: ${ref}`)
-  try{
+  try {
     const [result] = await db.query(
       'DELETE from payments WHERE ref_no = ?'
-      ,[ref]
+      , [ref]
     )
 
-    if(result.affectedRows === 0){
-      return res.status(404).json({message: "Payment not found"})
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Payment not found" })
     }
-    res.status(200).json({message: "Payment Deleted Successfully"})
+    res.status(200).json({ message: "Payment Deleted Successfully" })
   }
-  catch(err){
+  catch (err) {
     console.error("Error in deleting payment", err)
-    res.status(500).json({message : 'Internal Server error'})
+    res.status(500).json({ message: 'Internal Server error' })
   }
 }

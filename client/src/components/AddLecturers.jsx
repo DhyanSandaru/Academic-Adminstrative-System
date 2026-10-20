@@ -12,7 +12,7 @@ export default function AddLecturers({ selectedLecturers, setSelectedLecturers, 
     const fetchLecturers = async () => {
       try {
         const response = await axios.get("http://localhost:8000/api/lecturers/view-lecturers");
-        const validatedData = response.data.map((lecturer) => ({
+        const validatedData = response.data.data.map((lecturer) => ({
           lecturerId: lecturer.lecturerId,
           lecturerName: lecturer.name,
           profilePhoto: lecturer.profilePhoto,

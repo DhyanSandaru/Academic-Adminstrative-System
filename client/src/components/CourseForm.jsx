@@ -88,24 +88,17 @@ export default function CourseForm() {
 
     try {
       const url = "http://localhost:8000/api/courses/add-course";
-      const payload = new FormData();
-      payload.append('courseName', formData.courseName);
-      payload.append('payment', formData.payment);
-      payload.append('grade', formData.grade);
-      payload.append('curriculum', formData.curriculum);
-      payload.append('description', formData.description);
-      payload.append('lecturers', JSON.stringify(selectedLecturers));
+      const payload = {
+        courseName: formData.courseName,
+        payment: formData.payment,
+        grade: formData.grade,
+        curriculum: formData.curriculum,
+        description: formData.description,
+        lecturers: selectedLecturers,
+        courseBanner: courseBanner || null,
+      };
 
-      if (selectedFile) {
-        payload.append('courseBanner', selectedFile);
-      } else if (courseBanner) {
-        // send existing selected banner path (string)
-        payload.append('courseBanner', courseBanner);
-      }
-
-      const response = await axios.post(url, payload, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await axios.post(url, payload);
 
       if (response.status === 200) {
         setMessage("✅ Course added successfully!");
