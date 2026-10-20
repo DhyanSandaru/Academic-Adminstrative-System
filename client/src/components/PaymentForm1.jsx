@@ -25,10 +25,12 @@ export default function PaymentForm1() {
 
   
   useEffect(()=> {
-    const fetchData =async ()=>{
-      try{
-        const response = await axios.get("http://localhost:8000/api/students/view-students")
-        const validatedData = response.data.map(student => ({
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/students/view-students?limit=50")
+        // API returns paginated shape: { data, total, totalPages }
+        const students = response.data?.data ?? response.data;
+        const validatedData = students.map(student => ({
           studentName: student.name,
           studentId: student.studentId,
           courses: student.courses
@@ -107,7 +109,7 @@ export default function PaymentForm1() {
   return (
     <>
       {receiptData && (
-        <PaymentReceipt data={receiptData} onClose={() => setReceiptData(null)} />
+        <PaymentReceipt data={receiptData} onClose={() => setReceiptData(null)} del={false}/>
       )}
 
       <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-12 px-4">

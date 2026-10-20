@@ -14,6 +14,7 @@ export default function CourseForm() {
   const [selectedLecturers, setSelectedLecturers] = useState([]);
   const [isLecturerModalOpen, setIsLecturerModalOpen] = useState(false);
   const [courseBanner, setCourseBanner] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -33,9 +34,16 @@ export default function CourseForm() {
   }, [formData.grade]);
 
   const bannerOptions = [
-    "/images/banner1.jpg",
-    "/images/banner2.jpg",
-    "/images/banner3.jpg",
+    "/images/course_backgrounds/green_tiles.jpg",
+    "/images/course_backgrounds/color_tiles.png",
+    "/images/course_backgrounds/gold-brown tiles.jpg",
+    "/images/course_backgrounds/abstract_art.jpg",
+    "/images/course_backgrounds/abstract_art2.png",
+    "/images/course_backgrounds/floral.jpg",
+    "/images/course_backgrounds/pattern_tile.jpeg",
+    "/images/course_backgrounds/wall_art.jpg",
+    "/images/course_backgrounds/space-art.jpg",
+    "/images/course_backgrounds/tides.jpg"
   ];
 
   const handleInputChange = (e) => {
@@ -47,6 +55,15 @@ export default function CourseForm() {
     setCourseBanner(banner);
     setIsModalOpen(false);
   };
+
+  // Revoke object URL when selected file changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (selectedFile && courseBanner) {
+        try { URL.revokeObjectURL(courseBanner); } catch (e) { }
+      }
+    };
+  }, [selectedFile, courseBanner]);
 
   const validateForm = () => {
     const { courseName, payment, grade, curriculum, description } = formData;
@@ -67,20 +84,21 @@ export default function CourseForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
-
     if (!validateForm()) return;
 
     try {
+      const url = "http://localhost:8000/api/courses/add-course";
       const payload = {
-        ...formData,
-        courseBanner,
-        lecturers: selectedLecturers, // Array of {lecturerId, lecturerName}
+        courseName: formData.courseName,
+        payment: formData.payment,
+        grade: formData.grade,
+        curriculum: formData.curriculum,
+        description: formData.description,
+        lecturers: selectedLecturers,
+        courseBanner: courseBanner || null,
       };
 
-      const response = await axios.post(
-        "http://localhost:8000/api/courses/add-course",
-        payload
-      );
+      const response = await axios.post(url, payload);
 
       if (response.status === 200) {
         setMessage("✅ Course added successfully!");
@@ -92,6 +110,11 @@ export default function CourseForm() {
           description: "",
         });
         setSelectedLecturers([]);
+        // revoke object URL if used
+        if (selectedFile && courseBanner) {
+          URL.revokeObjectURL(courseBanner);
+        }
+        setSelectedFile(null);
         setCourseBanner(null);
       }
     } catch (error) {
@@ -177,7 +200,7 @@ export default function CourseForm() {
               <h2 className="block text-md font-medium mb-3">Grade</h2>
               <div className="flex flex-col sm:flex-row gap-5 w-full">
                 <div className="w-full sm:w-1/2">
-                <label htmlFor="grade">Grade</label>
+                  <label htmlFor="grade">Grade</label>
                   <select
                     id="grade"
                     name="grade"
@@ -201,7 +224,7 @@ export default function CourseForm() {
                   </select>
                 </div>
                 <div className="w-full sm:w-1/2">
-                <label htmlFor="">Curriculum</label>
+                  <label htmlFor="">Curriculum</label>
                   <select
                     id="curriculum"
                     name="curriculum"
@@ -247,6 +270,37 @@ export default function CourseForm() {
                 >
                   Choose Banner
                 </button>
+                <div className="mt-3 flex items-center gap-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (file) {
+                        const url = URL.createObjectURL(file);
+                        setSelectedFile(file);
+                        setCourseBanner(url);
+                      } else {
+                        setSelectedFile(null);
+                        setCourseBanner(null);
+                      }
+                    }}
+                    className="text-sm"
+                  />
+                  {selectedFile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try { URL.revokeObjectURL(courseBanner); } catch (e) { }
+                        setSelectedFile(null);
+                        setCourseBanner(null);
+                      }}
+                      className="text-sm text-red-600"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -277,11 +331,10 @@ export default function CourseForm() {
           </button>
           {message && (
             <p
-              className={`text-sm ${
-                message.startsWith("✅")
-                  ? "text-green-600"
-                  : "text-red-600 font-medium"
-              }`}
+              className={`text-sm ${message.startsWith("✅")
+                ? "text-green-600"
+                : "text-red-600 font-medium"
+                }`}
             >
               {message}
             </p>
@@ -312,11 +365,10 @@ export default function CourseForm() {
               {bannerOptions.map((banner, index) => (
                 <div
                   key={index}
-                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition ${
-                    courseBanner === banner
-                      ? "border-indigo-600 scale-[1.02]"
-                      : "border-transparent hover:scale-[1.02]"
-                  }`}
+                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition ${courseBanner === banner
+                    ? "border-indigo-600 scale-[1.02]"
+                    : "border-transparent hover:scale-[1.02]"
+                    }`}
                   onClick={() => handleSelectBanner(banner)}
                 >
                   <img

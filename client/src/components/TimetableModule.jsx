@@ -5,7 +5,7 @@ import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import axios from "axios";
-import { Calendar, Plus, Save, X, Clock, User, BookOpen, GraduationCap,CopyPlus } from "lucide-react";
+import { Calendar, Plus, Save, X, Clock, User, BookOpen, GraduationCap, CopyPlus } from "lucide-react";
 
 function Timetable() {
   const [events, setEvents] = useState([]);
@@ -19,11 +19,11 @@ function Timetable() {
     updated: [],
     deleted: []
   });
-  const [lecturers,setlecturers] = useState([]);
-  const [courses,setCourses] = useState([]);
+  const [lecturers, setlecturers] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [isDuplicatingWeek, setIsDuplicatingWeek] = useState(false);
-  
+
   const [newClass, setNewClass] = useState({
     date: new Date().toISOString().split("T")[0],
     start_time: "09:00",
@@ -42,10 +42,17 @@ function Timetable() {
     subject_filter: "",
   };
 
-  // Fetch classes from backend
-  const fetchClasses = async () => {
+  // Fetch classes from backend — passes a date window so we don't load all historical data
+  const fetchClasses = async (referenceDate = new Date()) => {
     try {
-      const res = await axios.get("http://localhost:8000/api/timetable/timetable");
+      const start = new Date(referenceDate);
+      start.setMonth(start.getMonth() - 1);
+      const end = new Date(referenceDate);
+      end.setMonth(end.getMonth() + 2);
+      const startDate = start.toISOString().split('T')[0];
+      const endDate = end.toISOString().split('T')[0];
+
+      const res = await axios.get(`http://localhost:8000/api/timetable/timetable?startDate=${startDate}&endDate=${endDate}`);
       const mapped = res.data.map((cls) => ({
         id: cls.id.toString(),
         title: cls.title,
@@ -56,7 +63,7 @@ function Timetable() {
         extendedProps: {
           module_id: cls.module_id,
           module_name: cls.module_name,
-          grade:cls.grade,
+          grade: cls.grade,
           lecturer_name: cls.lecturer_name,
         }
       }));
@@ -123,6 +130,10 @@ function Timetable() {
       alert("Please select a course module");
       return;
     }
+    if (!newClass.date || !newClass.start_time || !newClass.end_time) {
+      alert("Please ensure the Date, Start Time, and Duration are filled out correctly.");
+      return;
+    }
 
     const selected = courses.find(c => c.module_id === newClass.module_id);
     if (!selected) {
@@ -131,13 +142,13 @@ function Timetable() {
     }
 
     const dayName = new Date(newClass.date).toLocaleDateString("en-US", { weekday: "long" });
-    
+
     const tempId = `temp-${Date.now()}`;
     const startDateTime = `${newClass.date}T${newClass.start_time}:00`;
     const endDateTime = `${newClass.date}T${newClass.end_time}:00`;
-    
+
     const title = `${selected.name} - ${selected.lecturer}`;
-    
+
     const newEvent = {
       id: tempId,
       title: title,
@@ -154,7 +165,7 @@ function Timetable() {
     };
 
     setEvents([...events, newEvent]);
-    
+
     setPendingChanges({
       ...pendingChanges,
       added: [...pendingChanges.added, {
@@ -198,20 +209,20 @@ function Timetable() {
         ...pendingChanges,
         added: pendingChanges.added.map(item =>
           item.tempId === id
-            ? { 
-                ...item, 
-                date: newDate, 
-                start_time: newStartTime, 
-                end_time: newEndTime,
-                displayInfo: { ...item.displayInfo, date: newDate, start_time: newStartTime, end_time: newEndTime }
-              }
+            ? {
+              ...item,
+              date: newDate,
+              start_time: newStartTime,
+              end_time: newEndTime,
+              displayInfo: { ...item.displayInfo, date: newDate, start_time: newStartTime, end_time: newEndTime }
+            }
             : item
         )
       });
     } else {
       const existingUpdateIndex = pendingChanges.updated.findIndex(u => u.id === id);
       const originalEvent = originalEvents.find(e => e.id === id);
-      
+
       if (existingUpdateIndex >= 0) {
         const updatedChanges = [...pendingChanges.updated];
         updatedChanges[existingUpdateIndex] = {
@@ -257,20 +268,20 @@ function Timetable() {
         ...pendingChanges,
         added: pendingChanges.added.map(item =>
           item.tempId === id
-            ? { 
-                ...item, 
-                date: newDate, 
-                start_time: newStartTime, 
-                end_time: newEndTime,
-                displayInfo: { ...item.displayInfo, date: newDate, start_time: newStartTime, end_time: newEndTime }
-              }
+            ? {
+              ...item,
+              date: newDate,
+              start_time: newStartTime,
+              end_time: newEndTime,
+              displayInfo: { ...item.displayInfo, date: newDate, start_time: newStartTime, end_time: newEndTime }
+            }
             : item
         )
       });
     } else {
       const existingUpdateIndex = pendingChanges.updated.findIndex(u => u.id === id);
       const originalEvent = originalEvents.find(e => e.id === id);
-      
+
       if (existingUpdateIndex >= 0) {
         const updatedChanges = [...pendingChanges.updated];
         updatedChanges[existingUpdateIndex] = {
@@ -412,23 +423,23 @@ function Timetable() {
   };
 
   const hasChanges = () => {
-    return pendingChanges.added.length > 0 || 
-           pendingChanges.updated.length > 0 || 
-           pendingChanges.deleted.length > 0;
+    return pendingChanges.added.length > 0 ||
+      pendingChanges.updated.length > 0 ||
+      pendingChanges.deleted.length > 0;
   };
 
   // Custom event rendering with time display
   const renderEventContent = (eventInfo) => {
-    const startTime = eventInfo.event.start.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    const startTime = eventInfo.event.start ? eventInfo.event.start.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: false 
-    });
-    const endTime = eventInfo.event.end.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+      hour12: false
+    }) : '?';
+    const endTime = eventInfo.event.end ? eventInfo.event.end.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: false 
-    });
+      hour12: false
+    }) : '?';
 
     return (
       <div className="p-1.5 h-full overflow-hidden">
@@ -446,7 +457,7 @@ function Timetable() {
     try {
       setIsDuplicatingWeek(true);
       const res = await axios.post(
-        "http://localhost:8000/api/timetable/timetable/duplicate-next-week"
+        "http://localhost:8000/api/timetable/duplicate-next-week"
       );
       alert(res.data.message || "Timetable copied to next week");
       await fetchClasses();
@@ -456,7 +467,7 @@ function Timetable() {
     } finally {
       setIsDuplicatingWeek(false);
     }
-};
+  };
 
   return (
     <>
@@ -553,7 +564,7 @@ function Timetable() {
       <div className="relative p-8 bg-gradient-to-br from-slate-50  to-indigo-50 rounded-3xl w-[75vw] min-h-screen flex flex-col shadow-2xl overflow-hidden">
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-200/30 to-purple-300/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-200/30 to-cyan-300/30 rounded-full blur-3xl" style={{animation: 'pulse 4s ease-in-out infinite', animationDelay: '2s'}}></div>
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-200/30 to-cyan-300/30 rounded-full blur-3xl" style={{ animation: 'pulse 4s ease-in-out infinite', animationDelay: '2s' }}></div>
 
         {/* Header */}
         <div className="relative z-10 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6 border border-white/60">
@@ -570,11 +581,10 @@ function Timetable() {
 
             <div className="flex gap-3">
               <button
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all shadow-lg ${
-                  hasChanges() 
-                    ? 'bg-gradient-to-r from-green-500 to-green-600 hover:shadow-xl hover:scale-105' 
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all shadow-lg ${hasChanges()
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 hover:shadow-xl hover:scale-105'
                     : 'bg-gray-400 cursor-not-allowed'
-                }`}
+                  }`}
                 onClick={() => hasChanges() && setShowConfirmPopup(true)}
                 disabled={!hasChanges()}
               >
@@ -669,16 +679,21 @@ function Timetable() {
                     value={
                       newClass.start_time && newClass.end_time
                         ? Math.round(
-                            (new Date(`2000-01-01T${newClass.end_time}`) - 
-                             new Date(`2000-01-01T${newClass.start_time}`)) / (1000 * 60 * 60)
-                          )
+                          (new Date(`2000-01-01T${newClass.end_time}`) -
+                            new Date(`2000-01-01T${newClass.start_time}`)) / (1000 * 60 * 60)
+                        )
                         : 1
                     }
                     onChange={(e) => {
                       const duration = parseInt(e.target.value);
                       const [hour, minute] = newClass.start_time.split(':');
-                      const endHour = parseInt(hour) + duration;
-                      const endTime = `${String(endHour).padStart(2, '0')}:${minute}`;
+                      let endHour = parseInt(hour) + duration;
+                      let endTime;
+                      if (endHour >= 24) {
+                        endTime = "23:59";
+                      } else {
+                        endTime = `${String(endHour).padStart(2, '0')}:${minute}`;
+                      }
                       setNewClass({ ...newClass, end_time: endTime });
                     }}
                   >

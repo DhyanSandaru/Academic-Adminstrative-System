@@ -4,7 +4,9 @@ const { paymentData } = require("../pages/studentData");
 const studentData = async () => {
     try{
         const response = await axios.get("http://localhost:8000/api/students/view-students");
-        const validatedData = response.data.map((student,index) => ({
+        // API now returns paginated shape: { data, total, totalPages }
+        const students = response.data?.data ?? response.data;
+        const validatedData = students.map((student, index) => ({
             courses: student.courses || [],
             payment_status: student.payment_status || ''
         }))

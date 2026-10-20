@@ -45,6 +45,7 @@ exports.generateCode = async (req, res) => {
 
 exports.validateCode = async (req, res) => {
   const { code } = req.body;
+  console.log(`Received code : ${code}`)
 
   try {
     const [rows] = await db.query(

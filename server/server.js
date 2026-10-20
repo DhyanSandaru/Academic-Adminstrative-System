@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
@@ -7,7 +9,20 @@ const bodyParser = require('body-parser');
 dotenv.config();
 
 const app = express();
+const httpServer = http.createServer(app);
 const port = process.env.PORT || 8000;
+
+// ── Socket.IO ─────────────────────────────────────────────────────────────────
+const io = new Server(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
+
+const { initSocketManager } = require('./socketManager.js');
+initSocketManager(io);
+// ─────────────────────────────────────────────────────────────────────────────
 
 app.use(cors());
 app.use(express.json());
@@ -45,9 +60,10 @@ app.use('/api/dashboard',dashboardRoutes);
 initializeScheduledBackups();
 initializeCleanupSchedule();
 
-app.listen(port, "0.0.0.0", () => {
+httpServer.listen(port, "0.0.0.0", () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+
 
 
 // const mysql = require('mysql2');

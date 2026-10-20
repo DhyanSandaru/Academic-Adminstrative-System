@@ -5,7 +5,7 @@ import LecturerEducationDetails from "../components/LecturerProfiles/EducationDe
 import Salary from "../components/LecturerProfiles/SalaryCalculation.jsx";
 import { Trash } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import LecturerContext from "../components/LecturerProfiles/LecturerContext.jsx";
 
@@ -15,6 +15,7 @@ export default function LecturerProfile() {
   const [saving, setSaving] = useState(false);
   const [deletePopup, setDeletePopup] = useState(false);
   const { lecturer_id } = useParams();
+  const navigate = useNavigate();
 
   // Single fetch on mount
   useEffect(() => {
@@ -55,12 +56,10 @@ export default function LecturerProfile() {
     fetchLecturerById();
   }, [lecturer_id]);
 
-   const handleDelete = async() => {
-
+  const handleDelete = async() => {
     try{
        await axios.delete(`http://localhost:8000/api/lecturers/delete-lecturer/${lecturer_id}`);
-       navigate('/view-students')
-
+       navigate('/view-lecturers')
        alert("Lecturer has been deleted successfully")
     }
     catch(err){

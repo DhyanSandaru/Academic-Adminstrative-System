@@ -1,171 +1,202 @@
-// Dashboard.jsx - Updated with separate API calls
-import React, { useEffect, useState, useMemo } from "react";
-import { User, Shield, ClipboardPlus, DollarSign, GraduationCap, Loader, AlertCircle } from "lucide-react";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import FlashCard from './FlashCard.jsx';
+// Dashboard.jsx — redesigned to match reference screenshot.
+// Data fetching is delegated to useDashboardData hook (src/hooks/useDashboardData.js).
+import React, { useEffect, useState, useMemo, useContext } from "react";
+import {
+  Users, BookOpen, CreditCard, GraduationCap,
+  Calendar, Clock, Loader2, AlertTriangle, UserCircle2,
+  TrendingUp, BarChart3,
+} from "lucide-react";
+import {
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from "recharts";
+import FlashCard from "./FlashCard.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
+import { useDashboardData } from "../hooks/useDashboardData.js";
 
-const API_BASE_URL = 'http://localhost:8000/api/dashboard';
+// ── colour tokens ────────────────────────────────────────────────────────────
+const CHART_BLUE   = "#3D5A99";
+const CHART_GOLD   = "#E8B84B";
+const AREA_GRADIENT_ID = "blueGrad";
 
-const COLORS = {
-  blue: '#3b82f6',
-  purple: '#8b5cf6',
-  green: '#10b981',
-  orange: '#f59e0b',
-  red: '#ef4444',
-  pink: '#ec4899'
-};
+// Donut: [Unpaid, Paid] — matches screenshot (dark blue + gold)
+const DONUT_COLORS = [CHART_BLUE, CHART_GOLD];
 
-const PAYMENT_COLORS = ['#10b981', '#f59e0b'];
-const COURSE_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+// Bar chart: single blue
+const BAR_COLOR = CHART_BLUE;
 
+// ── tiny helpers ─────────────────────────────────────────────────────────────
+
+function SectionTitle({ children }) {
+  return (
+    <div className="mb-5">
+      <h2 className="text-lg font-bold text-gray-900">{children}</h2>
+      <div className="mt-1 w-36 h-0.5 bg-gray-800" />
+    </div>
+  );
+}
+
+/** Donut centre label */
+function DonutLabel({ cx, cy, total }) {
+  return (
+    <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
+      <tspan x={cx} dy="-0.4em" fontSize="22" fontWeight="700" fill="#1f2937">
+        {total}
+      </tspan>
+      <tspan x={cx} dy="1.4em" fontSize="11" fill="#6b7280">
+        students
+      </tspan>
+    </text>
+  );
+}
+
+/** The right-hand "Last added student" + stats panel */
+function StudentInfoPanel({ lastAdded, stats }) {
+  const initials = lastAdded
+    ? (lastAdded.full_name || lastAdded.name || "?")
+        .split(" ")
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+    : "?";
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Last added student card */}
+      <div>
+        <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-2">
+          Last added student
+        </p>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg shrink-0">
+            {lastAdded ? initials : <UserCircle2 size={28} />}
+          </div>
+          {lastAdded ? (
+            <div>
+              <p className="font-semibold text-gray-900 leading-tight">
+                {lastAdded.full_name || lastAdded.name || "—"}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {lastAdded.student_id || lastAdded.id || "—"}
+              </p>
+              <p className="text-xs text-gray-500">
+                {[lastAdded.grade, lastAdded.curriculum].filter(Boolean).join(" | ") || "—"}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">No student data</p>
+          )}
+        </div>
+      </div>
+
+      {/* Stats breakdown */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-gray-600">Total Students</span>
+          <span className="text-sm font-bold text-gray-900">{stats.total}</span>
+        </div>
+        <div className="h-px bg-gray-100" />
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Male : <span className="font-semibold text-gray-900">{stats.male}</span></span>
+          <span className="text-gray-600">Female : <span className="font-semibold text-gray-900">{stats.female}</span></span>
+        </div>
+        <div className="h-px bg-gray-100" />
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Edexcel : <span className="font-semibold text-gray-900">{stats.edexcel}</span></span>
+          <span className="text-gray-600">Cambridge : <span className="font-semibold text-gray-900">{stats.cambridge}</span></span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** The right-hand "Student Payments" panel with donut */
+function PaymentInfoPanel({ paymentStatus, summary }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col h-full">
+      <p className="text-sm text-gray-500 font-medium">Student Payments</p>
+      <p className="text-4xl font-bold text-blue-700 mt-1">{summary.totalStudents} Students</p>
+      <p className="text-sm text-gray-400 mt-0.5">{summary.paid} Payments</p>
+
+      {/* Donut chart */}
+      <div className="flex-1 min-h-0 mt-2">
+        <ResponsiveContainer width="100%" height={180}>
+          <PieChart>
+            <Pie
+              data={paymentStatus}
+              cx="40%"
+              cy="50%"
+              innerRadius={55}
+              outerRadius={82}
+              paddingAngle={3}
+              dataKey="value"
+              isAnimationActive={false}
+            >
+              {paymentStatus.map((_, i) => (
+                <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+              ))}
+            </Pie>
+            <Legend
+              layout="vertical"
+              verticalAlign="middle"
+              align="right"
+              iconType="circle"
+              iconSize={10}
+              formatter={(v) => <span className="text-xs text-gray-600">{v}</span>}
+            />
+            <Tooltip
+              contentStyle={{ borderRadius: 8, fontSize: 12 }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+// ── main component ────────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const { user } = useContext(AuthContext);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  const { user } = React.useContext(AuthContext);
-  
-  // Flash cards data
-  const [flashCardsData, setFlashCardsData] = useState({
-    totalStudents: { value: 0, change: 0, percentage: 0 },
-    totalLecturers: { value: 0, change: 0, percentage: 0 },
-    availableCourses: { value: 0 },
-    monthPayments: { value: 0, change: 0, percentage: 0 },
-    newStudents: { value: 0 },
-    pendingPayments: { value: 0 }
-  });
-  
-  // Chart data
-  const [registrationData, setRegistrationData] = useState([]);
-  const [revenueData, setRevenueData] = useState([]);
-  const [courseDistribution, setCourseDistribution] = useState([]);
-  const [paymentStatus, setPaymentStatus] = useState([]);
-  const [paymentCollectionRate, setPaymentCollectionRate] = useState([]);
-  const [lecturerWorkload, setLecturerWorkload] = useState([]);
-  const [pendingApplications, setPendingApplications] = useState([]);
 
-  // Memoized time display to prevent chart re-renders
-  const timeDisplay = useMemo(() => ({
-    date: currentTime.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    }),
-    time: currentTime.toLocaleTimeString(undefined, {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    })
-  }), [currentTime]);
+  const {
+    flashCards,
+    registrationData,
+    revenueData,
+    courseDistribution,
+    paymentStatus,
+    lastAddedStudent,
+    studentStats,
+    paymentSummary,
+    loading,
+    error,
+  } = useDashboardData();
 
-  // Update time every second
+  // Live clock
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
-  // Fetch flash cards data
-  useEffect(() => {
-    const fetchFlashCards = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/flashcards`);
-        if (!response.ok) throw new Error('Failed to fetch flash cards data');
-        const data = await response.json();
-        setFlashCardsData(data);
-      } catch (err) {
-        console.error('Error fetching flash cards:', err);
-        setError('Failed to load flash cards data.');
-      }
-    };
-
-    fetchFlashCards();
-  }, []);
-
-  // Fetch all chart data
-  useEffect(() => {
-    const fetchChartsData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [
-          registrationsRes,
-          revenueRes,
-          courseRes,
-          paymentRes,
-          collectionRateRes,
-          lecturerWorkloadRes,
-          pendingAppsRes
-        ] = await Promise.all([
-          fetch(`${API_BASE_URL}/registrations`),
-          fetch(`${API_BASE_URL}/revenue`),
-          fetch(`${API_BASE_URL}/course-distribution`),
-          fetch(`${API_BASE_URL}/payment-status`),
-          fetch(`${API_BASE_URL}/payment-collection-rate`),
-          fetch(`${API_BASE_URL}/lecturer-workload`),
-          fetch(`${API_BASE_URL}/pending-applications`)
-        ]);
-
-        // Check if all responses are ok
-        if (!registrationsRes.ok || !revenueRes.ok || !courseRes.ok || !paymentRes.ok || !collectionRateRes.ok || !lecturerWorkloadRes.ok || !pendingAppsRes.ok) {
-          throw new Error('Failed to fetch chart data');
-        }
-
-        const [registrations, revenue, courses, payments, collectionRate, lecturerWorkloadData, pendingApps] = await Promise.all([
-          registrationsRes.json(),
-          revenueRes.json(),
-          courseRes.json(),
-          paymentRes.json(),
-          collectionRateRes.json(),
-          lecturerWorkloadRes.json(),
-          pendingAppsRes.json()
-        ]);
-
-        setRegistrationData(registrations);
-        setRevenueData(revenue);
-        setCourseDistribution(courses);
-        setPaymentStatus(payments);
-        setPaymentCollectionRate(collectionRate);
-        setLecturerWorkload(lecturerWorkloadData);
-        setPendingApplications(pendingApps);
-
-      } catch (err) {
-        console.error('Error fetching charts data:', err);
-        setError('Failed to load chart data. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchChartsData();
-  }, []);
-
-  // Combine registration and revenue data for charts
-  const combinedData = useMemo(() => {
-  const map = new Map();
-
-  registrationData.forEach(r => {
-    map.set(r.month, { month: r.month, registrations: r.registrations, revenue: 0 });
+  const dateStr = currentTime.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const timeStr = currentTime.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 
-  revenueData.forEach(r => {
-    if (map.has(r.month)) {
-      map.get(r.month).revenue = r.revenue;
-    } else {
-      map.set(r.month, { month: r.month, registrations: 0, revenue: r.revenue });
-    }
-  });
-
-  return Array.from(map.values());
-}, [registrationData, revenueData]);
-
+  // ── loading / error states ───────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">Loading dashboard...</p>
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+          <p className="text-gray-500 text-sm">Loading dashboard…</p>
         </div>
       </div>
     );
@@ -174,13 +205,13 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md">
-          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 text-center mb-2">Error Loading Dashboard</h2>
-          <p className="text-gray-600 text-center mb-4">{error}</p>
-          <button 
+        <div className="bg-white rounded-2xl shadow-md p-8 max-w-sm text-center">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-gray-800 mb-1">Error Loading Dashboard</h2>
+          <p className="text-gray-500 text-sm mb-4">{error}</p>
+          <button
             onClick={() => window.location.reload()}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-blue-700 transition"
           >
             Retry
           </button>
@@ -189,267 +220,224 @@ export default function Dashboard() {
     );
   }
 
+  const fc = flashCards;
+
   return (
-    <div className="min-h-screen p-6 w-full">
-      {/* Header Section */}
-      <div className="bg-white px-6 py-6 rounded-xl shadow-sm mb-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="min-h-screen bg-gray-50 px-6 py-6 w-full">
+
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          {/* Left: Welcome */}
           <div>
-            <p className="text-gray-500 text-sm">Welcome back,</p>
-            <h1 className="text-3xl font-bold text-gray-800">{user?.name || 'Admin'}</h1>
+            <p className="text-sm text-gray-500 font-medium">Welcome Back,</p>
+            <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+              {user?.name || "Admin"}
+            </h1>
           </div>
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex flex-col">
-              <span className="text-gray-500 text-sm">Date</span>
-              <span className="text-gray-800 font-semibold">{timeDisplay.date}</span>
+
+          {/* Right: Date + Time */}
+          <div className="flex items-center gap-6 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-gray-400" />
+              <span className="font-medium">{dateStr}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-gray-500 text-sm">Time</span>
-              <span className="text-gray-800 font-semibold">{timeDisplay.time}</span>
+            <div className="flex items-center gap-2">
+              <Clock size={16} className="text-gray-400" />
+              <span className="font-semibold text-gray-800 tabular-nums">{timeStr}</span>
             </div>
           </div>
         </div>
+        <div className="mt-4 h-px bg-gray-200" />
       </div>
 
-      {/* Flash Cards Grid - 3 columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+      {/* ── Stat Cards ──────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <FlashCard
-          icon={User}
-          title="Total Students"
-          value={flashCardsData.totalStudents.value.toLocaleString()}
+          icon={Users}
+          title="Students"
+          value={fc.totalStudents?.value ?? 0}
           theme="blue"
-          changedNo={flashCardsData.totalStudents.change ? `${flashCardsData.totalStudents.change >= 0 ? '+' : ''}${flashCardsData.totalStudents.change}` : null}
-          percentage={flashCardsData.totalStudents.percentage ? `${flashCardsData.totalStudents.percentage >= 0 ? '+' : ''}${flashCardsData.totalStudents.percentage}` : null}
+          changedNo={fc.totalStudents?.change ? `+${fc.totalStudents.change}` : null}
         />
         <FlashCard
-          icon={Shield}
-          title="Total Lecturers"
-          value={flashCardsData.totalLecturers.value.toLocaleString()}
+          icon={BookOpen}
+          title="Lecturers"
+          value={fc.totalLecturers?.value ?? 0}
           theme="purple"
-          changedNo={flashCardsData.totalLecturers.change ? `${flashCardsData.totalLecturers.change >= 0 ? '+' : ''}${flashCardsData.totalLecturers.change}` : null}
-          percentage={flashCardsData.totalLecturers.percentage ? `${flashCardsData.totalLecturers.percentage >= 0 ? '+' : ''}${flashCardsData.totalLecturers.percentage}` : null}
+          changedNo={fc.totalLecturers?.change ? `+${fc.totalLecturers.change}` : null}
+        />
+        <FlashCard
+          icon={CreditCard}
+          title="Monthly Payments"
+          value={(fc.monthPayments?.value ?? 0).toLocaleString()}
+          theme="green"
+          changedNo={
+            fc.monthPayments?.change
+              ? `${fc.monthPayments.change >= 0 ? "+" : ""}${fc.monthPayments.change.toLocaleString()}`
+              : null
+          }
         />
         <FlashCard
           icon={GraduationCap}
-          title="Available Courses"
-          value={flashCardsData.availableCourses.value.toLocaleString()}
-          theme="red"
-        />
-        <FlashCard
-          icon={DollarSign}
-          title="Month Payments"
-          value={`$${flashCardsData.monthPayments.value.toLocaleString()}`}
-          theme="green"
-          changedNo={flashCardsData.monthPayments.change ? `${flashCardsData.monthPayments.change >= 0 ? '+' : ''}$${Math.abs(flashCardsData.monthPayments.change).toLocaleString()}` : null}
-          percentage={flashCardsData.monthPayments.percentage ? `${flashCardsData.monthPayments.percentage >= 0 ? '+' : ''}${flashCardsData.monthPayments.percentage}` : null}
+          title="Courses"
+          value={fc.availableCourses?.value ?? 0}
+          theme="blue"
+          active
         />
       </div>
 
-      {/* Charts Grid - Organized by sections */}
-      
-      {/* ===== STUDENT ANALYTICS SECTION ===== */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Student Analytics</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* Student Registrations - Line Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Student Registrations Trend</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={registrationData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+      {/* ── SECTION 1: Student Registrations ────────────────────────────── */}
+      <section className="mb-8">
+        <SectionTitle>Student Registrations</SectionTitle>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Chart — 2/3 width */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <p className="text-sm font-semibold text-gray-700 mb-4">
+              Students registrations in this year
+            </p>
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={registrationData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id={AREA_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor={CHART_BLUE} stopOpacity={0.35} />
+                    <stop offset="95%" stopColor={CHART_BLUE} stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  axisLine={false}
+                  tickLine={false}
                 />
-                <Line
+                <YAxis
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 8, fontSize: 12, border: "1px solid #e5e7eb" }}
+                  labelStyle={{ fontWeight: 600 }}
+                />
+                <Area
                   type="monotone"
                   dataKey="registrations"
-                  stroke={COLORS.blue}
-                  strokeWidth={3}
-                  dot={{ fill: COLORS.blue, r: 5 }}
-                  activeDot={{ r: 7 }}
+                  stroke={CHART_BLUE}
+                  strokeWidth={2.5}
+                  fill={`url(#${AREA_GRADIENT_ID})`}
+                  dot={false}
+                  activeDot={{ r: 5, fill: CHART_BLUE }}
                   name="Registrations"
                   isAnimationActive={false}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Pending Applications */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Pending Applications</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={pendingApplications}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                />
-                <Bar dataKey="total_pending" fill={COLORS.orange} radius={[8, 8, 0, 0]} name="Pending" isAnimationActive={false} />
-              </BarChart>
-            </ResponsiveContainer>
+          {/* Info panel — 1/3 width */}
+          <div className="lg:col-span-1">
+            <StudentInfoPanel lastAdded={lastAddedStudent} stats={studentStats} />
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ===== FINANCIAL ANALYTICS SECTION ===== */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Financial Analytics</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-          {/* Payment Status - Pie Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Status</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={paymentStatus}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  isAnimationActive={false}
-                >
-                  {paymentStatus.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PAYMENT_COLORS[index % PAYMENT_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Payment Collection Rate - Line Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm lg:col-span-2">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Collection Rate</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={paymentCollectionRate}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" label={{ value: 'Rate (%)', angle: -90, position: 'insideLeft' }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                  formatter={(value) => `${value}%`}
+      {/* ── SECTION 2: Payment Analytics ────────────────────────────────── */}
+      <section className="mb-8">
+        <SectionTitle>Payment Analytics</SectionTitle>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Revenue area chart — 2/3 */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <p className="text-sm font-semibold text-gray-700 mb-4">
+              Monthly Revenue trend
+            </p>
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={revenueData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor={CHART_BLUE} stopOpacity={0.35} />
+                    <stop offset="95%" stopColor={CHART_BLUE} stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  axisLine={false}
+                  tickLine={false}
                 />
-                <Legend />
-                <Line
+                <YAxis
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 8, fontSize: 12, border: "1px solid #e5e7eb" }}
+                  labelStyle={{ fontWeight: 600 }}
+                  formatter={(v) => [`$${v.toLocaleString()}`, "Revenue"]}
+                />
+                <Area
                   type="monotone"
-                  dataKey="collection_rate"
-                  stroke={COLORS.green}
-                  strokeWidth={3}
-                  dot={{ fill: COLORS.green, r: 5 }}
-                  activeDot={{ r: 7 }}
-                  name="Collection Rate (%)"
+                  dataKey="revenue"
+                  stroke={CHART_BLUE}
+                  strokeWidth={2.5}
+                  fill="url(#revenueGrad)"
+                  dot={false}
+                  activeDot={{ r: 5, fill: CHART_BLUE }}
+                  name="Revenue"
                   isAnimationActive={false}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
 
-        {/* Revenue Trend - Full Width */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Revenue Trend</h3>
-          <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={combinedData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                formatter={(value) => `$${value.toLocaleString()}`}
+          {/* Payment donut panel — 1/3 */}
+          <div className="lg:col-span-1">
+            <PaymentInfoPanel paymentStatus={paymentStatus} summary={paymentSummary} />
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 3: Course Details ────────────────────────────────────── */}
+      <section>
+        <SectionTitle>Course Details</SectionTitle>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart
+              data={courseDistribution}
+              margin={{ top: 5, right: 20, left: -20, bottom: 10 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+              <XAxis
+                dataKey="course"
+                tick={{ fontSize: 11, fill: "#9ca3af" }}
+                axisLine={false}
+                tickLine={false}
               />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="revenue"
-                stroke={COLORS.green}
-                strokeWidth={3}
-                dot={{ fill: COLORS.green, r: 5 }}
-                activeDot={{ r: 7 }}
-                name="Revenue ($)"
+              <YAxis
+                tick={{ fontSize: 11, fill: "#9ca3af" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{ borderRadius: 8, fontSize: 12, border: "1px solid #e5e7eb" }}
+                labelStyle={{ fontWeight: 600 }}
+                cursor={{ fill: "rgba(61,90,153,0.06)" }}
+              />
+              <Bar
+                dataKey="students"
+                fill={BAR_COLOR}
+                radius={[4, 4, 0, 0]}
+                name="Students"
                 isAnimationActive={false}
+                maxBarSize={60}
               />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* ===== COURSE & LECTURER ANALYTICS SECTION ===== */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Course & Lecturer Analytics</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-          {/* Course Distribution - Bar Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm lg:col-span-2">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Course Enrollment Distribution</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={courseDistribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="course" 
-                  stroke="#6b7280" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                  interval={0}
-                />
-                <YAxis stroke="#6b7280" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                />
-                <Bar dataKey="students" radius={[8, 8, 0, 0]} name="Students" isAnimationActive={false}>
-                  {courseDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COURSE_COLORS[index % COURSE_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Quick Stats Card */}
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-6">Quick Stats</h3>
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                <p className="text-sm text-gray-600">Total Courses</p>
-                <p className="text-2xl font-bold text-gray-800">{courseDistribution.length}</p>
-              </div>
-              <div className="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
-                <p className="text-sm text-gray-600">Total Lecturers</p>
-                <p className="text-2xl font-bold text-gray-800">{lecturerWorkload.length}</p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
-                <p className="text-sm text-gray-600">Total Students in Courses</p>
-                <p className="text-2xl font-bold text-gray-800">
-                  {courseDistribution.reduce((sum, course) => sum + course.students, 0).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Lecturer Workload - Bar Chart */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Lecturer Workload Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={lecturerWorkload} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis type="number" stroke="#6b7280" />
-              <YAxis dataKey="lecturer" type="category" stroke="#6b7280" width={100} />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-              />
-              <Legend />
-              <Bar dataKey="courses" fill={COLORS.purple} name="Courses" isAnimationActive={false} />
-              <Bar dataKey="students" fill={COLORS.blue} name="Students" isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </section>
+
     </div>
   );
 }

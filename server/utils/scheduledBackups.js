@@ -159,20 +159,29 @@ async function deleteOldFirebaseBackups() {
       return;
     }
 
-    const fiveDaysAgo = Date.now() - (5 * 24 * 60 * 60 * 1000);
+    // Exclude 'latest' from cleanup
+    const backupKeys = Object.keys(backups).filter(k => k !== 'latest');
+    
+    if (backupKeys.length <= 5) {
+      console.log(`Only ${backupKeys.length} backups exist, no cleanup needed.`);
+      return;
+    }
+
+    // Sort by timestamp descending
+    backupKeys.sort((a, b) => {
+      const timeA = backups[a].metadata?.timestamp ? new Date(backups[a].metadata.timestamp).getTime() : 0;
+      const timeB = backups[b].metadata?.timestamp ? new Date(backups[b].metadata.timestamp).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    // The ones to delete are from index 5 onwards
+    const toDelete = backupKeys.slice(5);
     let deletedCount = 0;
 
-    for (const backupId of Object.keys(backups)) {
-      const metadata = backups[backupId].metadata;
-      if (metadata && metadata.timestamp) {
-        const backupTime = new Date(metadata.timestamp).getTime();
-        
-        if (backupTime < fiveDaysAgo) {
-          await database.ref(`backups/${backupId}`).remove();
-          console.log(`🗑️  Deleted old Firebase backup: ${backupId}`);
-          deletedCount++;
-        }
-      }
+    for (const backupId of toDelete) {
+      await database.ref(`backups/${backupId}`).remove();
+      console.log(`🗑️  Deleted old Firebase backup: ${backupId}`);
+      deletedCount++;
     }
 
     console.log(`✅ Cleaned up ${deletedCount} old Firebase backup(s)`);
@@ -188,21 +197,29 @@ async function deleteOldLocalDumps() {
   try {
     console.log('🧹 Cleaning up old local MySQL dumps...');
     
-    const files = fs.readdirSync(BACKUP_DIR);
-    const fiveDaysAgo = Date.now() - (5 * 24 * 60 * 60 * 1000);
+    const files = fs.readdirSync(BACKUP_DIR).filter(f => f.endsWith('.sql'));
+    
+    if (files.length <= 5) {
+      console.log(`Only ${files.length} local dumps exist, no cleanup needed.`);
+      return;
+    }
+
+    // Sort files by modification time descending
+    const filesWithStats = files.map(file => {
+      const filePath = path.join(BACKUP_DIR, file);
+      return { file, filePath, mtime: fs.statSync(filePath).mtimeMs };
+    });
+    
+    filesWithStats.sort((a, b) => b.mtime - a.mtime);
+
+    // Delete from index 5 onwards
+    const toDelete = filesWithStats.slice(5);
     let deletedCount = 0;
 
-    for (const file of files) {
-      if (file.endsWith('.sql')) {
-        const filePath = path.join(BACKUP_DIR, file);
-        const stats = fs.statSync(filePath);
-        
-        if (stats.mtimeMs < fiveDaysAgo) {
-          fs.unlinkSync(filePath);
-          console.log(`🗑️  Deleted old dump: ${file}`);
-          deletedCount++;
-        }
-      }
+    for (const { file, filePath } of toDelete) {
+      fs.unlinkSync(filePath);
+      console.log(`🗑️  Deleted old dump: ${file}`);
+      deletedCount++;
     }
 
     console.log(`✅ Cleaned up ${deletedCount} old local dump(s)`);
@@ -244,33 +261,27 @@ async function performCompleteBackup() {
  * Runs daily at 2:00 AM
  */
 function initializeScheduledBackups() {
-  // Schedule: Daily at 2:00 AM
-  cron.schedule('0 2 * * *', async () => {
+  // Schedule: Hourly at minute 0
+  cron.schedule('0 * * * *', async () => {
     console.log('\n🕐 Scheduled backup triggered at', new Date().toLocaleString());
     await performCompleteBackup();
   });
 
-  console.log('⏰ Scheduled backups initialized (Daily at 2:00 AM)');
-  
-  // Optional: Run backup on startup (comment out if not needed)
-  // setTimeout(() => {
-  //   console.log('🚀 Running initial backup on startup...');
-  //   performCompleteBackup();
-  // }, 5000); // Wait 5 seconds after startup
+  console.log('⏰ Scheduled backups initialized (Hourly at minute 0)');
 }
 
 /**
  * Schedule cleanup job
- * Runs daily at 3:00 AM (after backup)
+ * Runs hourly at minute 30
  */
 function initializeCleanupSchedule() {
-  cron.schedule('0 3 * * *', async () => {
+  cron.schedule('30 * * * *', async () => {
     console.log('\n🧹 Scheduled cleanup triggered at', new Date().toLocaleString());
     await deleteOldFirebaseBackups();
     await deleteOldLocalDumps();
   });
 
-  console.log('⏰ Scheduled cleanup initialized (Daily at 3:00 AM)');
+  console.log('⏰ Scheduled cleanup initialized (Hourly at minute 30)');
 }
 
 module.exports = {

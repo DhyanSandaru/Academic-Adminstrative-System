@@ -1,13 +1,17 @@
-import { Check, Download, Share2 } from "lucide-react";
+import { Check, Download, Share2, Trash } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import PaymentReceiptPDF from "./PaymentReceiptPDF";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-export default function PaymentReceipt({ data, onClose }) {
+export default function PaymentReceipt({ data, onClose, del }) {
   if (!data) return null;
   const receiptRef = useRef(null);
+  const navigate = useNavigate();
 
+  const [deletePopup, setDeletePopup] = useState(false);
   const {
     studentName,
     studentId,
@@ -29,6 +33,19 @@ export default function PaymentReceipt({ data, onClose }) {
     minute: "2-digit",
   });
 
+
+  const handleDelete = async () => {
+    try{
+      await axios.delete(`http://localhost:8000/api/payments/delete/${refNo}`)
+
+      alert("Payment has been deleted successfully")
+      setDeletePopup(false)
+      onClose();
+    }
+    catch(err){
+      alert(err.response?.data?.message || "Payment deletion failed ")
+    }
+  }
  const handleDownload = async () => {
     if (!receiptRef.current) return;
 
@@ -102,9 +119,15 @@ export default function PaymentReceipt({ data, onClose }) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mb-8 relative z-10 justify-center">
+          <div className="flex gap-3 mb-8 relative z-10 justify-around">
             <PaymentReceiptPDF data={data}/>
-           
+            {del && (
+              <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded hover:bg-gray-300 transition"
+              onClick={() => setDeletePopup(true)}>
+                <Trash className="w-4 h-4"/>
+                Delete
+              </button>
+            )}
           </div>
 
           {/* Scalloped Bottom Edge */}
@@ -112,10 +135,28 @@ export default function PaymentReceipt({ data, onClose }) {
             <svg viewBox="0 0 400 32" className="w-full h-full" preserveAspectRatio="none">
               <path
                 d="M0,32 C13.33,16 26.67,16 40,32 C53.33,16 66.67,16 80,32 C93.33,16 106.67,16 120,32 C133.33,16 146.67,16 160,32 C173.33,16 186.67,16 200,32 C213.33,16 226.67,16 240,32 C253.33,16 266.67,16 280,32 C293.33,16 306.67,16 320,32 C333.33,16 346.67,16 360,32 C373.33,16 386.67,16 400,32 L400,32 L0,32 Z"
-                className="fill-white"
+                className="fill-stone-300"
               />
             </svg>
           </div>
+          {deletePopup == true && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="w-[60%] max-w-2xl bg-white text-black p-10 rounded-2xl flex flex-col items-center gap-5">
+                <p>Are you sure you want to delete this payment?</p>
+                <div className="flex flex-row justify-around w-full">
+                  <button className="bg-red-500 hover:bg-red-600"
+                  onClick={handleDelete}>
+                    Yes
+                    </button>
+                  <button className="bg-green-400 hover:bg-green-500"
+                  onClick={() => setDeletePopup(false)}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // mailers/paymentMailer.js
-const { sendMail } = require('./NodeMailer');
+const { sendTextMail } = require('./NodeMailer');
 
 exports.paymentMailer = async (course, email, name, amount, refNo) => {
   const htmlContent = `
@@ -16,7 +16,7 @@ exports.paymentMailer = async (course, email, name, amount, refNo) => {
     </div>
   `;
 
-  await sendMail({
+  await sendTextMail({
     to: email,
     subject: `Payment Confirmation - ${course}`,
     html: htmlContent,

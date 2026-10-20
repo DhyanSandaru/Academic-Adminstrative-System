@@ -377,10 +377,12 @@ exports.listBackups = async (req, res) => {
       });
     }
 
-    const backupsList = Object.keys(backups).map(backupId => ({
-      backupId,
-      ...(backups[backupId].metadata || {})
-    }));
+    const backupsList = Object.keys(backups)
+      .filter(backupId => backupId !== 'latest')
+      .map(backupId => ({
+        backupId,
+        ...(backups[backupId].metadata || {})
+      }));
 
     res.status(200).json({
       backups: backupsList,

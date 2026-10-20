@@ -1,4 +1,6 @@
 const db = require('../DBconfig.js');
+const fs = require('fs');
+const path = require('path');
 
 // ==============================
 // ADD LECTURER
@@ -116,48 +118,81 @@ exports.addLecturer = async (req, res) => {
 // ==============================
 exports.fetchLecturers = async (req, res) => {
   try {
-    const [rows] = await db.query(`SELECT * FROM lecturers`);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 12));
+    const offset = (page - 1) * limit;
+    const search = req.query.search?.trim() || '';
+    const searchBy = req.query.searchBy || 'name';
 
-    const formattedData = await Promise.all(
-      rows.map(async (lecturer) => {
-        const [subjectRows] = await db.query(
-          `
-          SELECT m.name
-          FROM lecturer_modules lm
-          JOIN modules m ON lm.module_id = m.module_id
-          WHERE lm.lecturer_id = ?
-          `,
-          [lecturer.lecturer_id]
-        );
+    // Build WHERE clause for optional search
+    let whereClause = '';
+    let queryParams = [];
+    if (search) {
+      if (searchBy === 'id') {
+        whereClause = 'WHERE l.lecturer_id LIKE ?';
+        queryParams.push(`%${search}%`);
+      } else {
+        whereClause = 'WHERE l.lecturer_name LIKE ?';
+        queryParams.push(`%${search}%`);
+      }
+    }
 
-        const courses = subjectRows.map((row) => row.name);
-
-        return {
-          name: lecturer.lecturer_name,
-          lecturerId: lecturer.lecturer_id,
-          profilePhoto: lecturer.profile_photo,
-          gender: lecturer.gender,
-          email: lecturer.email,
-          nic: lecturer.nic,
-          mobile: lecturer.mobile,
-          address: lecturer.address,
-          highestQualification: lecturer.highest_qualification,
-          institute: lecturer.institute,
-          fieldOfStudy: lecturer.field_of_study,
-          experience: lecturer.experience,
-          certifications: lecturer.certifications,
-          joinedYear: lecturer.joined_year,
-          courses
-        };
-      })
+    // Get total count for pagination metadata
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) as total FROM lecturers l ${whereClause}`,
+      queryParams
     );
 
-    res.json(formattedData);
+    // Single query with LEFT JOIN to get modules — eliminates N+1
+    const [rows] = await db.query(
+      `SELECT l.lecturer_id, l.lecturer_name, l.profile_photo, l.gender, l.email,
+              l.nic, l.mobile, l.address, l.highest_qualification, l.institute,
+              l.field_of_study, l.experience, l.certifications, l.joined_year,
+              GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR '||') as module_names
+       FROM lecturers l
+       LEFT JOIN lecturer_modules lm ON l.lecturer_id = lm.lecturer_id
+       LEFT JOIN modules m ON lm.module_id = m.module_id
+       ${whereClause}
+       GROUP BY l.lecturer_id
+       ORDER BY l.lecturer_name ASC
+       LIMIT ? OFFSET ?`,
+      [...queryParams, limit, offset]
+    );
+
+    const formattedData = rows.map((lecturer) => {
+      const courses = lecturer.module_names ? lecturer.module_names.split('||') : [];
+      return {
+        name: lecturer.lecturer_name,
+        lecturerId: lecturer.lecturer_id,
+        profilePhoto: lecturer.profile_photo,
+        gender: lecturer.gender,
+        email: lecturer.email,
+        nic: lecturer.nic,
+        mobile: lecturer.mobile,
+        address: lecturer.address,
+        highestQualification: lecturer.highest_qualification,
+        institute: lecturer.institute,
+        fieldOfStudy: lecturer.field_of_study,
+        experience: lecturer.experience,
+        certifications: lecturer.certifications,
+        joinedYear: lecturer.joined_year,
+        courses
+      };
+    });
+
+    res.json({
+      data: formattedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (err) {
     console.error("Error fetching lecturers:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 // ==============================
 // FETCH SINGLE LECTURER BY ID
@@ -257,9 +292,6 @@ exports.updateLecturerById = async (req, res) => {
     } = req.body;
 
     const courseModules = JSON.parse(req.body.courses || "[]");
-    const profilePhoto = req.file
-      ? `/public/lecturers/${req.file.filename}`
-      : req.body.profilePhoto; // keep previous one if no new upload
 
     // Check lecturer existence
     const [rows] = await db.query(
@@ -269,6 +301,19 @@ exports.updateLecturerById = async (req, res) => {
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "Lecturer not found" });
+    }
+
+    const oldPhoto = rows[0].profile_photo;
+      const profilePhoto = req.file
+        ? `/public/lecturers/${req.file.filename}`
+        : req.body.profilePhoto; //keep previous if no upload
+    
+    // Delete old photo only when a new file is uploaded
+    if (req.file && oldPhoto) {
+      const oldPhotoPath = path.join(__dirname, '../public/lecturers', path.basename(oldPhoto));
+      if (fs.existsSync(oldPhotoPath)) {
+        fs.unlinkSync(oldPhotoPath);
+      }
     }
 
     // Update lecturer data

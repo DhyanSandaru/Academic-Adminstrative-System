@@ -1,21 +1,32 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, User, Calendar, Clock, MapPin, Users, DollarSign, Info, X, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { BookOpen, User, Calendar, Clock, MapPin, Users, DollarSign, Info, X, Plus, Trash } from 'lucide-react';
 import axios from 'axios';
 import AddLecturers from '../components/AddLecturers';
 
 const bannerOptions = [
   '/images/course_backgrounds/green_tiles.jpg',
-  '/images/banner2.jpg',
-  '/images/banner3.jpg'
+  '/images/course_backgrounds/color_tiles.png',
+  '/images/course_backgrounds/gold-brown tiles.jpg',
+  "/images/course_backgrounds/abstract_art.jpg",
+  "/images/course_backgrounds/abstract_art2.png",
+  "/images/course_backgrounds/floral.jpg",
+  "/images/course_backgrounds/pattern_tile.jpeg",
+  "/images/course_backgrounds/wall_art.jpg",
+  "/images/course_backgrounds/space-art.jpg",
+  "/images/course_backgrounds/tides.jpg"
 ];
 
 export default function CourseProfile({ courseId }) {
+  const navigate = useNavigate();
+
   // Separate state for each data source
   const [courseData, setCourseData] = useState(null);
   const [classes, setClasses] = useState([]);
   const [lecturers, setLecturers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletePopup, setDeletePopup] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -46,7 +57,7 @@ export default function CourseProfile({ courseId }) {
     if (courseData) {
       const initial = {
         name: courseData.name || '',
-        payment: courseData.payment || '',
+        payment: courseData.payment || 0,
         grade: courseData.grade || '',
         curriculum: courseData.curriculum || '',
         description: courseData.description || '',
@@ -55,7 +66,7 @@ export default function CourseProfile({ courseId }) {
       };
       setFormData(initial);
       setInitialData(initial);
-      
+
       if (initial.courseBanner) {
         setPreviewUrl(initial.courseBanner);
       }
@@ -84,52 +95,52 @@ export default function CourseProfile({ courseId }) {
   }, [formData.grade]);
 
   const fetchAllData = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const { data: course } = await axios.get(
-      `http://localhost:8000/api/courses/get-courses/${courseId}`
-    );
+      const { data: course } = await axios.get(
+        `http://localhost:8000/api/courses/get-courses/${courseId}`
+      );
 
-    if (!course) {
-      setCourseData(null);
+      if (!course) {
+        setCourseData(null);
+        setLoading(false);
+        return;
+      }
+
+      setCourseData(course);
+
+      try {
+        const { data } = await axios.get(
+          `http://localhost:8000/api/timetable/timetable/${encodeURIComponent(courseId)}`
+        );
+        setClasses(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (error.response?.status !== 404) {
+          console.error("Timetable fetch failed:", error);
+        }
+        setClasses([]);
+      }
+
+      try {
+        const { data } = await axios.get(
+          `http://localhost:8000/api/lecturers/view-lecturers/${encodeURIComponent(courseId)}`
+        );
+        setLecturers(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (error.response?.status !== 404) {
+          console.error("Lecturers fetch failed:", error);
+        }
+        setLecturers([]);
+      }
+
       setLoading(false);
-      return;
-    }
-
-    setCourseData(course);
-
-    try {
-      const { data } = await axios.get(
-        `http://localhost:8000/api/timetable/timetable/${encodeURIComponent(courseId)}`
-      );
-      setClasses(Array.isArray(data) ? data : []);
     } catch (error) {
-      if (error.response?.status !== 404) {
-        console.error("Timetable fetch failed:", error);
-      }
-      setClasses([]);
+      console.error("Course fetch failed:", error);
+      alert("Failed to load course data");
+      setLoading(false);
     }
-
-    try {
-      const { data } = await axios.get(
-        `http://localhost:8000/api/lecturers/view-lecturers/${encodeURIComponent(courseId)}`
-      );
-      setLecturers(Array.isArray(data) ? data : []);
-    } catch (error) {
-      if (error.response?.status !== 404) {
-        console.error("Lecturers fetch failed:", error);
-      }
-      setLecturers([]);
-    }
-
-    setLoading(false);
-  } catch (error) {
-    console.error("Course fetch failed:", error);
-    alert("Failed to load course data");
-    setLoading(false);
-  }
-};
+  };
 
   const filterCurrentWeekClasses = () => {
     const today = new Date();
@@ -181,7 +192,7 @@ export default function CourseProfile({ courseId }) {
     try {
       setSaving(true);
       // const data = new FormData();
-      
+
       // // Append all form fields
       // data.append('name', formData.name);
       // data.append('payment', formData.payment);
@@ -189,14 +200,14 @@ export default function CourseProfile({ courseId }) {
       // data.append('curriculum', formData.curriculum);
       // data.append('description', formData.description);
       // data.append('courseBanner', formData.courseBanner);
-      
+
       // // Append lecturers as JSON string
       // data.append('lecturers', JSON.stringify(formData.lecturers));
 
       const response = await axios.put(
         `http://localhost:8000/api/courses/update-course/${courseId}`,
         formData
-        );
+      );
 
       if (response.status === 200) {
         alert('Course details updated successfully');
@@ -206,7 +217,7 @@ export default function CourseProfile({ courseId }) {
     } catch (error) {
       console.error('Error updating course:', error);
       alert('Failed to update course: ' + (error.response?.data?.message || error.message));
-      
+
       // Reset to initial data on failure
       if (initialData) {
         setFormData(initialData);
@@ -215,6 +226,17 @@ export default function CourseProfile({ courseId }) {
       }
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:8000/api/courses/delete-course/${courseId}`);
+      alert('Course deleted successfully');
+      navigate('/view-courses');
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      alert(error.response?.data?.message || 'Failed to delete course');
     }
   };
 
@@ -243,24 +265,36 @@ export default function CourseProfile({ courseId }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
+      <div className="max-w-5xl mx-auto space-y-8">
+
+        <div className="flex justify-center">
+          <button
+            onClick={() => setDeletePopup(true)}
+            className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all duration-200 shadow-md flex items-center gap-2"
+          >
+            <Trash size={18} />
+            Delete Course
+          </button>
+        </div>
+
         {/* Course Details Section */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-purple-600 to-indigo-800 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <BookOpen className="text-white" size={28} />
-                <h2 className="text-2xl font-bold text-white">Course Details</h2>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <BookOpen className="text-white" size={28} />
+                  <h2 className="text-2xl font-bold text-white">Course Details</h2>
+                </div>
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !hasChanges}
+                  className="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
               </div>
-              <button
-                onClick={handleSave}
-                disabled={saving || !hasChanges}
-                className="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
             </div>
           </div>
 
@@ -515,6 +549,30 @@ export default function CourseProfile({ courseId }) {
 
       </div>
 
+      {deletePopup && (
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-300">
+            <p className="text-lg mb-4 text-black">
+              Do you want to delete {courseData?.name || 'this course'}?
+            </p>
+            <div className="flex gap-4 justify-end">
+              <button
+                onClick={handleDelete}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setDeletePopup(false)}
+                className="bg-gray-300 text-black px-4 py-2 rounded-lg hover:bg-gray-400"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Banner Selection Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-3">
@@ -533,11 +591,10 @@ export default function CourseProfile({ courseId }) {
               {bannerOptions.map((banner, index) => (
                 <div
                   key={index}
-                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition ${
-                    formData.courseBanner === banner
-                      ? "border-indigo-600 scale-[1.02]"
-                      : "border-transparent hover:scale-[1.02]"
-                  }`}
+                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition ${formData.courseBanner === banner
+                    ? "border-indigo-600 scale-[1.02]"
+                    : "border-transparent hover:scale-[1.02]"
+                    }`}
                   onClick={() => handleSelectBanner(banner)}
                 >
                   <img

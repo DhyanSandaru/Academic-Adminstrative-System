@@ -1,6 +1,8 @@
 const db = require('../DBconfig.js');
 const Student = require("../models/StudentModel.js");
 const {registrationMailer} = require('../Mailer/RegistrationMailer.js');
+const fs = require('fs');
+const path = require('path');
 
 exports.addStudent = async (req, res) => {
   try {
@@ -20,7 +22,7 @@ exports.addStudent = async (req, res) => {
       grade,
       curriculum
     } = req.body;
-
+    
     const courseModules = JSON.parse(req.body.courseModules || "[]");
     const profilePhoto = req.file ? `/public/students/${req.file.filename}` : null;
 
@@ -49,6 +51,7 @@ exports.addStudent = async (req, res) => {
       `,
       [searchFormat]
     );
+
     const newid = rows.length > 0 ? parseInt(rows[0].student_id.slice(-3), 10) + 1 : 1;
     const studentId = `S-${year}${curr}${month}-${newid.toString().padStart(3, "0")}`;
 
@@ -57,9 +60,8 @@ exports.addStudent = async (req, res) => {
 
     await db.execute(
       `INSERT INTO students (
-        student_id, student_name, profile_photo, gender, dob, ethnicity
-        email, nic, mobile, address,
-        guardian_name, guardian_mobile, guardian_relation,
+        student_id, student_name, profile_photo, gender, dob, ethnicity,
+        email, nic, mobile, address, guardian_name, guardian_mobile, guardian_relation,
         previous_education, grade, submitted_at, payment_status,age,curriculum
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -86,7 +88,8 @@ exports.addStudent = async (req, res) => {
     );
 
     // Insert related course modules
-    for (const moduleName of courseModules) {
+    if(courseModules.length > 0){
+      for (const moduleName of courseModules) {
       const [moduleRows] = await db.execute(
         "SELECT module_id FROM modules WHERE LOWER(name) = LOWER(?)",
         [moduleName]
@@ -100,6 +103,8 @@ exports.addStudent = async (req, res) => {
         );
       }
     }
+    }
+
     try {
       await registrationMailer(email, studentName, studentId, grade, curriculum);
       console.log("📧 Registration email sent to:", email);
@@ -116,47 +121,74 @@ exports.addStudent = async (req, res) => {
 
 exports.fetchStudents = async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 12));
+    const offset = (page - 1) * limit;
+    const search = req.query.search?.trim() || '';
+    const searchBy = req.query.searchBy || 'name';
+
+    // Build WHERE clause for optional search
+    let whereClause = '';
+    let queryParams = [];
+    if (search) {
+      if (searchBy === 'id') {
+        whereClause = 'WHERE s.student_id LIKE ?';
+        queryParams.push(`%${search}%`);
+      } else {
+        whereClause = 'WHERE s.student_name LIKE ?';
+        queryParams.push(`%${search}%`);
+      }
+    }
+
+    // Get total count for pagination metadata
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) as total FROM students s ${whereClause}`,
+      queryParams
+    );
+
+    // Single query with LEFT JOIN to get modules — eliminates N+1
     const [rows] = await db.query(
-      `SELECT student_name, student_id, profile_photo, gender, payment_status, grade 
-      FROM students`
-    );
-    const formattedData = await Promise.all(
-      rows.map(async (student) => {
-        const [moduleRows] = await db.query(
-          `
-          SELECT m.name, m.module_id 
-          FROM student_modules sm
-          JOIN modules m ON sm.module_id = m.module_id
-          WHERE sm.student_id = ?
-          `,
-          [student.student_id]
-        );
-
-        const courses = moduleRows.map(row => (
-          {
-            course: row.name,
-            course_id: row.module_id
-          }
-        ));
-
-        return {
-          name: student.student_name,
-          studentId: student.student_id,
-          profilePhoto: student.profile_photo,
-          gender: student.gender,
-          payment_status: student.payment_status,
-          grade: student.grade,
-          courses
-        };
-      })
+      `SELECT s.student_name, s.student_id, s.profile_photo, s.gender, s.payment_status, s.grade,
+              GROUP_CONCAT(m.name ORDER BY m.name SEPARATOR '||') as module_names,
+              GROUP_CONCAT(m.module_id ORDER BY m.name SEPARATOR '||') as module_ids
+       FROM students s
+       LEFT JOIN student_modules sm ON s.student_id = sm.student_id
+       LEFT JOIN modules m ON sm.module_id = m.module_id
+       ${whereClause}
+       GROUP BY s.student_id
+       ORDER BY s.student_name ASC
+       LIMIT ? OFFSET ?`,
+      [...queryParams, limit, offset]
     );
 
-    res.json(formattedData);
+    const formattedData = rows.map((student) => {
+      const names = student.module_names ? student.module_names.split('||') : [];
+      const ids = student.module_ids ? student.module_ids.split('||') : [];
+      const courses = names.map((name, i) => ({ course: name, course_id: ids[i] }));
+      return {
+        name: student.student_name,
+        studentId: student.student_id,
+        profilePhoto: student.profile_photo,
+        gender: student.gender,
+        payment_status: student.payment_status,
+        grade: student.grade,
+        courses
+      };
+    });
+
+    res.json({
+      data: formattedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (err) {
     console.error("Error fetching students ", err);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 exports.fetchStudentbyID = async (req, res) => {
   const id = req.params.id;
@@ -267,13 +299,22 @@ exports.updateStudentById = async (req, res) => {
       } = req.body;
 
       const courses = JSON.parse(req.body.courses || "[]");
-      const profilePhoto = req.file
-        ? `/public/students/${req.file.filename}`
-        : req.body.profilePhoto;
 
       const [rows] = await db.query(`SELECT * FROM students WHERE student_id = ?`, [studentId]);
       if (rows.length === 0) {
         return res.status(404).json({ message: "Student not found" });
+      }
+      const oldPhoto = rows[0].profile_photo;
+      const profilePhoto = req.file
+        ? `/public/students/${req.file.filename}`
+        : req.body.profilePhoto;
+
+      // Delete old photo only when a new file is uploaded
+      if (req.file && oldPhoto) {
+        const oldPhotoPath = path.join(__dirname, '../public/students', path.basename(oldPhoto));
+        if (fs.existsSync(oldPhotoPath)) {
+          fs.unlinkSync(oldPhotoPath);
+        }
       }
 
       await db.query(
@@ -340,9 +381,37 @@ exports.deleteStudentById = async (req, res) => {
   const id = req.params.id;
 
   try {
-    // Delete from student_modules first to maintain FK integrity
+    // Get profile photo path from DB first
+    const [rows] = await db.query(
+      "SELECT profile_photo FROM students WHERE student_id = ?",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const profilePhoto = rows[0].profile_photo;
+
+    if (profilePhoto) {
+      const photoPath = path.join(
+        __dirname,
+        "./public/students",
+        path.basename(profilePhoto)
+      );
+
+      if (fs.existsSync(photoPath)) {
+        fs.unlinkSync(photoPath);
+      }
+    }
+
+    // Delete related module links first
     await db.query("DELETE FROM student_modules WHERE student_id = ?", [id]);
-    const [result] = await db.query("DELETE FROM students WHERE student_id = ?", [id]);
+
+    const [result] = await db.query(
+      "DELETE FROM students WHERE student_id = ?",
+      [id]
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Student not found" });
